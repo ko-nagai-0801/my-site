@@ -1,6 +1,6 @@
 // app/blog/page.tsx
 import Link from "next/link";
-import { getAllPosts } from "@/lib/posts";
+import { formatDate, getAllPosts } from "@/lib/posts";
 
 export default async function BlogPage() {
   const posts = await getAllPosts();
@@ -24,21 +24,20 @@ export default async function BlogPage() {
       </header>
 
       {posts.length === 0 ? (
-        <p className="mt-10 text-sm text-foreground/70">記事がまだありません。</p>
+        <p className="mt-10 text-sm text-foreground/70">
+          記事がまだありません。
+        </p>
       ) : (
         <ul className="mt-10 divide-y divide-foreground/10 border-y border-foreground/10">
           {posts.map((p) => (
             <li key={p.slug} className="py-7">
-              <Link
-                href={`/blog/${p.slug}`}
-                className="group block"
-              >
+              <Link href={`/blog/${p.slug}`} className="group block">
                 <div className="flex items-start justify-between gap-6">
                   <h2 className="text-lg font-medium tracking-tight underline decoration-foreground/25 underline-offset-4 group-hover:decoration-foreground/50">
                     {p.meta.title}
                   </h2>
                   <span className="shrink-0 text-xs tracking-[0.18em] text-foreground/60">
-                    {p.meta.date}
+                    {formatDate(p.meta.date)}
                   </span>
                 </div>
 

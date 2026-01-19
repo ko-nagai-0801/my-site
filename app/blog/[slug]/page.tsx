@@ -1,6 +1,6 @@
 // app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
-import { getPostBySlug, getPostSlugs } from "@/lib/posts";
+import { formatDate, getPostBySlug, getPostSlugs } from "@/lib/posts";
 import Link from "next/link";
 
 export async function generateStaticParams() {
@@ -35,7 +35,7 @@ export default async function PostPage({
         </Link>
 
         <span className="text-xs tracking-[0.18em] text-foreground/60">
-          {meta.date}
+          {formatDate(meta.date)}
         </span>
       </div>
 

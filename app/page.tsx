@@ -1,7 +1,7 @@
 // app/page.tsx
 import Link from "next/link";
 import Image from "next/image";
-import { getLatestPosts } from "@/lib/posts";
+import { formatDate, getLatestPosts } from "@/lib/posts";
 
 export default async function Home() {
   const latest = await getLatestPosts(3);
@@ -11,8 +11,7 @@ export default async function Home() {
       {/* Hero Visual */}
       <section>
         <div className="overflow-hidden rounded-3xl border border-foreground/10 bg-foreground/5 shadow-2xl shadow-black/30">
-          {/* モバイルは見やすさ優先で少し縦長、sm以上は21:9（2400x1029に近い比率） */}
-          <div className="relative aspect-[16/10] sm:aspect-[2400/1029]">
+          <div className="relative aspect-[16/10] sm:aspect-[21/9]">
             <Image
               src="/images/hero.png"
               alt="Site hero visual"
@@ -21,10 +20,7 @@ export default async function Home() {
               sizes="(min-width: 1024px) 1024px, 100vw"
               className="object-cover saturate-[0.85] contrast-[1.05] brightness-[0.9]"
             />
-
-            {/* トーンを揃える薄い被せ（暗背景でも成立） */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
-            {/* うっすらフレーム感 */}
             <div className="absolute inset-0 ring-1 ring-foreground/10" />
           </div>
         </div>
@@ -81,7 +77,7 @@ export default async function Home() {
                 </div>
 
                 <div className="shrink-0 text-xs tracking-[0.18em] text-foreground/60">
-                  {p.meta.date}
+                  {formatDate(p.meta.date)}
                 </div>
               </div>
 

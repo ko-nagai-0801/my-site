@@ -1,12 +1,14 @@
+// lib/posts.ts
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type React from "react";
 
 export type PostMeta = {
   title: string;
-  date: string;
+  date: string; // ISO 8601 推奨: "2026-01-19T21:30:00+09:00"
   description?: string;
   tags?: string[];
+  draft?: boolean;
 };
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
@@ -26,11 +28,35 @@ export async function getPostBySlug(slug: string) {
   return { slug, meta, Content };
 }
 
+function toTime(dateStr: string) {
+  const t = Date.parse(dateStr);
+  return Number.isNaN(t) ? 0 : t;
+}
+
+/**
+ * 表示用：ISO日時 → YYYY-MM-DD だけにする
+ * - "2026-01-19T21:30:00+09:00" -> "2026-01-19"
+ * - "2026-01-19" -> "2026-01-19"
+ */
+export function formatDate(dateStr: string) {
+  if (!dateStr) return "";
+  return dateStr.length >= 10 ? dateStr.slice(0, 10) : dateStr;
+}
+
 export async function getAllPosts() {
   const slugs = await getPostSlugs();
   const posts = await Promise.all(slugs.map(getPostBySlug));
-  posts.sort((a, b) => (a.meta.date < b.meta.date ? 1 : -1));
-  return posts;
+
+  const published = posts.filter((p) => !p.meta.draft);
+
+  published.sort((a, b) => {
+    const ad = toTime(a.meta.date);
+    const bd = toTime(b.meta.date);
+    if (bd !== ad) return bd - ad; // 日付降順（時刻込みでOK）
+    return a.slug.localeCompare(b.slug, "ja"); // 同一時刻ならslugで固定
+  });
+
+  return published;
 }
 
 export async function getLatestPosts(limit = 3) {
