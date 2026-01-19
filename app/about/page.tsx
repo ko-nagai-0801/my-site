@@ -1,6 +1,7 @@
 // app/about/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import type React from "react";
 
 export const metadata: Metadata = {
   title: "About | My Site",
@@ -17,6 +18,26 @@ const links = [
 
 const whatIDo = [
   {
+    title: "静的サイト / LP コーディング",
+    desc: "構造（HTML）・見た目（CSS）・挙動（JS）の基本に沿って実装します。",
+  },
+  {
+    title: "既存サイトの改修・バグ修正",
+    desc: "崩れ・不具合・フォームの問題などを原因から切り分け、再発しにくい形に整えます。",
+  },
+  {
+    title: "品質改善（A11y / セマンティック）",
+    desc: "読みやすさ・操作しやすさ・保守性を意識し、公開前の品質を底上げします。",
+  },
+  {
+    title: "フォーム実装（セキュリティ重視）",
+    desc: "CSRF対策・バリデーション・スパム対策まで含めて、安心して運用できる形で組みます。",
+  },
+  {
+    title: "WordPressテーマ化 / 組み込み",
+    desc: "HTML/CSS/JSで作ったサイトをテーマ化し、更新しやすい運用に載せ替えます。",
+  },
+  {
     title: "Next.js + MDX のブログ構築",
     desc: "記事追加・一覧・詳細。運用しやすい最小構成から、回遊性の拡張まで。",
   },
@@ -24,10 +45,22 @@ const whatIDo = [
     title: "Tailwind CSS でのUI調整",
     desc: "余白・線・タイポ・コンポーネントの統一で、全体の雰囲気を整えます。",
   },
-  {
-    title: "静的サイト / LP コーディング",
-    desc: "構造（HTML）・見た目（CSS）・挙動（JS）の基本に沿って実装します。",
-  },
+] as const;
+
+
+/**
+ * Focus（右カラム）
+ * - “デザイン→実装→改善→守る” の流れが伝わる構成
+ * - 表示密度は高いが、1行で読める長さに揃える
+ */
+const focus = [
+  { label: "Build", value: "HTML / CSS / JS", note: "semantic / maintainable" },
+  { label: "UX", value: "spacing / type", note: "readability first" },
+  { label: "Motion", value: "animation", note: "JS assisted" },
+  { label: "Forms", value: "PHP scratch", note: "CSRF / validate / spam" },
+  { label: "Fix", value: "bugs / layout", note: "refactor & repair" },
+  { label: "WP", value: "themeing", note: "static → WP" },
+  { label: "Care", value: "A11y / Security", note: "quality as default" },
 ] as const;
 
 function Section({
@@ -74,9 +107,13 @@ export default function AboutPage() {
         <div className="mt-6 grid gap-8 md:grid-cols-12">
           <div className="md:col-span-8">
             <p className="max-w-2xl text-sm leading-relaxed text-foreground/80">
-              ここに自己紹介文を書きます（例：Web制作 / Next.js / MDXブログ構築 など）。
+              デザインの意図に沿って、コーディングで「気持ちいい体験」まで仕上げるのが得意です。
               <br />
-              方針や得意領域を2〜3行でまとめると、読みやすくて信頼感が出ます。
+              HTMLはセマンティックを意識し、CSSでは余白とタイポを整え、保守しやすい構造で実装することを特に意識しています。必要に応じてJavaScriptでアニメーションやUIの改善も実施いたします。
+              <br />
+              フォームは基本的にスクラッチで組んでいます。CSRF対策・バリデーション・ハニーポットなど、セキュリティ面は特に丁寧に扱います。
+              <br />
+              既存サイトの崩れ・バグ修正、リニューアル時の調整も得意です。
             </p>
           </div>
 
@@ -86,26 +123,29 @@ export default function AboutPage() {
               <p className="text-xs tracking-[0.22em] uppercase text-foreground/60">
                 Focus
               </p>
-              <ul className="mt-3 space-y-2 text-sm text-foreground/80">
-                <li className="flex items-center justify-between gap-3">
-                  <span className="text-foreground/75">Design</span>
-                  <span className="text-[11px] tracking-[0.14em] text-foreground/60">
-                    spacing / type
-                  </span>
-                </li>
-                <li className="flex items-center justify-between gap-3">
-                  <span className="text-foreground/75">Build</span>
-                  <span className="text-[11px] tracking-[0.14em] text-foreground/60">
-                    Next.js / MDX
-                  </span>
-                </li>
-                <li className="flex items-center justify-between gap-3">
-                  <span className="text-foreground/75">Ship</span>
-                  <span className="text-[11px] tracking-[0.14em] text-foreground/60">
-                    CI / deploy
-                  </span>
-                </li>
+
+              <ul className="mt-4 space-y-3">
+                {focus.map((f) => (
+                  <li key={f.label} className="space-y-1">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm font-medium text-foreground/80">
+                        {f.label}
+                      </span>
+                      <span className="text-xs tracking-[0.16em] text-foreground/60">
+                        {f.value}
+                      </span>
+                    </div>
+                    <div className="h-px w-full bg-foreground/10" />
+                    <p className="text-[11px] leading-relaxed tracking-[0.14em] text-foreground/55">
+                      {f.note}
+                    </p>
+                  </li>
+                ))}
               </ul>
+
+              <p className="mt-5 text-[11px] leading-relaxed tracking-[0.18em] text-foreground/55">
+                “作って終わり”ではなく、運用と改善まで意識して仕上げます。
+              </p>
             </div>
           </div>
         </div>
