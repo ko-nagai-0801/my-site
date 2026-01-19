@@ -13,26 +13,38 @@ export const metadata: Metadata = {
 
 function Header() {
   return (
-    <header className="hairline sticky top-0 z-50 bg-background/80 backdrop-blur">
-      <div className="container flex h-16 items-center justify-between">
-        <Link
-          href="/"
-          className="text-sm font-semibold tracking-[0.24em] uppercase"
-        >
-          My Site
-        </Link>
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur">
+      {/* main row */}
+      <div className="hairline">
+        <div className="container flex h-16 items-center justify-between">
+          <Link
+            href="/"
+            className="text-sm font-semibold tracking-[0.24em] uppercase"
+          >
+            My Site
+          </Link>
 
-        <nav className="flex items-center gap-6">
-          <Link className="nav-link" href="/">
-            Home
-          </Link>
-          <Link className="nav-link" href="/blog">
-            Blog
-          </Link>
-          <Link className="nav-link" href="/about">
-            About
-          </Link>
-        </nav>
+          <nav className="flex items-center gap-6">
+            <Link className="nav-link" href="/">
+              Home
+            </Link>
+            <Link className="nav-link" href="/blog">
+              Blog
+            </Link>
+            <Link className="nav-link" href="/about">
+              About
+            </Link>
+          </nav>
+        </div>
+      </div>
+
+      {/* subcopy row (JP/EN in one line) */}
+      <div className="hairline">
+        <div className="container py-2">
+          <p className="text-[11px] leading-relaxed tracking-[0.18em] text-foreground/55">
+            余白・タイポ・情報設計を整える / Spacing, Typography & Information Design
+          </p>
+        </div>
       </div>
     </header>
   );
