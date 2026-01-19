@@ -1,14 +1,14 @@
 // app/page.tsx
 import Link from "next/link";
 import Image from "next/image";
-import { formatDate, getLatestPosts } from "@/lib/posts";
+import { getLatestPosts } from "@/lib/posts";
 
 export default async function Home() {
   const latest = await getLatestPosts(3);
 
   return (
     <main className="container py-14">
-      {/* Hero Visual */}
+      {/* Hero Visual + Catch (bottom-left) */}
       <section>
         <div className="overflow-hidden rounded-3xl border border-foreground/10 bg-foreground/5 shadow-2xl shadow-black/30">
           <div className="relative aspect-[16/10] sm:aspect-[21/9]">
@@ -20,25 +20,34 @@ export default async function Home() {
               sizes="(min-width: 1024px) 1024px, 100vw"
               className="object-cover saturate-[0.85] contrast-[1.05] brightness-[0.9]"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
+
+            {/* 読みやすさ用の被せ */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/70" />
             <div className="absolute inset-0 ring-1 ring-foreground/10" />
+
+            {/* Catch copy (bottom-left) */}
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+              <div className="max-w-[46rem]">
+                <p className="text-[11px] tracking-[0.22em] text-foreground/75">
+                  余白・タイポ・情報設計を整える
+                </p>
+                <p className="mt-2 text-xs tracking-[0.22em] text-foreground/70">
+                  Spacing, Typography & Information Design
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <p className="mt-3 text-[11px] tracking-[0.18em] text-foreground/55">
-          VISUAL / ONE IMAGE HERO
-        </p>
-      </section>
-
-      {/* Intro */}
-      <section className="mt-10">
-        <p className="text-xs tracking-[0.22em] uppercase text-foreground/60">
-          Portfolio & Blog
-        </p>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">My Site</h1>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-foreground/80">
-          余白・タイポ・情報設計を整えながら、MDXで記事を積み上げていくミニブログ。
-        </p>
+        <div className="mt-10">
+          <p className="text-xs tracking-[0.22em] uppercase text-foreground/60">
+            Portfolio & Blog
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">My Site</h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-foreground/80">
+            余白・タイポ・情報設計を整えながら、MDXで記事を積み上げていくミニブログ。
+          </p>
+        </div>
       </section>
 
       {/* Latest */}
@@ -77,7 +86,7 @@ export default async function Home() {
                 </div>
 
                 <div className="shrink-0 text-xs tracking-[0.18em] text-foreground/60">
-                  {formatDate(p.meta.date)}
+                  {p.meta.date}
                 </div>
               </div>
 
