@@ -4,7 +4,6 @@ import Link from "next/link";
 import { getPostBySlug, getPostSlugs } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
 
-
 export async function generateStaticParams() {
   const slugs = await getPostSlugs();
   return slugs.map((slug) => ({ slug }));
@@ -29,24 +28,19 @@ export default async function PostPage({
   return (
     <main className="container py-14">
       <div className="flex items-baseline justify-between gap-6">
-        <Link
-          href="/blog"
-          className="text-xs tracking-[0.22em] uppercase text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/blog" className="text-xs tracking-[0.22em] uppercase">
           ← Back to Blog
         </Link>
 
-        <span className="text-xs tracking-[0.18em] text-foreground/60">
+        <span className="text-xs tracking-[0.18em] text-muted">
           {formatDate(meta.date)}
         </span>
       </div>
 
-      <h1 className="mt-6 text-4xl font-semibold tracking-tight">
-        {meta.title}
-      </h1>
+      <h1 className="mt-6 text-4xl font-semibold tracking-tight">{meta.title}</h1>
 
       {meta.description && (
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-foreground/80">
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
           {meta.description}
         </p>
       )}
@@ -56,7 +50,7 @@ export default async function PostPage({
           {meta.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-foreground/12 bg-foreground/3 px-3 py-1 text-[11px] tracking-[0.14em] text-foreground/70"
+              className="rounded-full border border-border bg-panel px-3 py-1 text-[11px] tracking-[0.14em] text-muted"
             >
               {tag}
             </span>
@@ -64,15 +58,17 @@ export default async function PostPage({
         </div>
       )}
 
-      <div className="mt-10 border-t border-foreground/10 pt-10">
+      <div className="mt-10 border-t border-border pt-10">
         <article
-          className="prose prose-neutral max-w-none dark:prose-invert
-            prose-p:leading-relaxed
-            prose-a:decoration-foreground/25 prose-a:underline-offset-4 hover:prose-a:decoration-foreground/50
-            prose-headings:tracking-tight
-            prose-h2:mt-12 prose-h2:mb-4
-            prose-h3:mt-10 prose-h3:mb-3
-            prose-code:before:content-none prose-code:after:content-none"
+          className={[
+            "prose max-w-none",
+            "prose-p:leading-relaxed",
+            "prose-headings:tracking-tight",
+            "prose-h2:mt-12 prose-h2:mb-4",
+            "prose-h3:mt-10 prose-h3:mb-3",
+            "prose-code:before:content-none prose-code:after:content-none",
+            "prose-a:underline prose-a:underline-offset-4",
+          ].join(" ")}
         >
           <Content />
         </article>

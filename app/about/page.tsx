@@ -70,10 +70,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-12 border-t border-foreground/10 pt-10">
-      <h2 className="text-sm tracking-[0.22em] uppercase text-foreground/70">
-        {title}
-      </h2>
+    <section className="mt-12 border-t border-border pt-10">
+      <h2 className="text-sm tracking-[0.22em] uppercase text-muted">{title}</h2>
       {children}
     </section>
   );
@@ -88,16 +86,13 @@ export default function AboutPage() {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-foreground/60">
+          <p className="text-xs tracking-[0.22em] uppercase text-muted">
             Profile
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">About</h1>
         </div>
 
-        <Link
-          href="/"
-          className="text-xs tracking-[0.22em] uppercase text-foreground/60 hover:text-foreground"
-        >
+        <Link href="/" className="text-xs tracking-[0.22em] uppercase">
           Home
         </Link>
       </header>
@@ -105,7 +100,7 @@ export default function AboutPage() {
       <Section title="Bio">
         <div className="mt-6 grid gap-8 md:grid-cols-12">
           <div className="md:col-span-8">
-            <p className="max-w-2xl text-sm leading-relaxed text-foreground/80">
+            <p className="max-w-2xl text-sm leading-relaxed text-muted">
               ご覧いただきありがとうございます。Kou Nagaiです。
               <br />
               デザインの意図に沿って、コーディングで「気持ちいい体験」まで仕上げることが得意です。
@@ -122,8 +117,8 @@ export default function AboutPage() {
 
           {/* 一旦非表示にしたい場合は、このブロックを丸ごとコメントアウトでOK */}
           <div className="md:col-span-4">
-            <div className="rounded-2xl border border-foreground/10 bg-foreground/3 p-5">
-              <p className="text-xs tracking-[0.22em] uppercase text-foreground/60">
+            <div className="rounded-2xl border border-border bg-panel p-5">
+              <p className="text-xs tracking-[0.22em] uppercase text-muted">
                 Focus
               </p>
 
@@ -131,15 +126,15 @@ export default function AboutPage() {
                 {focus.map((f) => (
                   <li key={f.label} className="space-y-1">
                     <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-sm font-medium text-foreground/80">
+                      <span className="text-sm font-medium text-muted">
                         {f.label}
                       </span>
-                      <span className="text-xs tracking-[0.16em] text-foreground/60">
+                      <span className="text-xs tracking-[0.16em] text-muted">
                         {f.value}
                       </span>
                     </div>
-                    <div className="h-px w-full bg-foreground/10" />
-                    <p className="text-[11px] leading-relaxed tracking-[0.14em] text-foreground/55">
+                    <div className="h-px w-full bg-border" />
+                    <p className="text-[11px] leading-relaxed tracking-[0.14em] text-muted">
                       {f.note}
                     </p>
                   </li>
@@ -147,8 +142,8 @@ export default function AboutPage() {
               </ul>
 
               <div className="mt-6 pl-4">
-                <p className="relative text-sm leading-relaxed text-foreground/85">
-                  <span className="absolute left-[-1rem] top-0 h-full w-px bg-foreground/20" />
+                <p className="relative text-sm leading-relaxed text-muted">
+                  <span className="absolute left-[-1rem] top-0 h-full w-px bg-border" />
                   “作って終わり”ではなく、運用と改善まで意識して仕上げます。
                 </p>
               </div>
@@ -162,26 +157,21 @@ export default function AboutPage() {
           {whatIDo.map((item) => (
             <li
               key={item.title}
-              className="rounded-2xl border border-foreground/10 bg-foreground/3 p-6 transition hover:border-foreground/15 hover:bg-foreground/5"
+              className="rounded-2xl border border-border bg-panel p-6 transition hover:bg-foreground/5"
             >
               <p className="text-base font-medium tracking-tight">
                 {item.title}
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/75">
+              <p className="mt-2 text-sm leading-relaxed text-muted">
                 {item.desc}
               </p>
             </li>
           ))}
         </ul>
-
-        {/* 必要ならここも一旦非表示にできます */}
-        {/* <p className="mt-6 text-[11px] leading-relaxed tracking-[0.18em] text-foreground/55">
-          具体的な実績・制作範囲は、別ページにまとめてリンクする想定です。
-        </p> */}
       </Section>
 
       <Section title="Links">
-        <ul className="mt-6 divide-y divide-foreground/10 border-y border-foreground/10">
+        <ul className="mt-6 divide-y divide-border border-y border-border">
           {links.map((l) => (
             <li key={l.href} className="py-5">
               <a
@@ -192,25 +182,21 @@ export default function AboutPage() {
                 className="group flex items-center justify-between gap-6"
               >
                 <div className="min-w-0">
-                  <span className="text-sm font-medium underline decoration-foreground/25 underline-offset-4 group-hover:decoration-foreground/50">
+                  <span className="text-sm font-medium underline underline-offset-4">
                     {l.label}
                   </span>
-                  <p className="mt-1 truncate text-xs tracking-[0.16em] text-foreground/55">
+                  <p className="mt-1 truncate text-xs tracking-[0.16em] text-muted">
                     {displayUrl(l.href)}
                   </p>
                 </div>
 
-                <span className="shrink-0 text-xs tracking-[0.22em] uppercase text-foreground/55 group-hover:text-foreground/75">
+                <span className="shrink-0 text-xs tracking-[0.22em] uppercase text-muted">
                   Open →
                 </span>
               </a>
             </li>
           ))}
         </ul>
-
-        {/* <p className="mt-4 text-[11px] leading-relaxed tracking-[0.18em] text-foreground/55">
-          ※必要なら「お問い合わせ」「制作実績」への導線をここに追加できます。
-        </p> */}
       </Section>
     </main>
   );
