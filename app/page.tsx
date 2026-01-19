@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getLatestPosts } from "@/lib/posts";
+import { formatDate } from "@/lib/formatDate";
 
 export default async function Home() {
   const latest = await getLatestPosts(3);
@@ -18,21 +19,22 @@ export default async function Home() {
               fill
               priority
               sizes="(min-width: 1024px) 1024px, 100vw"
-              className="object-cover saturate-[0.85] contrast-[1.05] brightness-[0.9]"
+              className="object-cover saturate-[0.85] contrast-[1.05] brightness-[0.85]"
             />
 
-            {/* 読みやすさ用の被せ */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/70" />
+            {/* 可読性用 overlay（下と左を少し強めに） */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/10 to-transparent" />
             <div className="absolute inset-0 ring-1 ring-foreground/10" />
 
             {/* Catch copy (bottom-left) */}
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
-              <div className="max-w-[46rem]">
-                <p className="text-[11px] tracking-[0.22em] text-foreground/75">
-                  余白・タイポ・情報設計を整える
+              <div className="inline-block max-w-[52rem] bg-black/35 px-4 py-3 backdrop-blur-sm">
+                <p className="text-sm sm:text-base font-medium leading-relaxed text-foreground drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)]">
+                  デザインの意図を、コードで「気持ち良い体験」へ。
                 </p>
-                <p className="mt-2 text-xs tracking-[0.22em] text-foreground/70">
-                  Spacing, Typography & Information Design
+                <p className="mt-1 text-xs sm:text-sm tracking-[0.18em] text-foreground/85 drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)]">
+                  Semantic HTML / Spacing & Type / Secure Forms
                 </p>
               </div>
             </div>
@@ -43,9 +45,11 @@ export default async function Home() {
           <p className="text-xs tracking-[0.22em] uppercase text-foreground/60">
             Portfolio & Blog
           </p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">My Site</h1>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+            My Site
+          </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-foreground/80">
-            余白・タイポ・情報設計を整えながら、MDXで記事を積み上げていくミニブログ。
+            セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
           </p>
         </div>
       </section>
@@ -86,7 +90,7 @@ export default async function Home() {
                 </div>
 
                 <div className="shrink-0 text-xs tracking-[0.18em] text-foreground/60">
-                  {p.meta.date}
+                  {formatDate(p.meta.date)}
                 </div>
               </div>
 

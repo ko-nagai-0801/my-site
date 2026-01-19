@@ -1,7 +1,9 @@
 // app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
-import { formatDate, getPostBySlug, getPostSlugs } from "@/lib/posts";
 import Link from "next/link";
+import { getPostBySlug, getPostSlugs } from "@/lib/posts";
+import { formatDate } from "@/lib/formatDate";
+
 
 export async function generateStaticParams() {
   const slugs = await getPostSlugs();

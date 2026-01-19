@@ -33,16 +33,6 @@ function toTime(dateStr: string) {
   return Number.isNaN(t) ? 0 : t;
 }
 
-/**
- * 表示用：ISO日時 → YYYY-MM-DD だけにする
- * - "2026-01-19T21:30:00+09:00" -> "2026-01-19"
- * - "2026-01-19" -> "2026-01-19"
- */
-export function formatDate(dateStr: string) {
-  if (!dateStr) return "";
-  return dateStr.length >= 10 ? dateStr.slice(0, 10) : dateStr;
-}
-
 export async function getAllPosts() {
   const slugs = await getPostSlugs();
   const posts = await Promise.all(slugs.map(getPostBySlug));

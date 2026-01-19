@@ -1,6 +1,8 @@
 // app/blog/page.tsx
 import Link from "next/link";
-import { formatDate, getAllPosts } from "@/lib/posts";
+import { getAllPosts } from "@/lib/posts";
+import { formatDate } from "@/lib/formatDate";
+
 
 export default async function BlogPage() {
   const posts = await getAllPosts();
