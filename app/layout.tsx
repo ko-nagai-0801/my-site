@@ -3,15 +3,8 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "My Site",
@@ -20,23 +13,23 @@ export const metadata: Metadata = {
 
 function Header() {
   return (
-    <header className="border-b border-white/10">
-      <div className="mx-auto flex max-w-3xl items-center justify-between p-6">
-        <Link href="/" className="font-semibold tracking-tight">
+    <header className="hairline sticky top-0 z-50 bg-background/80 backdrop-blur">
+      <div className="container flex h-16 items-center justify-between">
+        <Link
+          href="/"
+          className="text-sm font-semibold tracking-[0.24em] uppercase"
+        >
           My Site
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm">
-          <Link className="underline opacity-80 hover:opacity-100" href="/">
+        <nav className="flex items-center gap-6">
+          <Link className="nav-link" href="/">
             Home
           </Link>
-          <Link className="underline opacity-80 hover:opacity-100" href="/blog">
+          <Link className="nav-link" href="/blog">
             Blog
           </Link>
-          <Link
-            className="underline opacity-80 hover:opacity-100"
-            href="/about"
-          >
+          <Link className="nav-link" href="/about">
             About
           </Link>
         </nav>
@@ -47,13 +40,11 @@ function Header() {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <Header />
         {children}

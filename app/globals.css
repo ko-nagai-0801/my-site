@@ -1,9 +1,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ---- Theme tokens ---- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* u-d-l.jp寄せ：少しだけ温かい白＋しっかり黒 */
+  --background: #fbfbf8;
+  --foreground: #121212;
 }
 
 @theme inline {
@@ -20,8 +22,47 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI",
+      "Hiragino Sans", "Noto Sans JP", Arial, sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* うっすら上品な下線 */
+  a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+  }
+
+  /* フォーカス可視化（公開前の品質UP） */
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--foreground) 45%, transparent);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--foreground) 12%, transparent);
+  }
+}
+
+@layer components {
+  /* ページ共通の横幅と余白（u-d-l.jp の“広め余白”寄せ） */
+  .container {
+    @apply mx-auto w-full max-w-5xl px-6;
+  }
+
+  .nav-link {
+    @apply text-xs tracking-[0.22em] uppercase text-foreground/70 hover:text-foreground;
+  }
+
+  .hairline {
+    @apply border-b border-foreground/10;
+  }
 }
