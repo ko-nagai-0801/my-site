@@ -61,12 +61,25 @@ export default async function PostPage({
       <div className="mt-10 border-t border-border pt-10">
         <article
           className={[
-            "prose max-w-none",
-            "prose-p:leading-relaxed",
-            "prose-headings:tracking-tight",
+            // ★ ここが重要：ダーク固定なので常時 invert
+            "prose prose-invert max-w-none",
+
+            // 読みやすさ（スマホで薄すぎない/暗すぎない）
+            "prose-p:leading-relaxed prose-p:text-foreground/85",
+            "prose-li:text-foreground/85",
+
+            // 見出し/強調
+            "prose-headings:tracking-tight prose-headings:text-foreground",
+            "prose-strong:text-foreground",
+
+            // 余白設計（現状踏襲）
             "prose-h2:mt-12 prose-h2:mb-4",
             "prose-h3:mt-10 prose-h3:mb-3",
+
+            // codeのクォート除去（既存方針）
             "prose-code:before:content-none prose-code:after:content-none",
+
+            // リンクはglobals.cssで白系+ふわっと変化、下線だけ補助
             "prose-a:underline prose-a:underline-offset-4",
           ].join(" ")}
         >
