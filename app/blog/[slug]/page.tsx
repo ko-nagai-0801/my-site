@@ -24,7 +24,7 @@ export default async function PostPage({
   const { Content, meta } = post;
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main className="mx-auto max-w-3xl px-6 py-10">
       <Link href="/blog" className="text-sm underline opacity-80">
         ← ブログ一覧に戻る
       </Link>
@@ -44,7 +44,7 @@ export default async function PostPage({
         </div>
       )}
 
-      <article className="prose prose-invert mt-8 max-w-none">
+      <article className="prose mt-8 max-w-none dark:prose-invert prose-code:before:content-none prose-code:after:content-none">
         <Content />
       </article>
     </main>

@@ -91,7 +91,7 @@ function Pre({ className, ...props }: PreProps) {
   return (
     <pre
       className={cx(
-        "my-6 overflow-x-auto rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed",
+        "not-prose my-6 overflow-x-auto rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed",
         className
       )}
       {...props}
@@ -143,7 +143,7 @@ function Hr({ className, ...props }: HrProps) {
 type TableProps = ComponentProps<"table">;
 function Table({ className, ...props }: TableProps) {
   return (
-    <div className="my-6 overflow-x-auto">
+    <div className="not-prose my-6 overflow-x-auto">
       <table
         className={cx(
           "w-full border-collapse rounded-xl border border-white/10 text-sm",

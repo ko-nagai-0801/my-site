@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
+import type React from "react";
 
 export type PostMeta = {
   title: string;
@@ -12,7 +13,9 @@ const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 
 export async function getPostSlugs() {
   const files = await readdir(POSTS_DIR);
-  return files.filter((f) => f.endsWith(".mdx")).map((f) => f.replace(/\.mdx$/, ""));
+  return files
+    .filter((f) => f.endsWith(".mdx"))
+    .map((f) => f.replace(/\.mdx$/, ""));
 }
 
 export async function getPostBySlug(slug: string) {

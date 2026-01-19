@@ -6,7 +6,7 @@ export default async function Home() {
   const latest = await getLatestPosts(3);
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main className="mx-auto max-w-3xl px-6 py-10">
       {/* 既存の内容があるならここに残す */}
 
       <section className="mt-12">

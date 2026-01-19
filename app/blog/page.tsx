@@ -5,7 +5,7 @@ export default async function BlogPage() {
   const posts = await getAllPosts();
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main className="mx-auto max-w-3xl px-6 py-10">
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold">Blog</h1>
         <Link href="/" className="text-sm underline opacity-80">
