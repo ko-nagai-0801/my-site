@@ -47,7 +47,6 @@ const whatIDo = [
   },
 ] as const;
 
-
 /**
  * Focus（右カラム）
  * - “デザイン→実装→改善→守る” の流れが伝わる構成
@@ -107,13 +106,17 @@ export default function AboutPage() {
         <div className="mt-6 grid gap-8 md:grid-cols-12">
           <div className="md:col-span-8">
             <p className="max-w-2xl text-sm leading-relaxed text-foreground/80">
-              デザインの意図に沿って、コーディングで「気持ちいい体験」まで仕上げるのが得意です。
+              ご覧いただきありがとうございます。Kou Nagaiです。
+              <br />
+              デザインの意図に沿って、コーディングで「気持ちいい体験」まで仕上げることが得意です。
               <br />
               HTMLはセマンティックを意識し、CSSでは余白とタイポを整え、保守しやすい構造で実装することを特に意識しています。必要に応じてJavaScriptでアニメーションやUIの改善も実施いたします。
               <br />
               フォームは基本的にスクラッチで組んでいます。CSRF対策・バリデーション・ハニーポットなど、セキュリティ面は特に丁寧に扱います。
               <br />
-              既存サイトの崩れ・バグ修正、リニューアル時の調整も得意です。
+              既存サイトの崩れ・バグ修正、リニューアル時の調整も対応可能です。
+              <br />
+              ご相談はお気軽にどうぞ。
             </p>
           </div>
 
@@ -143,9 +146,12 @@ export default function AboutPage() {
                 ))}
               </ul>
 
-              <p className="mt-5 text-[11px] leading-relaxed tracking-[0.18em] text-foreground/55">
-                “作って終わり”ではなく、運用と改善まで意識して仕上げます。
-              </p>
+              <div className="mt-6 pl-4">
+                <p className="relative text-sm leading-relaxed text-foreground/85">
+                  <span className="absolute left-[-1rem] top-0 h-full w-px bg-foreground/20" />
+                  “作って終わり”ではなく、運用と改善まで意識して仕上げます。
+                </p>
+              </div>
             </div>
           </div>
         </div>
