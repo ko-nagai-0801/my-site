@@ -1,3 +1,4 @@
+// app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { getPostBySlug, getPostSlugs } from "@/lib/posts";
 import Link from "next/link";
@@ -24,19 +25,36 @@ export default async function PostPage({
   const { Content, meta } = post;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <Link href="/blog" className="text-sm underline opacity-80">
-        ← ブログ一覧に戻る
-      </Link>
+    <main className="container py-14">
+      <div className="flex items-baseline justify-between gap-6">
+        <Link
+          href="/blog"
+          className="text-xs tracking-[0.22em] uppercase text-foreground/60 hover:text-foreground"
+        >
+          ← Back to Blog
+        </Link>
 
-      <p className="text-sm opacity-70">{meta.date}</p>
-      <h1 className="mt-2 text-3xl font-bold">{meta.title}</h1>
+        <span className="text-xs tracking-[0.18em] text-foreground/60">
+          {meta.date}
+        </span>
+      </div>
+
+      <h1 className="mt-6 text-4xl font-semibold tracking-tight">
+        {meta.title}
+      </h1>
+
+      {meta.description && (
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-foreground/80">
+          {meta.description}
+        </p>
+      )}
+
       {meta.tags && meta.tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           {meta.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-white/10 px-3 py-1 text-xs opacity-80"
+              className="rounded-full border border-foreground/12 bg-foreground/3 px-3 py-1 text-[11px] tracking-[0.14em] text-foreground/70"
             >
               {tag}
             </span>
@@ -44,9 +62,19 @@ export default async function PostPage({
         </div>
       )}
 
-      <article className="prose mt-8 max-w-none dark:prose-invert prose-code:before:content-none prose-code:after:content-none">
-        <Content />
-      </article>
+      <div className="mt-10 border-t border-foreground/10 pt-10">
+        <article
+          className="prose prose-neutral max-w-none dark:prose-invert
+            prose-p:leading-relaxed
+            prose-a:decoration-foreground/25 prose-a:underline-offset-4 hover:prose-a:decoration-foreground/50
+            prose-headings:tracking-tight
+            prose-h2:mt-12 prose-h2:mb-4
+            prose-h3:mt-10 prose-h3:mb-3
+            prose-code:before:content-none prose-code:after:content-none"
+        >
+          <Content />
+        </article>
+      </div>
     </main>
   );
 }

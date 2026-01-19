@@ -112,7 +112,9 @@ function Code({ className, children, ...props }: CodeProps) {
   return (
     <code
       className={cx(
-        isBlock ? undefined : "rounded bg-white/10 px-1 py-0.5",
+        isBlock
+          ? undefined
+          : "rounded bg-foreground/6 px-1.5 py-0.5 font-mono text-[0.95em]",
         className
       )}
       {...props}
@@ -121,6 +123,7 @@ function Code({ className, children, ...props }: CodeProps) {
     </code>
   );
 }
+
 
 type BlockquoteProps = ComponentProps<"blockquote">;
 function Blockquote({ className, ...props }: BlockquoteProps) {
