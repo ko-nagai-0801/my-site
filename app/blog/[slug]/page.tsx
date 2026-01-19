@@ -27,7 +27,7 @@ export default async function PostPage({
 
   return (
     <main className="container py-14">
-      <div className="flex items-baseline justify-between gap-6">
+      <header className="flex items-baseline justify-between gap-6">
         <Link href="/blog" className="text-xs tracking-[0.22em] uppercase">
           ← Back to Blog
         </Link>
@@ -35,7 +35,7 @@ export default async function PostPage({
         <span className="text-xs tracking-[0.18em] text-muted">
           {formatDate(meta.date)}
         </span>
-      </div>
+      </header>
 
       <h1 className="mt-6 text-4xl font-semibold tracking-tight">{meta.title}</h1>
 
