@@ -13,7 +13,7 @@ export default async function Home() {
         <div className="overflow-hidden rounded-3xl border border-foreground/10 bg-foreground/5 shadow-2xl shadow-black/30">
           <div className="relative aspect-[16/10] sm:aspect-[21/9]">
             <Image
-              src="/images/hero.png"
+              src="/images/hero.webp"
               alt="Site hero visual"
               fill
               priority
