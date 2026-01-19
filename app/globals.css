@@ -15,7 +15,6 @@
   }
 }
 
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,13 +35,11 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* うっすら上品な下線 */
   a {
     text-underline-offset: 0.22em;
     text-decoration-thickness: 1px;
   }
 
-  /* フォーカス可視化（公開前の品質UP） */
   :focus-visible {
     outline: 2px solid color-mix(in oklab, var(--foreground) 45%, transparent);
     outline-offset: 3px;
@@ -54,7 +51,7 @@
 }
 
 @layer components {
-  /* ページ共通の横幅と余白（u-d-l.jp の“広め余白”寄せ） */
+  /* ページ共通の横幅と余白 */
   .container {
     @apply mx-auto w-full max-w-5xl px-6;
   }
