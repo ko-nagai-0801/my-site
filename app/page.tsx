@@ -11,8 +11,7 @@ export default async function Home() {
     <main className="container py-14">
       {/* Hero */}
       <section>
-        {/* 画像は “面” を優先。スマホは角丸弱め（参考寄せ） */}
-        <div className="overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-panel">
+        <div className="overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-panel shadow-2xl shadow-black/30">
           <div className="relative aspect-[4/3] sm:aspect-[21/9]">
             <Image
               src="/images/hero.webp"
@@ -23,34 +22,31 @@ export default async function Home() {
               className="object-cover saturate-[0.9] contrast-[1.05] brightness-[0.92]"
             />
 
-            {/* うっすら暗幕（文字を重ねないので弱めでOK） */}
-            <div className="hero-scrim pointer-events-none absolute inset-0 opacity-70" />
+            {/* 参考の“軽さ”寄せ：全面暗幕は使わず、下部だけ薄い帯（グラデ） */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-            {/* 参考寄せ：画像上にカードを置かない（=写真が主役） */}
+            {/* 輪郭を少しだけ締める（濃すぎない） */}
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-border" />
+
+            {/* Copy：カード無しで直置き（軽い） */}
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 hero-text">
+              <p className="max-w-[44rem] text-sm sm:text-base font-medium leading-relaxed text-foreground">
+                デザインの意図を、コードで「気持ち良い体験」へ。
+              </p>
+              <p className="mt-2 max-w-[44rem] text-xs sm:text-sm tracking-[0.18em] text-foreground/75">
+                Semantic HTML / Spacing &amp; Type / Secure Forms
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* 画像の下でテキストを読む（参考サイトの“余白で読ませる”） */}
         <div className="mt-8 sm:mt-10">
           <p className="text-xs tracking-[0.22em] uppercase text-muted">
-            Portfolio & Blog
+            Portfolio &amp; Blog
           </p>
-
-          <h1 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-tight">
-            My Site
-          </h1>
-
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight">My Site</h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
             セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
-          </p>
-
-          {/* キャッチコピーを入れるならここ（画像上ではなく下） */}
-          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-foreground/85">
-            デザインの意図を、コードで「気持ち良い体験」へ。
-          </p>
-
-          <p className="mt-2 text-xs tracking-[0.18em] text-muted">
-            Semantic HTML / Spacing &amp; Type / Secure Forms
           </p>
         </div>
       </section>
@@ -61,7 +57,6 @@ export default async function Home() {
           <h2 className="text-sm tracking-[0.22em] uppercase text-muted">
             Latest Posts
           </h2>
-
           <Link href="/blog" className="nav-link">
             View all
           </Link>
@@ -74,7 +69,10 @@ export default async function Home() {
             <li key={p.slug} className="py-6">
               <div className="flex items-start justify-between gap-6">
                 <div className="min-w-0">
-                  <Link href={`/blog/${p.slug}`} className="underline underline-offset-4">
+                  <Link
+                    href={`/blog/${p.slug}`}
+                    className="underline underline-offset-4"
+                  >
                     <h3 className="text-lg font-medium tracking-tight">
                       {p.meta.title}
                     </h3>
