@@ -1,8 +1,9 @@
 /* app/globals.css */
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
 
 @import "../styles/tokens.css";
 @import "../styles/base.css";
 @import "../styles/components.css";
 @import "../styles/typography.css";
+
+@plugin "@tailwindcss/typography";
