@@ -65,7 +65,7 @@ export default function SiteHeader() {
         const lastY = lastYRef.current;
         const dy = y - lastY;
 
-        // TOP付近は必ずaず表示（ここで“隠れっぱなし”を確実に戻す）
+        // TOP付近は必ず表示（ここで“隠れっぱなし”を確実に戻す）
         if (y <= TOP_THRESHOLD) {
           applyHidden(false);
           lastYRef.current = y;
