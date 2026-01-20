@@ -10,29 +10,35 @@ export default function SiteHeader() {
 
   const [isMobileHidden, setIsMobileHidden] = useState(false);
 
-  // refs（イベント内で最新値を参照）
   const hiddenRef = useRef(false);
   const lastYRef = useRef(0);
+
+  // 「同一方向にどれだけ進んだか」を測るための起点
+  const dirRef = useRef<"up" | "down" | null>(null);
+  const dirStartYRef = useRef(0);
+
+  // アニメ中（max-height 遷移中）は判定を止める
+  const cooldownUntilRef = useRef(0);
+
   const tickingRef = useRef(false);
 
-  // stateとrefを同時に揃える（ズレ防止）
   const applyHidden = (next: boolean) => {
     hiddenRef.current = next;
     setIsMobileHidden(next);
   };
 
-  // ルート遷移したら “メニューは表示” に戻す（※同期setStateを避ける）
+  // ルート遷移したらメニューは表示に戻す（同期setStateを避ける）
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // 初回スクロールでの誤判定を減らす
-    lastYRef.current = window.scrollY || 0;
+    const y = window.scrollY || 0;
+    lastYRef.current = y;
+    dirRef.current = null;
+    dirStartYRef.current = y;
 
-    // hidden のときだけ “次フレームで” 表示に戻す
     if (!hiddenRef.current) return;
 
     const id = requestAnimationFrame(() => {
-      // ここでも念のため再チェック
       if (hiddenRef.current) applyHidden(false);
     });
 
@@ -42,10 +48,17 @@ export default function SiteHeader() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    lastYRef.current = window.scrollY || 0;
+    const nowY = window.scrollY || 0;
+    lastYRef.current = nowY;
+    dirStartYRef.current = nowY;
 
-    const TOP_THRESHOLD = 8; // ここ未満は常に表示
-    const DEAD_ZONE = 10; // これ未満のスクロールは無視（揺れ防止）
+    // ---- 調整ポイント（ここだけ触れば体感調整できます）----
+    const TOP_THRESHOLD = 12; // ここ未満は常に表示
+    const HIDE_DISTANCE = 36; // 下方向にこの距離以上で隠す
+    const SHOW_DISTANCE = 24; // 上方向にこの距離以上で出す
+    const MICRO_DELTA = 2; // これ未満のdyは無視（細かい揺れ）
+    const COOLDOWN_MS = 300; // CSS遷移中は判定しない（max-heightの時間に合わせる）
+    // ---------------------------------------------------
 
     const onScroll = () => {
       if (tickingRef.current) return;
@@ -53,29 +66,62 @@ export default function SiteHeader() {
 
       requestAnimationFrame(() => {
         const y = window.scrollY || 0;
-        const dy = y - lastYRef.current;
-        const ady = Math.abs(dy);
+        const lastY = lastYRef.current;
+        const dy = y - lastY;
 
-        // TOP付近は常に表示
-        if (y < TOP_THRESHOLD) {
+        // TOP付近は必ず表示
+        if (y <= TOP_THRESHOLD) {
           if (hiddenRef.current) applyHidden(false);
           lastYRef.current = y;
+          dirRef.current = null;
+          dirStartYRef.current = y;
           tickingRef.current = false;
           return;
         }
 
-        // 微小スクロールは無視（ゆっくりスクロール時の揺れ防止）
-        if (ady < DEAD_ZONE) {
+        // 微小なdyは無視（タッチ/慣性/レイアウト変化の揺れ対策）
+        if (Math.abs(dy) < MICRO_DELTA) {
           lastYRef.current = y;
           tickingRef.current = false;
           return;
         }
 
-        // 下スクロールなら隠す / 上スクロールなら出す
-        const nextHidden = dy > 0;
+        // 遷移中はトグルしない（レイアウト変化でscrollYが戻るのを無視）
+        const t = performance.now();
+        if (t < cooldownUntilRef.current) {
+          lastYRef.current = y;
+          tickingRef.current = false;
+          return;
+        }
 
-        if (hiddenRef.current !== nextHidden) {
-          applyHidden(nextHidden);
+        const direction: "up" | "down" = dy > 0 ? "down" : "up";
+
+        // 方向が変わったら起点を更新
+        if (dirRef.current !== direction) {
+          dirRef.current = direction;
+          dirStartYRef.current = y;
+        }
+
+        const dist = Math.abs(y - dirStartYRef.current);
+
+        // 下に一定距離進んだら隠す
+        if (!hiddenRef.current && direction === "down" && dist >= HIDE_DISTANCE) {
+          applyHidden(true);
+          cooldownUntilRef.current = t + COOLDOWN_MS;
+          dirStartYRef.current = y;
+          lastYRef.current = y;
+          tickingRef.current = false;
+          return;
+        }
+
+        // 上に一定距離戻ったら出す
+        if (hiddenRef.current && direction === "up" && dist >= SHOW_DISTANCE) {
+          applyHidden(false);
+          cooldownUntilRef.current = t + COOLDOWN_MS;
+          dirStartYRef.current = y;
+          lastYRef.current = y;
+          tickingRef.current = false;
+          return;
         }
 
         lastYRef.current = y;

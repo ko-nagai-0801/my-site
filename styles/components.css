@@ -1,9 +1,11 @@
 /* styles/components.css */
 @layer components {
+  /* ページ共通の横幅と余白 */
   .container {
     @apply mx-auto w-full max-w-5xl px-6;
   }
 
+  /* ナビリンク（desktop / view all など共通） */
   .nav-link {
     @apply uppercase text-[11px] tracking-[0.14em] sm:text-xs sm:tracking-[0.22em];
     color: var(--muted);
@@ -13,6 +15,7 @@
     color: var(--foreground);
   }
 
+  /* ヘッダーなどの細い境界線 */
   .hairline {
     @apply border-b;
     border-color: var(--border);
@@ -23,16 +26,10 @@
     overflow: hidden;
     max-height: var(--mobile-nav-max);
     opacity: 1;
-
-    /* “途中でブレる” 対策 */
-    will-change: max-height, opacity;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-
     transition: max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
       opacity 180ms ease;
-
     contain: layout paint; /* sticky/backdrop-blur環境での揺れを抑えやすい */
+    will-change: max-height, opacity; /* カクつき対策 */
   }
 
   .mobile-nav.is-hidden {
@@ -47,6 +44,7 @@
     }
   }
 
+  /* ヒーロー用：暗幕（スクリーン） */
   .hero-scrim {
     background: var(--hero-overlay);
   }
@@ -56,15 +54,18 @@
     }
   }
 
+  /* ヒーロー文字：影で可読性を固定 */
   .hero-text {
     color: var(--foreground);
     text-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
   }
 
+  /* 共通：トークン準拠の薄いテキスト */
   .text-muted {
     color: var(--muted);
   }
 
+  /* タグチップ */
   .chip {
     border: 1px solid var(--chip-border);
     background: var(--chip-bg);
@@ -81,18 +82,21 @@
     color: var(--foreground);
   }
 
+  /* Hero 日本語：モバイルだけ縦書き */
   .hero-ja-vertical {
-    writing-mode: horizontal-tb;
+    writing-mode: horizontal-tb; /* デフォルト（PC含む）は横書き */
     text-orientation: mixed;
     letter-spacing: 0.02em;
   }
 
   @media (max-width: 640px) {
     .hero-ja-vertical {
-      writing-mode: vertical-rl;
-      text-orientation: upright;
+      writing-mode: vertical-rl; /* 右→左の縦書き */
+      text-orientation: upright; /* 日本語を縦に整える */
       line-height: 1.9;
       letter-spacing: 0.06em;
+
+      /* 2行に見えないように “高さ確保” して整列 */
       max-height: 12.5rem;
       white-space: normal;
     }
