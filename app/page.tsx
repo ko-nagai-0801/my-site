@@ -27,12 +27,24 @@ export default async function Home() {
             <div className="pointer-events-none absolute inset-0 ring-1 ring-border" />
 
             {/* Catch copy (bottom-left) */}
-            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 hero-text">
-              <div className="inline-block max-w-[52rem] rounded-xl border border-border bg-black/50 px-4 py-3 backdrop-blur-sm sm:bg-black/35">
-                <p className="text-sm font-medium leading-relaxed sm:text-base">
+            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-8 hero-text">
+              <div
+                className={[
+                  // ③ 枠を軽く：モバイルは薄め・blur弱め・余白少し減
+                  "inline-block",
+                  "max-w-[44rem] sm:max-w-[52rem]",
+                  "rounded-xl border border-border",
+                  "bg-black/40 sm:bg-black/30",
+                  "px-4 py-3 sm:px-4 sm:py-3",
+                  "backdrop-blur-[2px] sm:backdrop-blur-sm",
+                ].join(" ")}
+              >
+                <p className="text-sm sm:text-base font-medium leading-relaxed">
                   デザインの意図を、コードで「気持ち良い体験」へ。
                 </p>
-                <p className="mt-1 text-xs tracking-[0.18em] text-muted sm:text-sm">
+
+                {/* ④ サブコピー：モバイルだけ少し明るく */}
+                <p className="mt-1 text-xs sm:text-sm tracking-[0.18em] text-foreground/75 sm:text-muted">
                   Semantic HTML / Spacing & Type / Secure Forms
                 </p>
               </div>
@@ -40,7 +52,8 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="mt-10">
+        {/* ⑤ 情報密度：モバイルだけ少し詰める */}
+        <div className="mt-8 sm:mt-10">
           <p className="text-xs tracking-[0.22em] uppercase text-muted">
             Portfolio & Blog
           </p>
@@ -58,13 +71,16 @@ export default async function Home() {
             Latest Posts
           </h2>
 
-          {/* リンク色はglobals.cssで白系に統一されるので、ここは最小でOK */}
-          <Link href="/blog" className="text-xs tracking-[0.22em] uppercase">
+          {/* リンク色はglobals.cssで白系に統一。見出し系はnav-linkで統一 */}
+          <Link href="/blog" className="nav-link">
             View all
           </Link>
         </div>
 
-        <ul className="mt-8 divide-y divide-border border-y border-border">
+        {/* ⑥ 見出しと一覧の区切りを明確化 */}
+        <div className="mt-4 hairline" />
+
+        <ul className="mt-6 divide-y divide-border border-y border-border">
           {latest.map((p) => (
             <li key={p.slug} className="py-6">
               <div className="flex items-start justify-between gap-6">
@@ -90,10 +106,8 @@ export default async function Home() {
               {p.meta.tags && p.meta.tags.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {p.meta.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-border bg-panel px-3 py-1 text-[11px] tracking-[0.14em] text-muted"
-                    >
+                    // ⑦ チップを専用クラスに統一（押せそう感UP）
+                    <span key={tag} className="chip">
                       {tag}
                     </span>
                   ))}

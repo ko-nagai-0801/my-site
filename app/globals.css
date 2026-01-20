@@ -10,7 +10,8 @@
 
   /* roles */
   --muted: color-mix(in oklab, var(--foreground) 72%, var(--background));
-  --border: color-mix(in oklab, var(--foreground) 14%, var(--background));
+  /* ② 境界線を少しだけ強く（14%→18%） */
+  --border: color-mix(in oklab, var(--foreground) 18%, var(--background));
   --panel: color-mix(in oklab, var(--foreground) 6%, var(--background));
 
   /* links（白系に統一 / hoverでふわっと） */
@@ -28,6 +29,12 @@
   --code-bg: color-mix(in oklab, var(--panel) 86%, var(--background));
   --pre-bg: color-mix(in oklab, var(--panel) 78%, var(--background));
   --pre-border: color-mix(in oklab, var(--border) 90%, var(--background));
+
+  /* ⑦ チップ（タグ） */
+  --chip-bg: color-mix(in oklab, var(--panel) 78%, var(--background));
+  --chip-border: color-mix(in oklab, var(--border) 92%, var(--background));
+  --chip-text: color-mix(in oklab, var(--foreground) 74%, var(--background));
+  --chip-bg-hover: color-mix(in oklab, var(--chip-bg) 72%, var(--foreground) 28%);
 
   /* hero overlay（可読性用：下＋左が強い “1枚スクリーン”） */
   --hero-overlay:
@@ -59,13 +66,6 @@
 
   color-scheme: dark;
 }
-
-/* ★ ライトモード上書きは削除（= 端末がライトでもダーク基調のまま） */
-/*
-@media (prefers-color-scheme: light) {
-  :root { ... }
-}
-*/
 
 @theme inline {
   --color-background: var(--background);
@@ -125,8 +125,9 @@
     @apply mx-auto w-full max-w-5xl px-6;
   }
 
+  /* ① nav-link：モバイルだけ文字間を弱めて密度を上げる */
   .nav-link {
-    @apply text-xs tracking-[0.22em] uppercase;
+    @apply uppercase text-[11px] tracking-[0.14em] sm:text-xs sm:tracking-[0.22em];
     color: var(--muted);
     transition: color 180ms ease;
   }
@@ -143,7 +144,6 @@
   .hero-scrim {
     background: var(--hero-overlay);
   }
-
   @media (max-width: 768px) {
     .hero-scrim {
       background: var(--hero-overlay-mobile);
@@ -160,6 +160,23 @@
   .text-muted {
     color: var(--muted);
   }
+
+  /* ⑦ タグチップ（押せそう感/浮き） */
+  .chip {
+    border: 1px solid var(--chip-border);
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    border-radius: 9999px;
+    padding: 0.28rem 0.75rem;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+  .chip:hover {
+    background: var(--chip-bg-hover);
+    color: var(--foreground);
+  }
 }
 
 /* ------------------------------------------------
@@ -168,7 +185,6 @@
 ------------------------------------------------ */
 @layer base {
   .prose {
-    /* tailwind typography variables */
     --tw-prose-body: var(--foreground);
     --tw-prose-headings: var(--foreground);
     --tw-prose-lead: var(--muted);
@@ -185,24 +201,19 @@
     --tw-prose-pre-bg: var(--pre-bg);
     --tw-prose-th-borders: var(--border);
     --tw-prose-td-borders: var(--border);
-
-    /* 文章の読みやすさを少し底上げ（必要なら外してOK） */
     text-wrap: pretty;
   }
 
-  /* link hover（prose内） */
   .prose a:hover {
     color: var(--link-hover);
   }
 
-  /* headings：アンカー遷移時の見切れ防止（目安） */
   .prose h2,
   .prose h3,
   .prose h4 {
     scroll-margin-top: 96px;
   }
 
-  /* inline code（pre以外） */
   .prose :not(pre) > code {
     background: var(--code-bg);
     border: 1px solid var(--border);
@@ -218,22 +229,18 @@
     content: "";
   }
 
-  /* pre：背景/枠/角丸を統一 */
   .prose pre {
     border: 1px solid var(--pre-border);
     border-radius: 16px;
     padding: 1rem 1.1rem;
     overflow-x: auto;
   }
-
-  /* code block：色を崩さない */
   .prose pre code {
     color: var(--foreground);
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.92em;
   }
 
-  /* blockquote：境界と本文のコントラスト */
   .prose blockquote {
     border-left-color: var(--border);
     color: var(--muted);
@@ -242,7 +249,6 @@
     color: inherit;
   }
 
-  /* table：罫線とヘッダーの視認性 */
   .prose table {
     border-color: var(--border);
   }
@@ -257,7 +263,6 @@
     border-color: var(--border);
   }
 
-  /* hr：hairlineに寄せる */
   .prose hr {
     border-color: var(--border);
   }
