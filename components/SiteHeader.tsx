@@ -23,26 +23,22 @@ export default function SiteHeader() {
   const tickingRef = useRef(false);
 
   const applyHidden = (next: boolean) => {
+    if (hiddenRef.current === next) return; // ★同値なら何もしない（ブレ/無駄レンダ抑制）
     hiddenRef.current = next;
     setIsMobileHidden(next);
   };
 
-  // ルート遷移したらメニューは表示に戻す（同期setStateを避ける）
+  /**
+   * ★重要：pathname が変わった時に setState しない
+   * - スクロールが上（TOP付近）なら onScroll 側で自動的に「表示」に戻る
+   * - ここでは判定基準のリセットだけする
+   */
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const y = window.scrollY || 0;
     lastYRef.current = y;
     dirRef.current = null;
     dirStartYRef.current = y;
-
-    if (!hiddenRef.current) return;
-
-    const id = requestAnimationFrame(() => {
-      if (hiddenRef.current) applyHidden(false);
-    });
-
-    return () => cancelAnimationFrame(id);
   }, [pathname]);
 
   useEffect(() => {
@@ -56,8 +52,8 @@ export default function SiteHeader() {
     const TOP_THRESHOLD = 12; // ここ未満は常に表示
     const HIDE_DISTANCE = 36; // 下方向にこの距離以上で隠す
     const SHOW_DISTANCE = 24; // 上方向にこの距離以上で出す
-    const MICRO_DELTA = 2; // これ未満のdyは無視（細かい揺れ）
-    const COOLDOWN_MS = 300; // CSS遷移中は判定しない（max-heightの時間に合わせる）
+    const MICRO_DELTA = 2; // これ未満のdyは無視
+    const COOLDOWN_MS = 320; // CSS遷移中は判定しない（max-height時間に合わせる）
     // ---------------------------------------------------
 
     const onScroll = () => {
@@ -69,9 +65,9 @@ export default function SiteHeader() {
         const lastY = lastYRef.current;
         const dy = y - lastY;
 
-        // TOP付近は必ず表示
+        // TOP付近は必ずaず表示（ここで“隠れっぱなし”を確実に戻す）
         if (y <= TOP_THRESHOLD) {
-          if (hiddenRef.current) applyHidden(false);
+          applyHidden(false);
           lastYRef.current = y;
           dirRef.current = null;
           dirStartYRef.current = y;
@@ -79,14 +75,14 @@ export default function SiteHeader() {
           return;
         }
 
-        // 微小なdyは無視（タッチ/慣性/レイアウト変化の揺れ対策）
+        // 微小なdyは無視
         if (Math.abs(dy) < MICRO_DELTA) {
           lastYRef.current = y;
           tickingRef.current = false;
           return;
         }
 
-        // 遷移中はトグルしない（レイアウト変化でscrollYが戻るのを無視）
+        // 遷移中はトグルしない
         const t = performance.now();
         if (t < cooldownUntilRef.current) {
           lastYRef.current = y;
@@ -96,7 +92,7 @@ export default function SiteHeader() {
 
         const direction: "up" | "down" = dy > 0 ? "down" : "up";
 
-        // 方向が変わったら起点を更新
+        // 方向が変わったら起点更新
         if (dirRef.current !== direction) {
           dirRef.current = direction;
           dirStartYRef.current = y;
@@ -104,20 +100,23 @@ export default function SiteHeader() {
 
         const dist = Math.abs(y - dirStartYRef.current);
 
-        // 下に一定距離進んだら隠す
+        // 下に一定距離で隠す
         if (!hiddenRef.current && direction === "down" && dist >= HIDE_DISTANCE) {
           applyHidden(true);
           cooldownUntilRef.current = t + COOLDOWN_MS;
+
+          // トグル直後の“起点”を更新（連続トグル防止）
           dirStartYRef.current = y;
           lastYRef.current = y;
           tickingRef.current = false;
           return;
         }
 
-        // 上に一定距離戻ったら出す
+        // 上に一定距離で出す
         if (hiddenRef.current && direction === "up" && dist >= SHOW_DISTANCE) {
           applyHidden(false);
           cooldownUntilRef.current = t + COOLDOWN_MS;
+
           dirStartYRef.current = y;
           lastYRef.current = y;
           tickingRef.current = false;
@@ -169,7 +168,8 @@ export default function SiteHeader() {
         aria-label="Primary mobile"
       >
         <ul className="grid grid-cols-2">
-          <li className="border-b border-border">
+          {/* top-left */}
+          <li className="border-b border-r border-border">
             <Link
               href="/"
               className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
@@ -178,7 +178,8 @@ export default function SiteHeader() {
             </Link>
           </li>
 
-          <li className="border-r border-border">
+          {/* top-right */}
+          <li className="border-b border-border">
             <Link
               href="/blog"
               className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
@@ -187,7 +188,8 @@ export default function SiteHeader() {
             </Link>
           </li>
 
-          <li className="border-b border-r border-border">
+          {/* bottom-left */}
+          <li className="border-r border-border">
             <Link
               href="/about"
               className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
@@ -196,6 +198,7 @@ export default function SiteHeader() {
             </Link>
           </li>
 
+          {/* bottom-right */}
           <li>
             <Link
               href="/works"
