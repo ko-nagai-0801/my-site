@@ -1,0 +1,93 @@
+/* styles/components.css */
+@layer components {
+  .container {
+    @apply mx-auto w-full max-w-5xl px-6;
+  }
+
+  .nav-link {
+    @apply uppercase text-[11px] tracking-[0.14em] sm:text-xs sm:tracking-[0.22em];
+    color: var(--muted);
+    transition: color 180ms ease;
+  }
+  .nav-link:hover {
+    color: var(--foreground);
+  }
+
+  .hairline {
+    @apply border-b;
+    border-color: var(--border);
+  }
+
+  /* ★ モバイルメニュー：安定版（max-height + opacity のみ） */
+  .mobile-nav {
+    overflow: hidden;
+    max-height: var(--mobile-nav-max);
+    opacity: 1;
+    transition: max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 180ms ease;
+    contain: layout paint; /* sticky/backdrop-blur環境での揺れを抑えやすい */
+  }
+
+  .mobile-nav.is-hidden {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav {
+      transition: none;
+    }
+  }
+
+  .hero-scrim {
+    background: var(--hero-overlay);
+  }
+  @media (max-width: 768px) {
+    .hero-scrim {
+      background: var(--hero-overlay-mobile);
+    }
+  }
+
+  .hero-text {
+    color: var(--foreground);
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  }
+
+  .text-muted {
+    color: var(--muted);
+  }
+
+  .chip {
+    border: 1px solid var(--chip-border);
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    border-radius: 9999px;
+    padding: 0.28rem 0.75rem;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+  .chip:hover {
+    background: var(--chip-bg-hover);
+    color: var(--foreground);
+  }
+
+  .hero-ja-vertical {
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 640px) {
+    .hero-ja-vertical {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      line-height: 1.9;
+      letter-spacing: 0.06em;
+      max-height: 12.5rem;
+      white-space: normal;
+    }
+  }
+}

@@ -1,0 +1,38 @@
+/* styles/base.css */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI",
+      "Hiragino Sans", "Noto Sans JP", Arial, sans-serif;
+    text-rendering: optimizeLegibility;
+    min-height: 100dvh;
+  }
+
+  a {
+    color: var(--link);
+    text-decoration-color: var(--link-underline);
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+    transition: color 220ms ease, text-decoration-color 220ms ease,
+      opacity 220ms ease;
+  }
+
+  a:hover {
+    color: var(--link-hover);
+    text-decoration-color: var(--link-underline-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--selection);
+  }
+}

@@ -1,0 +1,88 @@
+/* styles/typography.css */
+/* Typography（MDX / prose） */
+@layer base {
+  .prose {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-lead: var(--muted);
+    --tw-prose-links: var(--link);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted);
+    --tw-prose-bullets: var(--muted);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--muted);
+    --tw-prose-code: var(--code-fg);
+    --tw-prose-pre-code: var(--foreground);
+    --tw-prose-pre-bg: var(--pre-bg);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+    text-wrap: pretty;
+  }
+
+  .prose a:hover {
+    color: var(--link-hover);
+  }
+
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    scroll-margin-top: 96px;
+  }
+
+  .prose :not(pre) > code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.12em 0.42em;
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo,
+      monospace;
+    font-size: 0.92em;
+    color: var(--code-fg);
+    white-space: break-spaces;
+  }
+  .prose :not(pre) > code::before,
+  .prose :not(pre) > code::after {
+    content: "";
+  }
+
+  .prose pre {
+    border: 1px solid var(--pre-border);
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+  }
+  .prose pre code {
+    color: var(--foreground);
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo,
+      monospace;
+    font-size: 0.92em;
+  }
+
+  .prose blockquote {
+    border-left-color: var(--border);
+    color: var(--muted);
+  }
+  .prose blockquote p {
+    color: inherit;
+  }
+
+  .prose table {
+    border-color: var(--border);
+  }
+  .prose thead {
+    border-bottom-color: var(--border);
+  }
+  .prose th {
+    color: var(--foreground);
+    border-color: var(--border);
+  }
+  .prose td {
+    border-color: var(--border);
+  }
+
+  .prose hr {
+    border-color: var(--border);
+  }
+}
