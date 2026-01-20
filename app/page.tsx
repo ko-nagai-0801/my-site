@@ -9,57 +9,48 @@ export default async function Home() {
 
   return (
     <main className="container py-14">
-      {/* Hero Visual + Catch (bottom-left) */}
+      {/* Hero */}
       <section>
-        <div className="overflow-hidden rounded-3xl border border-border bg-panel shadow-2xl shadow-black/30">
-          <div className="relative aspect-[16/10] sm:aspect-[21/9]">
+        {/* 画像は “面” を優先。スマホは角丸弱め（参考寄せ） */}
+        <div className="overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-panel">
+          <div className="relative aspect-[4/3] sm:aspect-[21/9]">
             <Image
               src="/images/hero.webp"
               alt="Site hero visual"
               fill
               priority
               sizes="(min-width: 1024px) 1024px, 100vw"
-              className="object-cover saturate-[0.85] contrast-[1.05] brightness-[0.85]"
+              className="object-cover saturate-[0.9] contrast-[1.05] brightness-[0.92]"
             />
 
-            {/* overlayは1枚に統一 */}
-            <div className="hero-scrim pointer-events-none absolute inset-0" />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-border" />
+            {/* うっすら暗幕（文字を重ねないので弱めでOK） */}
+            <div className="hero-scrim pointer-events-none absolute inset-0 opacity-70" />
 
-            {/* Catch copy (bottom-left) */}
-            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-8 hero-text">
-              <div
-                className={[
-                  // ③ 枠を軽く：モバイルは薄め・blur弱め・余白少し減
-                  "inline-block",
-                  "max-w-[44rem] sm:max-w-[52rem]",
-                  "rounded-xl border border-border",
-                  "bg-black/40 sm:bg-black/30",
-                  "px-4 py-3 sm:px-4 sm:py-3",
-                  "backdrop-blur-[2px] sm:backdrop-blur-sm",
-                ].join(" ")}
-              >
-                <p className="text-sm sm:text-base font-medium leading-relaxed">
-                  デザインの意図を、コードで「気持ち良い体験」へ。
-                </p>
-
-                {/* ④ サブコピー：モバイルだけ少し明るく */}
-                <p className="mt-1 text-xs sm:text-sm tracking-[0.18em] text-foreground/75 sm:text-muted">
-                  Semantic HTML / Spacing & Type / Secure Forms
-                </p>
-              </div>
-            </div>
+            {/* 参考寄せ：画像上にカードを置かない（=写真が主役） */}
           </div>
         </div>
 
-        {/* ⑤ 情報密度：モバイルだけ少し詰める */}
+        {/* 画像の下でテキストを読む（参考サイトの“余白で読ませる”） */}
         <div className="mt-8 sm:mt-10">
           <p className="text-xs tracking-[0.22em] uppercase text-muted">
             Portfolio & Blog
           </p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight">My Site</h1>
+
+          <h1 className="mt-4 text-3xl sm:text-4xl font-semibold tracking-tight">
+            My Site
+          </h1>
+
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
             セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
+          </p>
+
+          {/* キャッチコピーを入れるならここ（画像上ではなく下） */}
+          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-foreground/85">
+            デザインの意図を、コードで「気持ち良い体験」へ。
+          </p>
+
+          <p className="mt-2 text-xs tracking-[0.18em] text-muted">
+            Semantic HTML / Spacing &amp; Type / Secure Forms
           </p>
         </div>
       </section>
@@ -71,13 +62,11 @@ export default async function Home() {
             Latest Posts
           </h2>
 
-          {/* リンク色はglobals.cssで白系に統一。見出し系はnav-linkで統一 */}
           <Link href="/blog" className="nav-link">
             View all
           </Link>
         </div>
 
-        {/* ⑥ 見出しと一覧の区切りを明確化 */}
         <div className="mt-4 hairline" />
 
         <ul className="mt-6 divide-y divide-border border-y border-border">
@@ -106,7 +95,6 @@ export default async function Home() {
               {p.meta.tags && p.meta.tags.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {p.meta.tags.map((tag) => (
-                    // ⑦ チップを専用クラスに統一（押せそう感UP）
                     <span key={tag} className="chip">
                       {tag}
                     </span>
