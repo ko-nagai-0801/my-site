@@ -1,6 +1,7 @@
 /* app/works/page.tsx */
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { works } from "@/lib/works";
 
 export const metadata: Metadata = {
@@ -18,6 +19,44 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
       aria-label={label}
     >
       {label} ↗
+    </a>
+  );
+}
+
+function WorkThumb({
+  src,
+  alt,
+  href,
+}: {
+  src: string;
+  alt: string;
+  href?: string | null;
+}) {
+  const inner = (
+    <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-panel">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(min-width: 768px) 520px, 100vw"
+        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+      />
+      {/* 読みやすさ/統一感のためのうっすら暗幕 */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+    </div>
+  );
+
+  if (!href) return inner;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${alt} を開く`}
+      className="block"
+    >
+      {inner}
     </a>
   );
 }
@@ -47,45 +86,59 @@ export default function WorksPage() {
       <div className="mt-10 hairline" />
 
       <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-        {works.map((w) => (
-          <li
-            key={w.title}
-            className="group rounded-2xl border border-border bg-panel p-6 transition hover:border-foreground/15"
-          >
-            <h2 className="text-base font-medium tracking-tight">{w.title}</h2>
+        {works.map((w) => {
+          const primary = w.href ?? w.repo ?? null;
 
-            <p className="mt-3 text-sm leading-relaxed text-muted">{w.summary}</p>
+          return (
+            <li
+              key={w.title}
+              className="group rounded-2xl border border-border bg-panel p-5 sm:p-6 transition hover:border-foreground/15"
+            >
+              {w.image && (
+                <WorkThumb
+                  src={w.image.src}
+                  alt={w.image.alt}
+                  href={primary}
+                />
+              )}
 
-            {w.tags?.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {w.tags.map((tag) => (
-                  <span key={tag} className="chip">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+              <h2 className="mt-5 text-base font-medium tracking-tight">
+                {w.title}
+              </h2>
 
-            {(w.href || w.repo || w.note) && (
-              <div className="mt-5 space-y-2">
-                {(w.href || w.repo) && (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.16em] text-muted">
-                    {w.href && (
-                      <ExternalLink href={w.href} label="Open site" />
-                    )}
-                    {w.repo && (
-                      <ExternalLink href={w.repo} label="Repository" />
-                    )}
-                  </div>
-                )}
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                {w.summary}
+              </p>
 
-                {w.note && (
-                  <p className="text-xs leading-relaxed text-muted">{w.note}</p>
-                )}
-              </div>
-            )}
-          </li>
-        ))}
+              {w.tags?.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {w.tags.map((tag) => (
+                    <span key={tag} className="chip">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {(w.href || w.repo || w.note) && (
+                <div className="mt-5 space-y-2">
+                  {(w.href || w.repo) && (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.16em] text-muted">
+                      {w.href && <ExternalLink href={w.href} label="Open site" />}
+                      {w.repo && (
+                        <ExternalLink href={w.repo} label="Repository" />
+                      )}
+                    </div>
+                  )}
+
+                  {w.note && (
+                    <p className="text-xs leading-relaxed text-muted">{w.note}</p>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       <p className="mt-10 text-xs leading-relaxed tracking-[0.16em] text-muted">
