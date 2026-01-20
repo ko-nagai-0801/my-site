@@ -26,16 +26,16 @@ export default async function Home() {
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="pointer-events-none absolute inset-0 ring-1 ring-border" />
 
-            {/* Copy：日本語だけモバイル縦書き */}
+            {/* Copy：日本語だけモバイル縦書き / 横書き時は2行 */}
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 hero-text">
-              <div className="flex items-end gap-4">
+              <div className="flex items-end gap-4 sm:flex-col sm:items-start sm:gap-2">
                 {/* 日本語（モバイル縦書き） */}
-                <p className="hero-ja-vertical text-sm sm:text-base font-medium text-foreground">
+                <p className="hero-ja-vertical shrink-0 text-sm sm:text-base font-medium text-foreground sm:max-w-[44rem]">
                   デザインの意図を、コードで「気持ち良い体験」へ。
                 </p>
 
                 {/* 英文（横書き固定） */}
-                <p className="text-xs sm:text-sm tracking-[0.18em] text-foreground/75">
+                <p className="flex-1 text-xs sm:text-sm tracking-[0.18em] text-foreground/75 sm:max-w-[44rem]">
                   Semantic HTML / Spacing &amp; Type / Secure Forms
                 </p>
               </div>
