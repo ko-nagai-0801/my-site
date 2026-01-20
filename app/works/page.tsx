@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { works } from "@/lib/works";
+import { getAllWorks } from "@/lib/works";
 
 export const metadata: Metadata = {
   title: "Works | My Site",
@@ -26,42 +26,35 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
 function WorkThumb({
   src,
   alt,
-  href,
+  slug,
 }: {
   src: string;
   alt: string;
-  href?: string | null;
+  slug: string;
 }) {
-  const inner = (
-    <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-panel">
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes="(min-width: 768px) 520px, 100vw"
-        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-      />
-      {/* 読みやすさ/統一感のためのうっすら暗幕 */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-    </div>
-  );
-
-  if (!href) return inner;
-
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`${alt} を開く`}
+    <Link
+      href={`/works/${slug}`}
+      aria-label={`${alt} の詳細へ`}
       className="block"
     >
-      {inner}
-    </a>
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-panel">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="(min-width: 768px) 520px, 100vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+      </div>
+    </Link>
   );
 }
 
-export default function WorksPage() {
+export default async function WorksPage() {
+  const works = await getAllWorks();
+
   return (
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
@@ -71,7 +64,7 @@ export default function WorksPage() {
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">Works</h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
-            制作物・サンプル・作業ログの一覧です。必要に応じて、公開URL / リポジトリを追加していきます。
+            制作物・サンプル・作業ログの一覧です。各カードから詳細ページへ移動できます。
           </p>
         </div>
 
@@ -86,63 +79,65 @@ export default function WorksPage() {
       <div className="mt-10 hairline" />
 
       <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-        {works.map((w) => {
-          const primary = w.href ?? w.repo ?? null;
+        {works.map((w) => (
+          <li
+            key={w.slug}
+            className="group rounded-2xl border border-border bg-panel p-5 sm:p-6 transition hover:border-foreground/15"
+          >
+            {w.meta.image && (
+              <WorkThumb
+                src={w.meta.image.src}
+                alt={w.meta.image.alt}
+                slug={w.slug}
+              />
+            )}
 
-          return (
-            <li
-              key={w.title}
-              className="group rounded-2xl border border-border bg-panel p-5 sm:p-6 transition hover:border-foreground/15"
-            >
-              {w.image && (
-                <WorkThumb
-                  src={w.image.src}
-                  alt={w.image.alt}
-                  href={primary}
-                />
-              )}
+            <h2 className="mt-5 text-base font-medium tracking-tight">
+              <Link href={`/works/${w.slug}`} className="hover:underline">
+                {w.meta.title}
+              </Link>
+            </h2>
 
-              <h2 className="mt-5 text-base font-medium tracking-tight">
-                {w.title}
-              </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              {w.meta.summary}
+            </p>
 
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                {w.summary}
-              </p>
+            {w.meta.tags?.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {w.meta.tags.map((tag) => (
+                  <span key={tag} className="chip">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
-              {w.tags?.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {w.tags.map((tag) => (
-                    <span key={tag} className="chip">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+            {(w.meta.href || w.meta.repo || w.meta.note) && (
+              <div className="mt-5 space-y-2">
+                {(w.meta.href || w.meta.repo) && (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.16em] text-muted">
+                    {w.meta.href && (
+                      <ExternalLink href={w.meta.href} label="Open site" />
+                    )}
+                    {w.meta.repo && (
+                      <ExternalLink href={w.meta.repo} label="Repository" />
+                    )}
+                  </div>
+                )}
 
-              {(w.href || w.repo || w.note) && (
-                <div className="mt-5 space-y-2">
-                  {(w.href || w.repo) && (
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.16em] text-muted">
-                      {w.href && <ExternalLink href={w.href} label="Open site" />}
-                      {w.repo && (
-                        <ExternalLink href={w.repo} label="Repository" />
-                      )}
-                    </div>
-                  )}
-
-                  {w.note && (
-                    <p className="text-xs leading-relaxed text-muted">{w.note}</p>
-                  )}
-                </div>
-              )}
-            </li>
-          );
-        })}
+                {w.meta.note && (
+                  <p className="text-xs leading-relaxed text-muted">
+                    {w.meta.note}
+                  </p>
+                )}
+              </div>
+            )}
+          </li>
+        ))}
       </ul>
 
       <p className="mt-10 text-xs leading-relaxed tracking-[0.16em] text-muted">
-        ※ 今後「カテゴリ」「年別」「公開URLの有無」などで絞り込みが必要なら、UIを増やしていきます。
+        ※ 次は「タグ絞り込み（フィルタ）」を追加していきます。
       </p>
     </main>
   );
