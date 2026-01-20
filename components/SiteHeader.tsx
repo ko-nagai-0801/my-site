@@ -169,15 +169,6 @@ export default function SiteHeader() {
         aria-label="Primary mobile"
       >
         <ul className="grid grid-cols-2">
-          <li className="border-b border-r border-border">
-            <Link
-              href="/about"
-              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
-            >
-              About
-            </Link>
-          </li>
-
           <li className="border-b border-border">
             <Link
               href="/"
@@ -193,6 +184,15 @@ export default function SiteHeader() {
               className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
             >
               Blog
+            </Link>
+          </li>
+
+          <li className="border-b border-r border-border">
+            <Link
+              href="/about"
+              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+            >
+              About
             </Link>
           </li>
 
