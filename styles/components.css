@@ -23,8 +23,15 @@
     overflow: hidden;
     max-height: var(--mobile-nav-max);
     opacity: 1;
+
+    /* “途中でブレる” 対策 */
+    will-change: max-height, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+
     transition: max-height 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
       opacity 180ms ease;
+
     contain: layout paint; /* sticky/backdrop-blur環境での揺れを抑えやすい */
   }
 
