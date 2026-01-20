@@ -18,7 +18,11 @@
   --link: color-mix(in oklab, var(--foreground) 92%, var(--background));
   --link-hover: color-mix(in oklab, var(--foreground) 78%, var(--background));
   --link-underline: color-mix(in oklab, var(--foreground) 28%, transparent);
-  --link-underline-hover: color-mix(in oklab, var(--foreground) 46%, transparent);
+  --link-underline-hover: color-mix(
+    in oklab,
+    var(--foreground) 46%,
+    transparent
+  );
 
   /* focus / selection */
   --ring: color-mix(in oklab, var(--foreground) 38%, transparent);
@@ -34,11 +38,14 @@
   --chip-bg: color-mix(in oklab, var(--panel) 78%, var(--background));
   --chip-border: color-mix(in oklab, var(--border) 92%, var(--background));
   --chip-text: color-mix(in oklab, var(--foreground) 74%, var(--background));
-  --chip-bg-hover: color-mix(in oklab, var(--chip-bg) 72%, var(--foreground) 28%);
+  --chip-bg-hover: color-mix(
+    in oklab,
+    var(--chip-bg) 72%,
+    var(--foreground) 28%
+  );
 
   /* hero overlay（可読性用：下＋左が強い “1枚スクリーン”） */
-  --hero-overlay:
-    linear-gradient(
+  --hero-overlay: linear-gradient(
       to top,
       color-mix(in oklab, #000 82%, transparent),
       color-mix(in oklab, #000 28%, transparent) 58%,
@@ -51,8 +58,7 @@
     );
 
   /* モバイルはもう少し暗幕を強める */
-  --hero-overlay-mobile:
-    linear-gradient(
+  --hero-overlay-mobile: linear-gradient(
       to top,
       color-mix(in oklab, #000 88%, transparent),
       color-mix(in oklab, #000 34%, transparent) 56%,
@@ -101,7 +107,8 @@
     text-decoration-color: var(--link-underline);
     text-underline-offset: 0.22em;
     text-decoration-thickness: 1px;
-    transition: color 220ms ease, text-decoration-color 220ms ease, opacity 220ms ease;
+    transition: color 220ms ease, text-decoration-color 220ms ease,
+      opacity 220ms ease;
   }
 
   a:hover {
@@ -177,6 +184,27 @@
     background: var(--chip-bg-hover);
     color: var(--foreground);
   }
+
+  /* Mobile 縦書き：日本語コピーだけ */
+  .hero-ja-vertical {
+    /* デフォルト（PC含む）は横書き */
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 640px) {
+    .hero-ja-vertical {
+      writing-mode: vertical-rl; /* 右→左の縦書き */
+      text-orientation: upright; /* 日本語を縦に整える */
+      line-height: 1.9;
+      letter-spacing: 0.06em;
+
+      /* 2行に見えないように “高さ確保” して整列 */
+      max-height: 12.5rem;
+      white-space: normal;
+    }
+  }
 }
 
 /* ------------------------------------------------
@@ -219,7 +247,8 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 0.12em 0.42em;
-    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo,
+      monospace;
     font-size: 0.92em;
     color: var(--code-fg);
     white-space: break-spaces;
@@ -237,7 +266,8 @@
   }
   .prose pre code {
     color: var(--foreground);
-    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo,
+      monospace;
     font-size: 0.92em;
   }
 

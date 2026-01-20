@@ -22,20 +22,23 @@ export default async function Home() {
               className="object-cover saturate-[0.9] contrast-[1.05] brightness-[0.92]"
             />
 
-            {/* 参考の“軽さ”寄せ：全面暗幕は使わず、下部だけ薄い帯（グラデ） */}
+            {/* 下部だけ薄い帯（グラデ） */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-            {/* 輪郭を少しだけ締める（濃すぎない） */}
             <div className="pointer-events-none absolute inset-0 ring-1 ring-border" />
 
-            {/* Copy：カード無しで直置き（軽い） */}
+            {/* Copy：日本語だけモバイル縦書き */}
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 hero-text">
-              <p className="max-w-[44rem] text-sm sm:text-base font-medium leading-relaxed text-foreground">
-                デザインの意図を、コードで「気持ち良い体験」へ。
-              </p>
-              <p className="mt-2 max-w-[44rem] text-xs sm:text-sm tracking-[0.18em] text-foreground/75">
-                Semantic HTML / Spacing &amp; Type / Secure Forms
-              </p>
+              <div className="flex items-end gap-4">
+                {/* 日本語（モバイル縦書き） */}
+                <p className="hero-ja-vertical text-sm sm:text-base font-medium text-foreground">
+                  デザインの意図を、コードで「気持ち良い体験」へ。
+                </p>
+
+                {/* 英文（横書き固定） */}
+                <p className="text-xs sm:text-sm tracking-[0.18em] text-foreground/75">
+                  Semantic HTML / Spacing &amp; Type / Secure Forms
+                </p>
+              </div>
             </div>
           </div>
         </div>
