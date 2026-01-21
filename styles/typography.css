@@ -1,41 +1,35 @@
 /* styles/typography.css */
 @layer components {
   /* Typography（MDX / prose）
-     - prose はライト前提の配色なので、ダークでは `dark:prose-invert` を基本にする
-     - prose-invert 時の本文を「より白寄り」に寄せて可読性を上げる
+     - Tailwind Typography の色は「CSS変数 --tw-prose-*」で決まる
+     - ここを “トークン基準” にしておくと、darkクラスの有無に依存せず読みやすい
   */
 
   .prose {
     text-wrap: pretty;
-  }
 
-  /* ----------------------------
-     Dark mode readability boost
-     (`dark:prose-invert` で付く .prose-invert を強めに上書き)
-  ---------------------------- */
-  .prose.prose-invert {
-    /* shadcn系トークンは HSL 3値なので必ず hsl() で包む */
-    --tw-prose-body: hsl(var(--foreground) / 0.94);
+    /* ★ ここが重要：prose の色を常に design token 基準にする */
+    --tw-prose-body: hsl(var(--foreground) / 0.92);
     --tw-prose-headings: hsl(var(--foreground));
     --tw-prose-lead: hsl(var(--foreground) / 0.86);
-
-    /* リンクは白寄り + hoverで100% */
     --tw-prose-links: hsl(var(--foreground) / 0.92);
-
     --tw-prose-bold: hsl(var(--foreground));
     --tw-prose-counters: hsl(var(--foreground) / 0.72);
     --tw-prose-bullets: hsl(var(--foreground) / 0.65);
-
     --tw-prose-hr: hsl(var(--border));
     --tw-prose-quotes: hsl(var(--foreground) / 0.92);
     --tw-prose-quote-borders: hsl(var(--border));
     --tw-prose-captions: hsl(var(--foreground) / 0.70);
-
     --tw-prose-code: hsl(var(--foreground) / 0.96);
     --tw-prose-pre-code: hsl(var(--foreground));
     --tw-prose-pre-bg: hsl(var(--panel));
     --tw-prose-th-borders: hsl(var(--border));
     --tw-prose-td-borders: hsl(var(--border));
+  }
+
+  /* 任意：dark時だけさらに白くしたいなら残してOK（なくても良い） */
+  .prose.prose-invert {
+    --tw-prose-body: hsl(var(--foreground) / 0.94);
   }
 
   .prose a:hover {
@@ -87,33 +81,26 @@
     color: inherit;
   }
 
-  /* ----------------------------
-     Table (grid with vertical lines)
-     - デフォルトは横線寄りなので、縦線も出したい場合は th/td に border を明示
-  ---------------------------- */
+  /* Table (grid with vertical lines) */
   .prose table {
     width: 100%;
-    border-collapse: collapse; /* ★これがないと二重線になりやすい */
+    border-collapse: collapse;
     border: 1px solid hsl(var(--border));
   }
-
   .prose thead {
     border-bottom: 1px solid hsl(var(--border));
   }
-
   .prose th,
   .prose td {
-    border: 1px solid hsl(var(--border)); /* ★縦線も含めてセルを囲う */
+    border: 1px solid hsl(var(--border));
     padding: 0.6rem 0.75rem;
     vertical-align: top;
   }
-
   .prose th {
     color: hsl(var(--foreground));
     font-weight: 600;
   }
 
-  /* 区切り線 */
   .prose hr {
     border-color: hsl(var(--border));
   }
@@ -126,7 +113,6 @@
     font-weight: 400;
     color: hsl(var(--foreground) / 0.55);
   }
-
   .prose :is(h2, h3, h4, h5, h6):hover .heading-anchor {
     opacity: 1;
     color: hsl(var(--foreground) / 0.9);
