@@ -11,7 +11,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
 
 type PageProps = {
-  // Next.js 16 の型生成に合わせて Promise 扱い
+  // Next.js の型生成に合わせて Promise 扱い
   params: Promise<{ slug: string }>;
 };
 
@@ -105,7 +105,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      <article className="prose mt-10 max-w-none">
+      <article className="prose mt-10 max-w-none dark:prose-invert">
         <MDXRemote
           source={work.content}
           options={{
@@ -116,7 +116,6 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 [
                   rehypeAutolinkHeadings,
                   {
-                    // Blogと同じ：見出し全体をリンク化しない
                     behavior: "append",
                     properties: {
                       className: ["heading-anchor"],

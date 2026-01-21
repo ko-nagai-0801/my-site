@@ -1,4 +1,4 @@
-/* app/blog/[slug]/page.tsx */
+// app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { compileMDX } from "next-mdx-remote/rsc";
@@ -10,7 +10,7 @@ import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
 
 type Props = {
-  // Next.js 16 の型生成に合わせて Promise 扱い
+  // Next.js の型生成に合わせて Promise 扱い
   params: Promise<{ slug: string }>;
 };
 
@@ -47,17 +47,13 @@ export default async function BlogPostPage({ params }: Props) {
           [
             rehypeAutolinkHeadings,
             {
-              // 見出し全体をリンク化しない（見出しが青＋下線になりにくい）
+              // 見出し全体をリンク化しない（青＋下線になりにくい）
               behavior: "append",
               properties: {
                 className: ["heading-anchor"],
                 "aria-label": "見出しへのリンク",
               },
-              // クリックできる実体（#）を付ける
-              content: {
-                type: "text",
-                value: "#",
-              },
+              content: { type: "text", value: "#" },
             },
           ],
         ],
@@ -83,7 +79,9 @@ export default async function BlogPostPage({ params }: Props) {
         </p>
       </header>
 
-      <article className="prose mt-10 max-w-none">{content}</article>
+      <article className="prose mt-10 max-w-none dark:prose-invert">
+        {content}
+      </article>
     </main>
   );
 }

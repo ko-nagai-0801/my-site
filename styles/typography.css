@@ -1,29 +1,45 @@
 /* styles/typography.css */
-/* Typography（MDX / prose） */
-@layer base {
+@layer components {
+  /* Typography（MDX / prose）
+     - prose はライト前提の配色なので、ダークでは `dark:prose-invert` を基本にする
+     - prose-invert 時の本文を「より白寄り」に寄せて可読性を上げる
+  */
+
   .prose {
-    --tw-prose-body: var(--foreground);
-    --tw-prose-headings: var(--foreground);
-    --tw-prose-lead: var(--muted);
-    --tw-prose-links: var(--link);
-    --tw-prose-bold: var(--foreground);
-    --tw-prose-counters: var(--muted);
-    --tw-prose-bullets: var(--muted);
-    --tw-prose-hr: var(--border);
-    --tw-prose-quotes: var(--foreground);
-    --tw-prose-quote-borders: var(--border);
-    --tw-prose-captions: var(--muted);
-    --tw-prose-code: var(--code-fg);
-    --tw-prose-pre-code: var(--foreground);
-    --tw-prose-pre-bg: var(--pre-bg);
-    --tw-prose-th-borders: var(--border);
-    --tw-prose-td-borders: var(--border);
     text-wrap: pretty;
   }
 
-  /* ★見出しアンカー以外のリンクだけ hover 色を適用 */
-  .prose a:not(.heading-anchor):hover {
-    color: var(--link-hover);
+  /* ----------------------------
+     Dark mode readability boost
+     (`dark:prose-invert` で付く .prose-invert を強めに上書き)
+  ---------------------------- */
+  .prose.prose-invert {
+    /* shadcn系トークンは HSL 3値なので必ず hsl() で包む */
+    --tw-prose-body: hsl(var(--foreground) / 0.94);
+    --tw-prose-headings: hsl(var(--foreground));
+    --tw-prose-lead: hsl(var(--foreground) / 0.86);
+
+    /* リンクは白寄り + hoverで100% */
+    --tw-prose-links: hsl(var(--foreground) / 0.92);
+
+    --tw-prose-bold: hsl(var(--foreground));
+    --tw-prose-counters: hsl(var(--foreground) / 0.72);
+    --tw-prose-bullets: hsl(var(--foreground) / 0.65);
+
+    --tw-prose-hr: hsl(var(--border));
+    --tw-prose-quotes: hsl(var(--foreground) / 0.92);
+    --tw-prose-quote-borders: hsl(var(--border));
+    --tw-prose-captions: hsl(var(--foreground) / 0.70);
+
+    --tw-prose-code: hsl(var(--foreground) / 0.96);
+    --tw-prose-pre-code: hsl(var(--foreground));
+    --tw-prose-pre-bg: hsl(var(--panel));
+    --tw-prose-th-borders: hsl(var(--border));
+    --tw-prose-td-borders: hsl(var(--border));
+  }
+
+  .prose a:hover {
+    color: hsl(var(--foreground));
   }
 
   .prose h2,
@@ -32,14 +48,15 @@
     scroll-margin-top: 96px;
   }
 
+  /* Inline code */
   .prose :not(pre) > code {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
+    background: hsl(var(--code-bg));
+    border: 1px solid hsl(var(--border));
     border-radius: 8px;
     padding: 0.12em 0.42em;
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.92em;
-    color: var(--code-fg);
+    color: hsl(var(--code-fg));
     white-space: break-spaces;
   }
   .prose :not(pre) > code::before,
@@ -47,63 +64,71 @@
     content: "";
   }
 
+  /* Code block */
   .prose pre {
-    border: 1px solid var(--pre-border);
+    background: hsl(var(--pre-bg));
+    border: 1px solid hsl(var(--pre-border));
     border-radius: 16px;
     padding: 1rem 1.1rem;
     overflow-x: auto;
   }
   .prose pre code {
-    color: var(--foreground);
+    color: hsl(var(--foreground));
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.92em;
   }
 
+  /* Blockquote */
   .prose blockquote {
-    border-left-color: var(--border);
-    color: var(--muted);
+    border-left-color: hsl(var(--border));
+    color: hsl(var(--foreground) / 0.78);
   }
   .prose blockquote p {
     color: inherit;
   }
 
+  /* ----------------------------
+     Table (grid with vertical lines)
+     - デフォルトは横線寄りなので、縦線も出したい場合は th/td に border を明示
+  ---------------------------- */
   .prose table {
-    border-color: var(--border);
+    width: 100%;
+    border-collapse: collapse; /* ★これがないと二重線になりやすい */
+    border: 1px solid hsl(var(--border));
   }
+
   .prose thead {
-    border-bottom-color: var(--border);
+    border-bottom: 1px solid hsl(var(--border));
   }
-  .prose th {
-    color: var(--foreground);
-    border-color: var(--border);
-  }
+
+  .prose th,
   .prose td {
-    border-color: var(--border);
+    border: 1px solid hsl(var(--border)); /* ★縦線も含めてセルを囲う */
+    padding: 0.6rem 0.75rem;
+    vertical-align: top;
   }
 
+  .prose th {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  /* 区切り線 */
   .prose hr {
-    border-color: var(--border);
+    border-color: hsl(var(--border));
   }
-}
 
-@layer components {
-  /* 見出し末尾に付く # アンカー（append用） */
+  /* 見出しアンカー（rehype-autolink-headings の append 用） */
   .prose .heading-anchor {
     text-decoration: none !important;
     margin-left: 0.5rem;
     opacity: 0.55;
     font-weight: 400;
-    color: var(--muted);
+    color: hsl(var(--foreground) / 0.55);
   }
 
   .prose :is(h2, h3, h4, h5, h6):hover .heading-anchor {
     opacity: 1;
-    color: var(--foreground);
-  }
-
-  .prose .heading-anchor:focus-visible {
-    outline: 2px solid var(--border);
-    outline-offset: 4px;
-    border-radius: 6px;
+    color: hsl(var(--foreground) / 0.9);
   }
 }
