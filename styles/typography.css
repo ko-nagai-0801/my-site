@@ -1,35 +1,37 @@
 /* styles/typography.css */
 @layer components {
   /* Typography（MDX / prose）
-     - Tailwind Typography の色は「CSS変数 --tw-prose-*」で決まる
-     - ここを “トークン基準” にしておくと、darkクラスの有無に依存せず読みやすい
+     - ダーク基調のUIで、OSがライトでも読みやすさを崩さないため
+       MDX本文は基本 `prose-invert` を使う運用にする
   */
 
   .prose {
     text-wrap: pretty;
+  }
 
-    /* ★ ここが重要：prose の色を常に design token 基準にする */
-    --tw-prose-body: hsl(var(--foreground) / 0.92);
+  /* prose-invert を「より白寄り」に寄せて可読性を上げる */
+  .prose.prose-invert {
+    --tw-prose-body: hsl(var(--foreground) / 0.94);
     --tw-prose-headings: hsl(var(--foreground));
     --tw-prose-lead: hsl(var(--foreground) / 0.86);
+
     --tw-prose-links: hsl(var(--foreground) / 0.92);
     --tw-prose-bold: hsl(var(--foreground));
+
     --tw-prose-counters: hsl(var(--foreground) / 0.72);
     --tw-prose-bullets: hsl(var(--foreground) / 0.65);
+
     --tw-prose-hr: hsl(var(--border));
     --tw-prose-quotes: hsl(var(--foreground) / 0.92);
     --tw-prose-quote-borders: hsl(var(--border));
     --tw-prose-captions: hsl(var(--foreground) / 0.70);
+
     --tw-prose-code: hsl(var(--foreground) / 0.96);
     --tw-prose-pre-code: hsl(var(--foreground));
     --tw-prose-pre-bg: hsl(var(--panel));
+
     --tw-prose-th-borders: hsl(var(--border));
     --tw-prose-td-borders: hsl(var(--border));
-  }
-
-  /* 任意：dark時だけさらに白くしたいなら残してOK（なくても良い） */
-  .prose.prose-invert {
-    --tw-prose-body: hsl(var(--foreground) / 0.94);
   }
 
   .prose a:hover {
@@ -81,7 +83,7 @@
     color: inherit;
   }
 
-  /* Table (grid with vertical lines) */
+  /* Table（縦線ありグリッド） */
   .prose table {
     width: 100%;
     border-collapse: collapse;
@@ -101,6 +103,7 @@
     font-weight: 600;
   }
 
+  /* 区切り線 */
   .prose hr {
     border-color: hsl(var(--border));
   }

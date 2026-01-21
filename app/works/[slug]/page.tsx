@@ -11,7 +11,6 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
 
 type PageProps = {
-  // Next.js の型生成に合わせて Promise 扱い
   params: Promise<{ slug: string }>;
 };
 
@@ -20,9 +19,7 @@ export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
   return items.map((w) => ({ slug: w.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
   const work = await getWorkBySlug(slug);
@@ -105,7 +102,8 @@ export default async function WorkDetailPage({ params }: PageProps) {
         </div>
       )}
 
-      <article className="prose mt-10 max-w-none dark:prose-invert">
+      {/* ★ iPhoneがライトでも暗背景なら読めるよう、常に prose-invert */}
+      <article className="prose prose-invert mt-10 max-w-none">
         <MDXRemote
           source={work.content}
           options={{
