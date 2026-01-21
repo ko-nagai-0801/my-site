@@ -11,7 +11,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
 
 type PageProps = {
-  // ★ Next.js 16 の型生成に合わせて Promise 扱い
+  // Next.js 16 の型生成に合わせて Promise 扱い
   params: Promise<{ slug: string }>;
 };
 
@@ -52,9 +52,11 @@ export default async function WorkDetailPage({ params }: PageProps) {
           <p className="text-xs tracking-[0.22em] uppercase text-muted">
             Portfolio
           </p>
+
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">
             {work.meta.title}
           </h1>
+
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
             {work.meta.summary}
           </p>
@@ -98,14 +100,12 @@ export default async function WorkDetailPage({ params }: PageProps) {
           )}
 
           {work.meta.note && (
-            <p className="text-xs leading-relaxed text-muted">
-              {work.meta.note}
-            </p>
+            <p className="text-xs leading-relaxed text-muted">{work.meta.note}</p>
           )}
         </div>
       )}
 
-      <article className="prose prose-invert mt-10 max-w-none">
+      <article className="prose mt-10 max-w-none">
         <MDXRemote
           source={work.content}
           options={{
@@ -115,7 +115,15 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 rehypeSlug,
                 [
                   rehypeAutolinkHeadings,
-                  { behavior: "wrap", properties: { className: ["anchor"] } },
+                  {
+                    // Blogと同じ：見出し全体をリンク化しない
+                    behavior: "append",
+                    properties: {
+                      className: ["heading-anchor"],
+                      "aria-label": "見出しへのリンク",
+                    },
+                    content: { type: "text", value: "#" },
+                  },
                 ],
               ],
             },

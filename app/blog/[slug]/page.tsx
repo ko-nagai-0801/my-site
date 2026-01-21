@@ -1,91 +1,89 @@
-// app/blog/[slug]/page.tsx
+/* app/blog/[slug]/page.tsx */
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { getPostBySlug, getPostSlugs } from "@/lib/posts";
+import type { Metadata } from "next";
+import { compileMDX } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+
+import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
 
+type Props = {
+  // Next.js 16 の型生成に合わせて Promise 扱い
+  params: Promise<{ slug: string }>;
+};
+
 export async function generateStaticParams() {
-  const slugs = await getPostSlugs();
-  return slugs.map((slug) => ({ slug }));
+  const posts = await getAllPosts();
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
-export default async function PostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
-  let post;
-  try {
-    post = await getPostBySlug(slug);
-  } catch {
-    notFound();
-  }
+  const post = await getPostBySlug(slug);
+  if (!post) return { title: "Not Found | My Site" };
 
-  const { Content, meta } = post;
+  return {
+    title: `${post.meta.title} | My Site`,
+    description: post.meta.description,
+  };
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+
+  const post = await getPostBySlug(slug);
+  if (!post) notFound();
+
+  const { content } = await compileMDX({
+    source: post.content,
+    options: {
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
+        rehypePlugins: [
+          rehypeSlug,
+          [
+            rehypeAutolinkHeadings,
+            {
+              // 見出し全体をリンク化しない（見出しが青＋下線になりにくい）
+              behavior: "append",
+              properties: {
+                className: ["heading-anchor"],
+                "aria-label": "見出しへのリンク",
+              },
+              // クリックできる実体（#）を付ける
+              content: {
+                type: "text",
+                value: "#",
+              },
+            },
+          ],
+        ],
+      },
+    },
+  });
 
   return (
     <main className="container py-14">
-      <header className="flex items-baseline justify-between gap-6">
-        <Link href="/blog" className="text-xs tracking-[0.22em] uppercase">
-          ← Back to Blog
-        </Link>
+      <header className="max-w-3xl">
+        <p className="text-xs tracking-[0.22em] uppercase text-muted">Blog</p>
 
-        <span className="text-xs tracking-[0.18em] text-muted">
-          {formatDate(meta.date)}
-        </span>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+          {post.meta.title}
+        </h1>
+
+        <p className="mt-3 text-xs tracking-[0.16em] text-muted">
+          {formatDate(post.meta.date)}
+        </p>
+
+        <p className="mt-4 text-sm leading-relaxed text-muted">
+          {post.meta.description}
+        </p>
       </header>
 
-      <h1 className="mt-6 text-4xl font-semibold tracking-tight">{meta.title}</h1>
-
-      {meta.description && (
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
-          {meta.description}
-        </p>
-      )}
-
-      {meta.tags && meta.tags.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
-          {meta.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-border bg-panel px-3 py-1 text-[11px] tracking-[0.14em] text-muted"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-10 border-t border-border pt-10">
-        <article
-          className={[
-            // ★ ここが重要：ダーク固定なので常時 invert
-            "prose prose-invert max-w-none",
-
-            // 読みやすさ（スマホで薄すぎない/暗すぎない）
-            "prose-p:leading-relaxed prose-p:text-foreground/85",
-            "prose-li:text-foreground/85",
-
-            // 見出し/強調
-            "prose-headings:tracking-tight prose-headings:text-foreground",
-            "prose-strong:text-foreground",
-
-            // 余白設計（現状踏襲）
-            "prose-h2:mt-12 prose-h2:mb-4",
-            "prose-h3:mt-10 prose-h3:mb-3",
-
-            // codeのクォート除去（既存方針）
-            "prose-code:before:content-none prose-code:after:content-none",
-
-            // リンクはglobals.cssで白系+ふわっと変化、下線だけ補助
-            "prose-a:underline prose-a:underline-offset-4",
-          ].join(" ")}
-        >
-          <Content />
-        </article>
-      </div>
+      <article className="prose mt-10 max-w-none">{content}</article>
     </main>
   );
 }
