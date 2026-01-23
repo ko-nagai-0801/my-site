@@ -1,0 +1,53 @@
+<!-- public/images/brand/kns-wordmark-1200x300.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="KNS logo wordmark">
+  <defs>
+    <style>
+      .stroke { stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .wordmark {
+        fill: currentColor;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
+        letter-spacing: 0.02em;
+      }
+      .sub {
+        fill: currentColor;
+        opacity: 0.78;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
+        letter-spacing: 0.22em;
+      }
+    </style>
+  </defs>
+
+  <!-- 左：マーク領域（300x300想定） -->
+  <g transform="translate(60,30)">
+    <svg width="240" height="240" viewBox="0 0 512 512">
+      <circle class="stroke" cx="256" cy="256" r="206" stroke-width="12" opacity="0.9"/>
+
+      <!-- K -->
+      <path class="stroke" stroke-width="20" d="M152 166 V346"/>
+      <path class="stroke" stroke-width="20" d="M152 256 L236 166"/>
+      <path class="stroke" stroke-width="20" d="M152 256 L242 346"/>
+
+      <!-- N -->
+      <path class="stroke" stroke-width="20" d="M256 346 V166"/>
+      <path class="stroke" stroke-width="20" d="M256 166 L328 346"/>
+      <path class="stroke" stroke-width="20" d="M328 346 V166"/>
+
+      <!-- S -->
+      <path class="stroke" stroke-width="20"
+            d="M380 198
+               C380 176 360 164 332 164
+               C304 164 288 178 288 196
+               C288 214 302 224 330 232
+               L346 236
+               C374 244 392 258 392 284
+               C392 322 356 350 312 350
+               C274 350 244 330 244 304"/>
+    </svg>
+  </g>
+
+  <!-- 右：ワードマーク -->
+  <g transform="translate(360,92)">
+    <text class="wordmark" x="0" y="0" font-size="56" font-weight="650">Kou Nagai Studio</text>
+    <text class="sub" x="2" y="60" font-size="14">K N S</text>
+  </g>
+</svg>
