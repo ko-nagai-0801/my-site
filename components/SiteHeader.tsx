@@ -131,6 +131,7 @@ export default function SiteHeader() {
             width={35}
             height={35}
             priority
+            unoptimized
             className="block shrink-0 dark:hidden"
           />
           <Image
@@ -139,6 +140,7 @@ export default function SiteHeader() {
             width={35}
             height={35}
             priority
+            unoptimized
             className="hidden shrink-0 dark:block"
           />
 
