@@ -1,10 +1,10 @@
 /* components/SiteHeader.tsx */
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { KnsLogo } from "@/components/brand/KnsLogo";
 
 export default function SiteHeader() {
   const pathname = usePathname();
@@ -116,11 +116,39 @@ export default function SiteHeader() {
 
   return (
     <header className="hairline sticky top-0 z-50 bg-background/90 sm:bg-background/80 sm:backdrop-blur">
+      {/* top bar */}
       <div className="container flex items-center justify-between py-4">
-        <Link href="/" className="hover:opacity-90">
-          <KnsLogo />
+        {/* Brand */}
+        <Link href="/" className="group flex items-center gap-3">
+          {/* dark/light の2枚を Tailwind で出し分け */}
+          <Image
+            src="/images/brand/kns-mark-light.svg"
+            alt="KNS logo"
+            width={35}
+            height={35}
+            priority
+            className="block dark:hidden"
+          />
+          <Image
+            src="/images/brand/kns-mark-dark.svg"
+            alt=""
+            width={35}
+            height={35}
+            priority
+            className="hidden dark:block"
+          />
+
+          <div className="leading-none">
+            <span className="block text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground">
+              Kou Nagai Studio
+            </span>
+            <span className="mt-1 block text-[10px] tracking-[0.35em] text-muted">
+              K N S
+            </span>
+          </div>
         </Link>
 
+        {/* Desktop nav */}
         <nav className="hidden sm:flex items-center gap-8" aria-label="Primary">
           <Link className="nav-link" href="/">
             Home
@@ -137,6 +165,7 @@ export default function SiteHeader() {
         </nav>
       </div>
 
+      {/* Mobile grid nav（2×2） */}
       <nav
         className={`mobile-nav sm:hidden border-t border-border ${
           isMobileHidden ? "is-hidden" : ""
