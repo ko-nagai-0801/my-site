@@ -8,14 +8,6 @@ export const metadata: Metadata = {
   description: "プロフィール・できること・リンク集",
 };
 
-const links = [
-  { label: "X", href: "https://x.com/k_n_8141" },
-  { label: "GitHub", href: "https://github.com/ko-nagai-0801" },
-  { label: "note", href: "https://note.com/gapsmilegeek" },
-  { label: "Qiita", href: "https://qiita.com/ko_nagai_0801" },
-  // { label: "Blog", href: "https://gapsmilegeek.com" },
-] as const;
-
 const whatIDo = [
   {
     title: "静的サイト / LP コーディング",
@@ -47,11 +39,6 @@ const whatIDo = [
   },
 ] as const;
 
-/**
- * Focus（右カラム）
- * - “デザイン→実装→改善→守る” の流れが伝わる構成
- * - 表示密度は高いが、1行で読める長さに揃える
- */
 const focus = [
   { label: "Build", value: "HTML / CSS / JS", note: "semantic / maintainable" },
   { label: "UX", value: "spacing / type", note: "readability first" },
@@ -75,10 +62,6 @@ function Section({
       {children}
     </section>
   );
-}
-
-function displayUrl(href: string) {
-  return href.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
 export default function AboutPage() {
@@ -115,7 +98,6 @@ export default function AboutPage() {
             </p>
           </div>
 
-          {/* 一旦非表示にしたい場合は、このブロックを丸ごとコメントアウトでOK */}
           <div className="md:col-span-4">
             <div className="rounded-2xl border border-border bg-panel p-5">
               <p className="text-xs tracking-[0.22em] uppercase text-muted">
@@ -165,35 +147,6 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 {item.desc}
               </p>
-            </li>
-          ))}
-        </ul>
-      </Section>
-
-      <Section title="Links">
-        <ul className="mt-6 divide-y divide-border border-y border-border">
-          {links.map((l) => (
-            <li key={l.href} className="py-5">
-              <a
-                href={l.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${l.label} を開く`}
-                className="group flex items-center justify-between gap-6"
-              >
-                <div className="min-w-0">
-                  <span className="text-sm font-medium underline underline-offset-4">
-                    {l.label}
-                  </span>
-                  <p className="mt-1 truncate text-xs tracking-[0.16em] text-muted">
-                    {displayUrl(l.href)}
-                  </p>
-                </div>
-
-                <span className="shrink-0 text-xs tracking-[0.22em] uppercase text-muted">
-                  Open →
-                </span>
-              </a>
             </li>
           ))}
         </ul>

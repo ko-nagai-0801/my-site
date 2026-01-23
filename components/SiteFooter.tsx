@@ -1,26 +1,21 @@
 // components/SiteFooter.tsx
 import Link from "next/link";
 
-// const nav = [
-//   { href: "/", label: "Home" },
-//   { href: "/blog", label: "Blog" },
-//   { href: "/about", label: "About" },
-//   { href: "/works", label: "Works" },
-// ];
-
-const links = [
-  // 必要ならここに追加（例：GitHub, X, Email）
-  { href: "https://github.com/xxxx", label: "GitHub", external: true },
-];
+const socialLinks = [
+  { href: "https://x.com/k_n_8141", label: "X" },
+  { href: "https://github.com/ko-nagai-0801", label: "GitHub" },
+  { href: "https://note.com/gapsmilegeek", label: "note" },
+  { href: "https://qiita.com/ko_nagai_0801", label: "Qiita" },
+] as const;
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
     <footer className="mt-20 border-t border-border bg-background/40">
+      {/* 上段：常に縦並び */}
       <div className="container py-12 sm:py-14">
-        {/* Top row */}
-        <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-10">
           {/* Brand */}
           <div className="min-w-0">
             <div className="text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90">
@@ -44,34 +39,32 @@ export default function SiteFooter() {
               からご確認ください。
             </p>
 
-            {links.length > 0 && (
-              <ul className="mt-4 space-y-2 text-sm">
-                {links.map((l) => (
-                  <li key={l.href}>
-                    <a
-                      href={l.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="nav-link"
-                    >
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="mt-4 space-y-2 text-sm">
+              {socialLinks.map((l) => (
+                <li key={l.href}>
+                  <a
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nav-link"
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
+      </div>
 
-        {/* Bottom row */}
-        <div className="mt-10">
-          <div className="hairline" />
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs tracking-[0.18em] text-muted">
-              © {year} Kou Nagai Studio
-            </p>
-          </div>
-        </div>
+      {/* 区切り線：画面幅いっぱい */}
+      <div className="h-px w-full bg-border" />
+
+      {/* 下段：コピーライト中央寄せ */}
+      <div className="container py-6">
+        <p className="text-center text-xs tracking-[0.18em] text-muted">
+          © {year} Kou Nagai Studio
+        </p>
       </div>
     </footer>
   );
