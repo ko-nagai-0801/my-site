@@ -1,9 +1,14 @@
 <!-- public/images/brand/kns-mark-512x512.svg -->
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="KNS logo mark">
   <defs>
-    <!-- 色は currentColor にしてあるので、CSSで色を変えられます -->
+    <!-- shadcn系トークンは HSL 3値なので hsl() で包む -->
     <style>
-      .stroke { stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke {
+        stroke: hsl(var(--foreground));
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
     </style>
   </defs>
 

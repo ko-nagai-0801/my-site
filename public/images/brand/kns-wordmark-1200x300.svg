@@ -2,14 +2,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="KNS logo wordmark">
   <defs>
     <style>
-      .stroke { stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .stroke {
+        stroke: hsl(var(--foreground));
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
       .wordmark {
-        fill: currentColor;
+        fill: hsl(var(--foreground));
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
         letter-spacing: 0.02em;
       }
       .sub {
-        fill: currentColor;
+        fill: hsl(var(--foreground));
         opacity: 0.78;
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif;
         letter-spacing: 0.22em;
