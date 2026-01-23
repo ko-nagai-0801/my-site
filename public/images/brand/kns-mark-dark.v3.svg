@@ -1,0 +1,24 @@
+<!-- public/images/brand/kns-mark-dark.v3.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="KNS logo mark (dark)">
+  <g fill="none" stroke="#FAFAFA" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="256" cy="256" r="206" stroke-width="12" opacity="0.9"/>
+
+    <path stroke-width="20" d="M152 166 V346"/>
+    <path stroke-width="20" d="M152 256 L236 166"/>
+    <path stroke-width="20" d="M152 256 L242 346"/>
+
+    <path stroke-width="20" d="M256 346 V166"/>
+    <path stroke-width="20" d="M256 166 L328 346"/>
+    <path stroke-width="20" d="M328 346 V166"/>
+
+    <path stroke-width="20"
+      d="M380 198
+         C380 176 360 164 332 164
+         C304 164 288 178 288 196
+         C288 214 302 224 330 232
+         L346 236
+         C374 244 392 258 392 284
+         C392 322 356 350 312 350
+         C274 350 244 330 244 304"/>
+  </g>
+</svg>

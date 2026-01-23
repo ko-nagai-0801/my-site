@@ -124,19 +124,20 @@ export default function SiteHeader() {
       <div className="container flex items-center justify-between py-4">
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-3">
-          <picture>
-            <source
-              media="(prefers-color-scheme: dark)"
-              srcSet="/images/brand/kns-mark-dark.svg?v=2"
-            />
-            <img
-              src="/images/brand/kns-mark-light.svg?v=2"
-              width={35}
-              height={35}
-              alt="KNS logo"
-              className="block shrink-0"
-            />
-          </picture>
+          <img
+            src="/images/brand/kns-mark-light.v3.svg"
+            width={35}
+            height={35}
+            alt="KNS logo"
+            className="block shrink-0 dark:hidden"
+          />
+          <img
+            src="/images/brand/kns-mark-dark.v3.svg"
+            width={35}
+            height={35}
+            alt=""
+            className="hidden shrink-0 dark:block"
+          />
 
           <div className="leading-none">
             <span className="block text-[13px] sm:text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground">
