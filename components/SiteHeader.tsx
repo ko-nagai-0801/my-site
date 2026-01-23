@@ -87,7 +87,11 @@ export default function SiteHeader() {
 
         const dist = Math.abs(y - dirStartYRef.current);
 
-        if (!hiddenRef.current && direction === "down" && dist >= HIDE_DISTANCE) {
+        if (
+          !hiddenRef.current &&
+          direction === "down" &&
+          dist >= HIDE_DISTANCE
+        ) {
           applyHidden(true);
           cooldownUntilRef.current = t + COOLDOWN_MS;
           dirStartYRef.current = y;
@@ -127,7 +131,7 @@ export default function SiteHeader() {
             width={35}
             height={35}
             priority
-            className="block dark:hidden"
+            className="block shrink-0 dark:hidden"
           />
           <Image
             src="/images/brand/kns-mark-dark.svg"
@@ -135,11 +139,11 @@ export default function SiteHeader() {
             width={35}
             height={35}
             priority
-            className="hidden dark:block"
+            className="hidden shrink-0 dark:block"
           />
 
           <div className="leading-none">
-            <span className="block text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground">
+            <span className="block text-[13px] sm:text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground">
               Kou Nagai Studio
             </span>
             <span className="mt-1 block text-[10px] tracking-[0.35em] text-muted">
