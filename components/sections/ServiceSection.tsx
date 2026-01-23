@@ -104,7 +104,7 @@ export function ServiceSection() {
   ];
 
   return (
-    <section id="service" className="container py-20 sm:py-28">
+    <section id="service" className="py-20 sm:py-28">
       {/* Title */}
       <header className="text-center">
         <h2 className="text-5xl font-light tracking-[0.08em] text-foreground sm:text-6xl">
