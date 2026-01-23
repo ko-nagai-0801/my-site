@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { getLatestPosts } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
+import { ServiceSection } from "@/components/sections/ServiceSection";
+
 
 export default async function Home() {
   const latest = await getLatestPosts(3);
@@ -53,6 +55,8 @@ export default async function Home() {
           </p>
         </div>
       </section>
+
+      <ServiceSection />
 
       {/* Latest */}
       <section className="mt-14">
