@@ -4,16 +4,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { KnsWordmark } from "@/components/brand/KnsWordmark";
+import { KnsLogo } from "@/components/brand/KnsLogo";
 
 export default function SiteHeader() {
   const pathname = usePathname();
+
   const [isMobileHidden, setIsMobileHidden] = useState(false);
 
   const hiddenRef = useRef(false);
   const lastYRef = useRef(0);
+
   const dirRef = useRef<"up" | "down" | null>(null);
   const dirStartYRef = useRef(0);
+
   const cooldownUntilRef = useRef(0);
   const tickingRef = useRef(false);
 
@@ -114,34 +117,67 @@ export default function SiteHeader() {
   return (
     <header className="hairline sticky top-0 z-50 bg-background/90 sm:bg-background/80 sm:backdrop-blur">
       <div className="container flex items-center justify-between py-4">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-95">
-          <KnsWordmark className="h-6 w-auto text-foreground/90" />
+        <Link href="/" className="hover:opacity-90">
+          <KnsLogo />
         </Link>
 
         <nav className="hidden sm:flex items-center gap-8" aria-label="Primary">
-          <Link className="nav-link" href="/">Home</Link>
-          <Link className="nav-link" href="/blog">Blog</Link>
-          <Link className="nav-link" href="/about">About</Link>
-          <Link className="nav-link" href="/works">Works</Link>
+          <Link className="nav-link" href="/">
+            Home
+          </Link>
+          <Link className="nav-link" href="/blog">
+            Blog
+          </Link>
+          <Link className="nav-link" href="/about">
+            About
+          </Link>
+          <Link className="nav-link" href="/works">
+            Works
+          </Link>
         </nav>
       </div>
 
       <nav
-        className={`mobile-nav sm:hidden border-t border-border ${isMobileHidden ? "is-hidden" : ""}`}
+        className={`mobile-nav sm:hidden border-t border-border ${
+          isMobileHidden ? "is-hidden" : ""
+        }`}
         aria-label="Primary mobile"
       >
         <ul className="grid grid-cols-2">
           <li className="border-b border-r border-border">
-            <Link href="/" className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground">Home</Link>
+            <Link
+              href="/"
+              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+            >
+              Home
+            </Link>
           </li>
+
           <li className="border-b border-border">
-            <Link href="/blog" className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground">Blog</Link>
+            <Link
+              href="/blog"
+              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+            >
+              Blog
+            </Link>
           </li>
+
           <li className="border-r border-border">
-            <Link href="/about" className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground">About</Link>
+            <Link
+              href="/about"
+              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+            >
+              About
+            </Link>
           </li>
+
           <li>
-            <Link href="/works" className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground">Works</Link>
+            <Link
+              href="/works"
+              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+            >
+              Works
+            </Link>
           </li>
         </ul>
       </nav>
