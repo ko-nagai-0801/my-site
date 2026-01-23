@@ -125,12 +125,13 @@ export default function SiteHeader() {
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-3">
           <img
-            src="/images/brand/kns-mark-light.v3.svg"
+            src="/images/brand/kns-mark-white.svg"
             width={35}
             height={35}
             alt="KNS logo"
             className="block shrink-0"
           />
+
           <div className="leading-none">
             <span className="block text-[13px] sm:text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground">
               Kou Nagai Studio
