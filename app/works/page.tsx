@@ -1,70 +1,81 @@
 /* app/works/page.tsx */
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
+import { notFound } from "next/navigation";
 import { getAllWorks } from "@/lib/works";
+import { WorksGrid } from "@/components/works/WorksGrid";
 
 export const metadata: Metadata = {
-  title: "Works | My Site",
-  description: "制作実績 / 作業ログ / サンプルの一覧",
+  title: "Works | Kou Nagai Studio",
+  description: "制作実績 / サンプルの一覧",
 };
 
-function ExternalLink({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="underline underline-offset-4"
-      aria-label={label}
-    >
-      {label} ↗
-    </a>
-  );
-}
+const PER_PAGE = 6;
 
-function WorkThumb({
-  src,
-  alt,
-  slug,
-}: {
-  src: string;
-  alt: string;
-  slug: string;
-}) {
-  return (
-    <Link
-      href={`/works/${slug}`}
-      aria-label={`${alt} の詳細へ`}
-      className="block"
-    >
-      <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-panel">
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes="(min-width: 768px) 520px, 100vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-      </div>
-    </Link>
-  );
-}
+type Props = {
+  searchParams?: Promise<{ page?: string }>;
+};
 
-export default async function WorksPage() {
+const toInt = (v: string | undefined) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 1;
+  return Math.trunc(n);
+};
+
+const pageHref = (n: number) => (n <= 1 ? "/works" : `/works?page=${n}`);
+
+export default async function WorksPage({ searchParams }: Props) {
+  const sp = (await searchParams) ?? {};
+  const requested = Math.max(1, toInt(sp.page));
+
   const works = await getAllWorks();
+
+  if (works.length === 0) {
+    return (
+      <main className="container py-14">
+        <header className="flex items-end justify-between gap-6">
+          <div>
+            <p className="text-xs tracking-[0.22em] uppercase text-muted">Portfolio</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Works</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
+              制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
+            </p>
+          </div>
+
+          <Link
+            href="/"
+            className="text-xs tracking-[0.22em] uppercase text-muted hover:text-foreground"
+          >
+            Home
+          </Link>
+        </header>
+
+        <div className="mt-10 hairline" />
+        <p className="mt-8 text-sm text-muted">作品がまだありません。</p>
+      </main>
+    );
+  }
+
+  const totalPages = Math.max(1, Math.ceil(works.length / PER_PAGE));
+  if (requested > totalPages) notFound();
+
+  const start = (requested - 1) * PER_PAGE;
+  const items = works.slice(start, start + PER_PAGE);
+
+  const prev = requested > 1 ? requested - 1 : null;
+  const next = requested < totalPages ? requested + 1 : null;
 
   return (
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-muted">
-            Portfolio
-          </p>
+          <p className="text-xs tracking-[0.22em] uppercase text-muted">Portfolio</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">Works</h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
-            制作物・サンプル・作業ログの一覧です。各カードから詳細ページへ移動できます。
+            制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
+          </p>
+          <p className="mt-2 text-xs tracking-[0.18em] text-muted">
+            Page {requested} / {totalPages}
           </p>
         </div>
 
@@ -78,67 +89,32 @@ export default async function WorksPage() {
 
       <div className="mt-10 hairline" />
 
-      <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-        {works.map((w) => (
-          <li
-            key={w.slug}
-            className="group rounded-2xl border border-border bg-panel p-5 sm:p-6 transition hover:border-foreground/15"
-          >
-            {w.meta.image && (
-              <WorkThumb
-                src={w.meta.image.src}
-                alt={w.meta.image.alt}
-                slug={w.slug}
-              />
-            )}
+      <div className="mt-8">
+        <WorksGrid works={items} />
+      </div>
 
-            <h2 className="mt-5 text-base font-medium tracking-tight">
-              <Link href={`/works/${w.slug}`} className="hover:underline">
-                {w.meta.title}
-              </Link>
-            </h2>
+      <nav className="mt-10 flex items-center justify-between">
+        {prev ? (
+          <Link href={pageHref(prev)} className="nav-link">
+            ← Prev
+          </Link>
+        ) : (
+          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">← Prev</span>
+        )}
 
-            <p className="mt-3 text-sm leading-relaxed text-muted">
-              {w.meta.summary}
-            </p>
+        <span className="text-xs tracking-[0.22em] uppercase text-muted">
+          {requested} / {totalPages}
+        </span>
 
-            {w.meta.tags?.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {w.meta.tags.map((tag) => (
-                  <span key={tag} className="chip">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+        {next ? (
+          <Link href={pageHref(next)} className="nav-link">
+            Next →
+          </Link>
+        ) : (
+          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">Next →</span>
+        )}
+      </nav>
 
-            {(w.meta.href || w.meta.repo || w.meta.note) && (
-              <div className="mt-5 space-y-2">
-                {(w.meta.href || w.meta.repo) && (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.16em] text-muted">
-                    {w.meta.href && (
-                      <ExternalLink href={w.meta.href} label="Open site" />
-                    )}
-                    {w.meta.repo && (
-                      <ExternalLink href={w.meta.repo} label="Repository" />
-                    )}
-                  </div>
-                )}
-
-                {w.meta.note && (
-                  <p className="text-xs leading-relaxed text-muted">
-                    {w.meta.note}
-                  </p>
-                )}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <p className="mt-10 text-xs leading-relaxed tracking-[0.16em] text-muted">
-        ※ 次は「タグ絞り込み（フィルタ）」を追加していきます。
-      </p>
     </main>
   );
 }

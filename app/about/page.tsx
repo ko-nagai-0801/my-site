@@ -4,8 +4,8 @@ import Link from "next/link";
 import type React from "react";
 
 export const metadata: Metadata = {
-  title: "About | My Site",
-  description: "プロフィール・できること・リンク集",
+  title: "About | Kou Nagai Studio",
+  description: "プロフィール・できることリスト",
 };
 
 const whatIDo = [
