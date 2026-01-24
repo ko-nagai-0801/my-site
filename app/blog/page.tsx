@@ -1,8 +1,14 @@
-// app/blog/page.tsx
+/* app/blog/page.tsx */
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts } from "@/lib/posts";
 import { PostsList } from "@/components/blog/PostsList";
+
+export const metadata: Metadata = {
+  title: "Blog | Kou Nagai Studio",
+  description: "ブログ記事一覧（学習ログ / 制作メモ など）",
+};
 
 const PER_PAGE = 10;
 
@@ -73,7 +79,8 @@ export default async function BlogPage({ searchParams }: Props) {
       </header>
 
       <div className="mt-10">
-        <PostsList posts={items} variant="blog" linkMode="wrap" showReadLabel />
+        {/* ✅ タグを Link にするため title モードにする（wrap だとタグLinkがネストしやすい） */}
+        <PostsList posts={items} variant="blog" linkMode="title" showReadLabel />
       </div>
 
       <nav className="mt-10 flex items-center justify-between">

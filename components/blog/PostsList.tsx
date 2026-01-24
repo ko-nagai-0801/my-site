@@ -1,4 +1,4 @@
-// components/blog/PostsList.tsx
+/* components/blog/PostsList.tsx */
 import Link from "next/link";
 import { formatDate } from "@/lib/formatDate";
 
@@ -12,108 +12,94 @@ export type PostLike = {
   };
 };
 
-type Variant = "blog" | "latest";
+type Variant = "blog" | "home" | "latest";
 type LinkMode = "wrap" | "title";
-
-type Props = {
-  posts: PostLike[];
-  variant?: Variant; // spacing差分
-  linkMode?: LinkMode; // blogは wrap, latestは title
-  showReadLabel?: boolean; // blogだけ true
-};
 
 export function PostsList({
   posts,
-  variant = "latest",
+  variant = "blog",
   linkMode = "title",
   showReadLabel = false,
-}: Props) {
-  const itemPadding = variant === "blog" ? "py-7" : "py-6";
+}: {
+  posts: PostLike[];
+  variant?: Variant;
+  linkMode?: LinkMode;
+  showReadLabel?: boolean;
+}) {
+  const listClass =
+    variant === "blog"
+      ? "divide-y divide-border border-y border-border"
+      : "divide-y divide-border border-y border-border";
 
   return (
-    <ul className="divide-y divide-border border-y border-border">
+    <ul className={listClass}>
       {posts.map((p) => {
         const tags = p.meta.tags ?? [];
-
-        // ✅ blog: 行全体リンク（ネストリンクを避けるためタグはspan）
-        if (linkMode === "wrap") {
-          return (
-            <li key={p.slug} className={itemPadding}>
-              <Link href={`/blog/${p.slug}`} className="group block">
-                <div className="flex items-start justify-between gap-6">
-                  <h2 className="text-lg font-medium tracking-tight underline underline-offset-4">
-                    {p.meta.title}
-                  </h2>
-                  <span className="shrink-0 text-xs tracking-[0.18em] text-muted">
-                    {formatDate(p.meta.date)}
-                  </span>
-                </div>
-
-                {p.meta.description ? (
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    {p.meta.description}
-                  </p>
-                ) : null}
-
-                {tags.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <span key={`${p.slug}-${tag}`} className="chip">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-
-                {showReadLabel ? (
-                  <div className="mt-4 text-xs tracking-[0.22em] uppercase text-muted">
-                    Read →
-                  </div>
-                ) : null}
-              </Link>
-            </li>
-          );
-        }
-
-        // ✅ latest: タイトルだけリンク（タグは /tags へリンク可能）
-        return (
-          <li key={p.slug} className={itemPadding}>
+        const inner = (
+          <>
             <div className="flex items-start justify-between gap-6">
-              <div className="min-w-0">
+              {linkMode === "title" ? (
                 <Link
                   href={`/blog/${p.slug}`}
-                  className="underline underline-offset-4"
+                  className="text-lg font-medium tracking-tight underline underline-offset-4 hover:opacity-80"
                 >
-                  <h3 className="text-lg font-medium tracking-tight">
-                    {p.meta.title}
-                  </h3>
+                  {p.meta.title}
                 </Link>
+              ) : (
+                <h2 className="text-lg font-medium tracking-tight underline underline-offset-4">
+                  {p.meta.title}
+                </h2>
+              )}
 
-                {p.meta.description ? (
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    {p.meta.description}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="shrink-0 text-xs tracking-[0.18em] text-muted">
+              <span className="shrink-0 text-xs tracking-[0.18em] text-muted">
                 {formatDate(p.meta.date)}
-              </div>
+              </span>
             </div>
+
+            {p.meta.description ? (
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {p.meta.description}
+              </p>
+            ) : null}
 
             {tags.length > 0 ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Link
-                    key={`${p.slug}-${tag}`}
-                    href={`/tags/${encodeURIComponent(tag.trim())}`}
-                    className="chip"
-                  >
-                    {tag}
-                  </Link>
-                ))}
+                {tags.map((tag) => {
+                  const href = `/tags/${encodeURIComponent(tag.trim())}`;
+
+                  // wrap のときはネスト回避のため span 表示（title モードで Link になる）
+                  return linkMode === "wrap" ? (
+                    <span key={`${p.slug}-${tag}`} className="chip">
+                      {tag}
+                    </span>
+                  ) : (
+                    <Link key={`${p.slug}-${tag}`} href={href} className="chip">
+                      {tag}
+                    </Link>
+                  );
+                })}
               </div>
             ) : null}
+
+            {showReadLabel ? (
+              <div className="mt-4 text-xs tracking-[0.22em] uppercase text-muted">
+                <Link href={`/blog/${p.slug}`} className="hover:opacity-80">
+                  Read →
+                </Link>
+              </div>
+            ) : null}
+          </>
+        );
+
+        return (
+          <li key={p.slug} className="py-7">
+            {linkMode === "wrap" ? (
+              <Link href={`/blog/${p.slug}`} className="group block">
+                {inner}
+              </Link>
+            ) : (
+              <div className="group">{inner}</div>
+            )}
           </li>
         );
       })}
