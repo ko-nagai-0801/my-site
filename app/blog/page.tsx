@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts } from "@/lib/posts";
 import { PostsList } from "@/components/blog/PostsList";
+import { Pagination } from "@/components/ui/Pagination";
 
 export const metadata: Metadata = {
   title: "Blog | Kou Nagai Studio",
@@ -35,9 +36,7 @@ export default async function BlogPage({ searchParams }: Props) {
       <main className="container py-14">
         <header className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-xs tracking-[0.22em] uppercase text-muted">
-              Index
-            </p>
+            <p className="text-xs tracking-[0.22em] uppercase text-muted">Index</p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
           </div>
 
@@ -52,15 +51,10 @@ export default async function BlogPage({ searchParams }: Props) {
   }
 
   const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
-
-  // ✅ pageが範囲外なら 404（SEO的に安全）
   if (requested > totalPages) notFound();
 
   const start = (requested - 1) * PER_PAGE;
   const items = posts.slice(start, start + PER_PAGE);
-
-  const prev = requested > 1 ? requested - 1 : null;
-  const next = requested < totalPages ? requested + 1 : null;
 
   return (
     <main className="container py-14">
@@ -79,35 +73,15 @@ export default async function BlogPage({ searchParams }: Props) {
       </header>
 
       <div className="mt-10">
-        {/* ✅ タグを Link にするため title モードにする（wrap だとタグLinkがネストしやすい） */}
         <PostsList posts={items} variant="blog" linkMode="title" showReadLabel />
       </div>
 
-      <nav className="mt-10 flex items-center justify-between">
-        {prev ? (
-          <Link href={pageHref(prev)} className="nav-link">
-            ← Prev
-          </Link>
-        ) : (
-          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">
-            ← Prev
-          </span>
-        )}
-
-        <span className="text-xs tracking-[0.22em] uppercase text-muted">
-          {requested} / {totalPages}
-        </span>
-
-        {next ? (
-          <Link href={pageHref(next)} className="nav-link">
-            Next →
-          </Link>
-        ) : (
-          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">
-            Next →
-          </span>
-        )}
-      </nav>
+      <Pagination
+        className="mt-10"
+        current={requested}
+        total={totalPages}
+        hrefForPage={pageHref}
+      />
     </main>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllWorks } from "@/lib/works";
 import { WorksGrid } from "@/components/works/WorksGrid";
+import { Pagination } from "@/components/ui/Pagination";
 
 export const metadata: Metadata = {
   title: "Works | Kou Nagai Studio",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 const PER_PAGE = 6;
 
 type Props = {
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<{ page?: string; tag?: string }>;
 };
 
 const toInt = (v: string | undefined) => {
@@ -22,13 +23,30 @@ const toInt = (v: string | undefined) => {
   return Math.trunc(n);
 };
 
-const pageHref = (n: number) => (n <= 1 ? "/works" : `/works?page=${n}`);
+const normalize = (s: string) => s.trim();
 
 export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
+  const activeTag = typeof sp.tag === "string" ? normalize(decodeURIComponent(sp.tag)) : "";
+
   const works = await getAllWorks();
+
+  // ✅ フィルタ用タグ一覧（全Worksから抽出）
+  const allTags = Array.from(
+    new Set(
+      works
+        .flatMap((w) => w.meta.tags ?? [])
+        .map((t) => normalize(t))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b, "ja"));
+
+  // ✅ tag があるときだけ絞り込み
+  const filtered = activeTag
+    ? works.filter((w) => (w.meta.tags ?? []).some((t) => normalize(t) === activeTag))
+    : works;
 
   if (works.length === 0) {
     return (
@@ -56,14 +74,25 @@ export default async function WorksPage({ searchParams }: Props) {
     );
   }
 
-  const totalPages = Math.max(1, Math.ceil(works.length / PER_PAGE));
+  // ✅ フィルタ結果 0 件でも 404 にしない（UI上のフィルタとして自然）
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   if (requested > totalPages) notFound();
 
   const start = (requested - 1) * PER_PAGE;
-  const items = works.slice(start, start + PER_PAGE);
+  const items = filtered.slice(start, start + PER_PAGE);
 
-  const prev = requested > 1 ? requested - 1 : null;
-  const next = requested < totalPages ? requested + 1 : null;
+  const hrefForPage = (n: number) => {
+    const params = new URLSearchParams();
+    if (activeTag) params.set("tag", activeTag);
+    if (n > 1) params.set("page", String(n));
+    const qs = params.toString();
+    return qs ? `/works?${qs}` : "/works";
+  };
+
+  const chipBase =
+    "chip hover:opacity-80";
+  const chipActive =
+    "chip ring-1 ring-foreground/20";
 
   return (
     <main className="container py-14">
@@ -74,8 +103,10 @@ export default async function WorksPage({ searchParams }: Props) {
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
             制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
           </p>
+
           <p className="mt-2 text-xs tracking-[0.18em] text-muted">
             Page {requested} / {totalPages}
+            {activeTag ? <> ・ Tag: {activeTag}</> : null}
           </p>
         </div>
 
@@ -89,32 +120,39 @@ export default async function WorksPage({ searchParams }: Props) {
 
       <div className="mt-10 hairline" />
 
+      {/* ✅ タグフィルタ（/tags と同じ “chip” UI） */}
+      <div className="mt-8">
+        <div className="flex flex-wrap gap-2">
+          <Link href="/works" className={activeTag ? chipBase : chipActive}>
+            All
+          </Link>
+
+          {allTags.map((t) => {
+            const href = `/works?tag=${encodeURIComponent(t)}`;
+            const isActive = t === activeTag;
+            return (
+              <Link key={t} href={href} className={isActive ? chipActive : chipBase}>
+                {t}
+              </Link>
+            );
+          })}
+        </div>
+
+        {activeTag && filtered.length === 0 ? (
+          <p className="mt-4 text-sm text-muted">このタグの作品はありません。</p>
+        ) : null}
+      </div>
+
       <div className="mt-8">
         <WorksGrid works={items} />
       </div>
 
-      <nav className="mt-10 flex items-center justify-between">
-        {prev ? (
-          <Link href={pageHref(prev)} className="nav-link">
-            ← Prev
-          </Link>
-        ) : (
-          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">← Prev</span>
-        )}
-
-        <span className="text-xs tracking-[0.22em] uppercase text-muted">
-          {requested} / {totalPages}
-        </span>
-
-        {next ? (
-          <Link href={pageHref(next)} className="nav-link">
-            Next →
-          </Link>
-        ) : (
-          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">Next →</span>
-        )}
-      </nav>
-
+      <Pagination
+        className="mt-10"
+        current={requested}
+        total={totalPages}
+        hrefForPage={hrefForPage}
+      />
     </main>
   );
 }
