@@ -3,14 +3,21 @@ import type { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/posts";
 import { getAllWorks } from "@/lib/works";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "http://localhost:3000";
+function getSiteUrl() {
+  const fromPublic = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (fromPublic) return fromPublic.replace(/\/$/, "");
+
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
+
+  return "http://localhost:3000";
+}
 
 // ✅ 数値リテラルで（式は使わない）
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const SITE_URL = getSiteUrl();
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
