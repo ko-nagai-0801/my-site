@@ -1,19 +1,70 @@
 // app/blog/page.tsx
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getAllPosts } from "@/lib/posts";
-import { formatDate } from "@/lib/formatDate";
+import { PostsList } from "@/components/blog/PostsList";
 
-export default async function BlogPage() {
+const PER_PAGE = 10;
+
+type Props = {
+  searchParams?: Promise<{ page?: string }>;
+};
+
+const toInt = (v: string | undefined) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 1;
+  return Math.trunc(n);
+};
+
+const pageHref = (n: number) => (n <= 1 ? "/blog" : `/blog?page=${n}`);
+
+export default async function BlogPage({ searchParams }: Props) {
+  const sp = (await searchParams) ?? {};
+  const requested = Math.max(1, toInt(sp.page));
+
   const posts = await getAllPosts();
+
+  if (posts.length === 0) {
+    return (
+      <main className="container py-14">
+        <header className="flex items-end justify-between gap-6">
+          <div>
+            <p className="text-xs tracking-[0.22em] uppercase text-muted">
+              Index
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
+          </div>
+
+          <Link href="/" className="text-xs tracking-[0.22em] uppercase">
+            Home
+          </Link>
+        </header>
+
+        <p className="mt-10 text-sm text-muted">記事がまだありません。</p>
+      </main>
+    );
+  }
+
+  const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
+
+  // ✅ pageが範囲外なら 404（SEO的に安全）
+  if (requested > totalPages) notFound();
+
+  const start = (requested - 1) * PER_PAGE;
+  const items = posts.slice(start, start + PER_PAGE);
+
+  const prev = requested > 1 ? requested - 1 : null;
+  const next = requested < totalPages ? requested + 1 : null;
 
   return (
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-muted">
-            Index
-          </p>
+          <p className="text-xs tracking-[0.22em] uppercase text-muted">Index</p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
+          <p className="mt-2 text-xs tracking-[0.18em] text-muted">
+            Page {requested} / {totalPages}
+          </p>
         </div>
 
         <Link href="/" className="text-xs tracking-[0.22em] uppercase">
@@ -21,49 +72,35 @@ export default async function BlogPage() {
         </Link>
       </header>
 
-      {posts.length === 0 ? (
-        <p className="mt-10 text-sm text-muted">記事がまだありません。</p>
-      ) : (
-        <ul className="mt-10 divide-y divide-border border-y border-border">
-          {posts.map((p) => (
-            <li key={p.slug} className="py-7">
-              <Link href={`/blog/${p.slug}`} className="group block">
-                <div className="flex items-start justify-between gap-6">
-                  <h2 className="text-lg font-medium tracking-tight underline underline-offset-4">
-                    {p.meta.title}
-                  </h2>
-                  <span className="shrink-0 text-xs tracking-[0.18em] text-muted">
-                    {formatDate(p.meta.date)}
-                  </span>
-                </div>
+      <div className="mt-10">
+        <PostsList posts={items} variant="blog" linkMode="wrap" showReadLabel />
+      </div>
 
-                {p.meta.description && (
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    {p.meta.description}
-                  </p>
-                )}
+      <nav className="mt-10 flex items-center justify-between">
+        {prev ? (
+          <Link href={pageHref(prev)} className="nav-link">
+            ← Prev
+          </Link>
+        ) : (
+          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">
+            ← Prev
+          </span>
+        )}
 
-                {p.meta.tags && p.meta.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {p.meta.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-border bg-panel px-3 py-1 text-[11px] tracking-[0.14em] text-muted"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+        <span className="text-xs tracking-[0.22em] uppercase text-muted">
+          {requested} / {totalPages}
+        </span>
 
-                <div className="mt-4 text-xs tracking-[0.22em] uppercase text-muted">
-                  Read →
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+        {next ? (
+          <Link href={pageHref(next)} className="nav-link">
+            Next →
+          </Link>
+        ) : (
+          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">
+            Next →
+          </span>
+        )}
+      </nav>
     </main>
   );
 }
