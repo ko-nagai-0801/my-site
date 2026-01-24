@@ -23,31 +23,21 @@ const toInt = (v: string | undefined) => {
   return Math.trunc(n);
 };
 
-const normalize = (s: string) => s.trim();
+// 表示用（見た目）は trim のみ
+const normalizeLabel = (s: string) => s.trim();
+
+// 比較用（重複排除・一致判定）だけ lower して揃える
+const normalizeKey = (s: string) => s.trim().toLowerCase();
 
 export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
   // ✅ decodeURIComponent は外す（Next側でデコード済みのケースがある）
-  const activeTag = typeof sp.tag === "string" ? normalize(sp.tag) : "";
+  const activeTagRaw = typeof sp.tag === "string" ? normalizeLabel(sp.tag) : "";
+  const activeKey = activeTagRaw ? normalizeKey(activeTagRaw) : "";
 
   const works = await getAllWorks();
-
-  // ✅ フィルタ用タグ一覧（全Worksから抽出）
-  const allTags = Array.from(
-    new Set(
-      works
-        .flatMap((w) => w.meta.tags ?? [])
-        .map((t) => normalize(t))
-        .filter(Boolean)
-    )
-  ).sort((a, b) => a.localeCompare(b, "ja"));
-
-  // ✅ tag があるときだけ絞り込み
-  const filtered = activeTag
-    ? works.filter((w) => (w.meta.tags ?? []).some((t) => normalize(t) === activeTag))
-    : works;
 
   if (works.length === 0) {
     return (
@@ -75,6 +65,31 @@ export default async function WorksPage({ searchParams }: Props) {
     );
   }
 
+  // ✅ フィルタ用タグ一覧：キー（比較用）で重複排除しつつ、表示ラベルは最初に見つけたものを採用
+  const tagMap = new Map<string, string>(); // key -> label
+  for (const w of works) {
+    for (const t of w.meta.tags ?? []) {
+      const label = normalizeLabel(t);
+      if (!label) continue;
+      const key = normalizeKey(label);
+      if (!tagMap.has(key)) tagMap.set(key, label);
+    }
+  }
+
+  const allTags = Array.from(tagMap.entries())
+    .map(([key, label]) => ({ key, label }))
+    // 大文字小文字を意識しない並び（sensitivity: "base"）
+    .sort((a, b) => a.label.localeCompare(b.label, "ja", { sensitivity: "base" }));
+
+  const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
+
+  // ✅ tag があるときだけ絞り込み（比較は key で）
+  const filtered = activeKey
+    ? works.filter((w) =>
+        (w.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === activeKey)
+      )
+    : works;
+
   // ✅ フィルタ結果 0 件でも 404 にしない（UI上のフィルタとして自然）
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   if (requested > totalPages) notFound();
@@ -84,7 +99,8 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const hrefForPage = (n: number) => {
     const params = new URLSearchParams();
-    if (activeTag) params.set("tag", activeTag);
+    // 表示ラベルをURLに入れる（ユーザーが読める）
+    if (activeLabel) params.set("tag", activeLabel);
     if (n > 1) params.set("page", String(n));
     const qs = params.toString();
     return qs ? `/works?${qs}` : "/works";
@@ -105,7 +121,7 @@ export default async function WorksPage({ searchParams }: Props) {
 
           <p className="mt-2 text-xs tracking-[0.18em] text-muted">
             Page {requested} / {totalPages}
-            {activeTag ? <> ・ Tag: {activeTag}</> : null}
+            {activeLabel ? <> ・ Tag: {activeLabel}</> : null}
           </p>
         </div>
 
@@ -124,22 +140,22 @@ export default async function WorksPage({ searchParams }: Props) {
         <h2 className="sr-only">Filter by tag</h2>
 
         <div className="flex flex-wrap gap-2">
-          <Link href="/works" className={activeTag ? chipBase : chipActive}>
+          <Link href="/works" className={activeKey ? chipBase : chipActive}>
             All
           </Link>
 
-          {allTags.map((t) => {
-            const href = `/works?tag=${encodeURIComponent(t)}`;
-            const isActive = t === activeTag;
+          {allTags.map(({ key, label }) => {
+            const href = `/works?tag=${encodeURIComponent(label)}`;
+            const isActive = key === activeKey;
             return (
-              <Link key={t} href={href} className={isActive ? chipActive : chipBase}>
-                {t}
+              <Link key={key} href={href} className={isActive ? chipActive : chipBase}>
+                {label}
               </Link>
             );
           })}
         </div>
 
-        {activeTag && filtered.length === 0 ? (
+        {activeKey && filtered.length === 0 ? (
           <p className="mt-4 text-sm text-muted">このタグの作品はありません。</p>
         ) : null}
       </section>
@@ -148,7 +164,12 @@ export default async function WorksPage({ searchParams }: Props) {
         <WorksGrid works={items} />
       </div>
 
-      <Pagination className="mt-10" current={requested} total={totalPages} hrefForPage={hrefForPage} />
+      <Pagination
+        className="mt-10"
+        current={requested}
+        total={totalPages}
+        hrefForPage={hrefForPage}
+      />
     </main>
   );
 }

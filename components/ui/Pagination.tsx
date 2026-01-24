@@ -66,6 +66,7 @@ export function Pagination({
                 key={`e-${idx}`}
                 className="px-2 text-sm text-muted opacity-70"
                 aria-hidden="true"
+                role="presentation"
               >
                 …
               </li>
@@ -74,7 +75,7 @@ export function Pagination({
                 {it === current ? (
                   <span
                     aria-current="page"
-                    aria-label={`Page ${it}`}
+                    aria-label={`Page ${it} of ${total}`}
                     className="inline-flex min-w-9 items-center justify-center rounded-md border border-border bg-panel px-3 py-1 text-sm font-semibold"
                   >
                     {it}
@@ -82,7 +83,7 @@ export function Pagination({
                 ) : (
                   <Link
                     href={hrefForPage(it)}
-                    aria-label={`Page ${it}`}
+                    aria-label={`Page ${it} of ${total}`}
                     className="inline-flex min-w-9 items-center justify-center rounded-md border border-border bg-panel px-3 py-1 text-sm hover:opacity-80"
                   >
                     {it}
