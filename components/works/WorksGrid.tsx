@@ -31,13 +31,16 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
 
 function WorkThumb({ src, alt, slug }: { src: string; alt: string; slug: string }) {
   return (
-    <Link href={`/works/${slug}`} aria-label={`${alt} の詳細へ`} className="block">
+    <Link
+      href={`/works/${slug}`}
+      aria-label={`${alt} の詳細へ`}
+      className="group block"
+    >
       <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-panel">
         <Image
           src={src}
           alt={alt}
           fill
-          // ✅ 1カラム想定
           sizes="(min-width: 768px) 720px, 100vw"
           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
@@ -49,12 +52,11 @@ function WorkThumb({ src, alt, slug }: { src: string; alt: string; slug: string 
 
 export function WorksGrid({ works }: { works: WorkLike[] }) {
   return (
-    // ✅ 2カラムをやめて縦並び固定
     <ul className="space-y-4">
       {works.map((w) => (
         <li
           key={w.slug}
-          className="group rounded-2xl border border-border bg-panel p-5 transition hover:border-foreground/15 sm:p-6"
+          className="rounded-2xl border border-border bg-panel p-5 transition hover:border-foreground/15 sm:p-6"
         >
           {w.meta.image ? (
             <WorkThumb src={w.meta.image.src} alt={w.meta.image.alt} slug={w.slug} />
