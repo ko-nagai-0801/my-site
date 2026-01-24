@@ -7,7 +7,7 @@ import { getAllTags, getTagDetail, slugToTag } from "@/lib/tags";
 export const revalidate = 3600;
 
 type Props = {
-  params: { tag: string };
+  params: Promise<{ tag: string }>;
 };
 
 export async function generateStaticParams() {
@@ -16,7 +16,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const tagLabel = slugToTag(params.tag);
+  const { tag } = await params;
+  const tagLabel = slugToTag(tag);
+
   return {
     title: `${tagLabel} | Tags`,
     description: `タグ「${tagLabel}」で絞り込んだ一覧（Blog / Works 共通）`,
@@ -33,15 +35,23 @@ const formatDateYMD = (iso: string) => {
 };
 
 export default async function TagDetailPage({ params }: Props) {
-  const { tag, posts, works } = await getTagDetail(params.tag);
+  const { tag: tagParam } = await params;
 
-  if (posts.length === 0 && works.length === 0) notFound();
+  const { tag, posts, works } = await getTagDetail(tagParam);
+
+  if (posts.length === 0 && works.length === 0) {
+    notFound();
+  }
+  
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <header className="mb-8">
         <p className="text-sm opacity-80">
-          <Link href="/tags" className="underline underline-offset-4 hover:opacity-80">
+          <Link
+            href="/tags"
+            className="underline underline-offset-4 hover:opacity-80"
+          >
             Tags
           </Link>
           <span className="mx-2 opacity-60">/</span>
