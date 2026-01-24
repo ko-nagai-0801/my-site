@@ -1,14 +1,25 @@
 ---
 title: "フォーム実装（セキュリティ重視）"
 slug: "secure-form"
-source: "content/works/secure-form.mdx"
+source: "works"
 summary: "CSRF / バリデーション / ハニーポット等を含めた、運用を意識したフォーム構成のテンプレ。"
-tags: ["PHP", "Security", "CSRF", "Validation"]
+tags: ["form", "security", "csrf", "validation", "anti-spam", "template"]
+note: "テンプレ整理中"
+order: 3
 image:
-  src: "/images/works/secure-form.webp"
-  alt: "フォーム実装（セキュリティ重視）のサムネイル"
-order: 30
+  src: "/works/secure-form.png"
+  alt: "Secure Form"
 ---
 
 ## 概要
-（ここに本文）
+フォームは「送れて終わり」ではなく、運用時の事故を減らす設計が重要です。  
+このテンプレでは、最低限の防御と入力品質をセットで用意します。
+
+## 含める対策（例）
+- CSRF対策（トークン）
+- バリデーション（空/形式/長さ）
+- スパム対策（ハニーポット等）
+- エラーメッセージの一貫性（UI崩れ防止）
+
+## メモ
+案件ごとに要件が変わるため、共通化できる部分だけを整理しています。

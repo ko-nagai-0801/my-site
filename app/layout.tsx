@@ -6,14 +6,15 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+
+// 本番URLを優先（Vercelなら NEXT_PUBLIC_SITE_URL を設定しておくのが安定）
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
 export const metadata: Metadata = {
-  // 絶対URL化（OGP画像などで推奨）
-  metadataBase: new URL("https://my-site-five-flame.vercel.app"),
+  metadataBase: new URL(siteUrl),
 
   title: {
     default: "Kou Nagai Studio",
@@ -21,12 +22,20 @@ export const metadata: Metadata = {
   },
   description: "Portfolio & Blog",
 
-  // canonical（最小構成）
   alternates: {
     canonical: "/",
   },
 
-  // OGP
+  // favicon / icon / manifest（全部 public 直下に置く前提）
+  icons: {
+    icon: [
+      { url: "/favicon.ico" }, // まずはこれだけでもOK
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [{ url: "/icon.png" }],
+  },
+  manifest: "/manifest.webmanifest",
+
   openGraph: {
     title: "Kou Nagai Studio",
     description: "Portfolio & Blog",
@@ -41,7 +50,7 @@ export const metadata: Metadata = {
         height: 630,
         alt: "Kou Nagai Studio",
       },
-      // 任意：高解像度も登録（対応クローラ向け）
+      // 任意：高解像度も並べておく（無くてもOK）
       {
         url: "/og-kou-nagai-studio-2400x1260.png",
         width: 2400,
@@ -51,7 +60,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  // X(Twitter)
   twitter: {
     card: "summary_large_image",
     title: "Kou Nagai Studio",
@@ -59,14 +67,11 @@ export const metadata: Metadata = {
     images: ["/og-kou-nagai-studio-1200x630.png"],
   },
 
-  // 置く予定のファイル（存在しなくてもビルドは通るが、最終的には配置推奨）
-  icons: {
-    icon: "/icon.png",
-    shortcut: "/favicon.ico",
-    apple: "/icon.png",
+  // robots.txt を置くなら必須ではないが、メタでも明示しておくと安心
+  robots: {
+    index: true,
+    follow: true,
   },
-
-  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({

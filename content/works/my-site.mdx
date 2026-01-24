@@ -1,16 +1,29 @@
 ---
 title: "My Site（Next.js + MDX）"
 slug: "my-site"
-source: "content/works/my-site.mdx"
-summary: "ダーク基調のUI、MDX記事、ブログ一覧・詳細、タイポグラフィ、モバイルヘッダー挙動を整備。"
-tags: ["Next.js", "App Router", "MDX", "Tailwind", "Typography"]
-repo: "https://github.com/ko-nagai-0801"
-note: "現在も継続改善中。トークン設計で dark/light の雰囲気を統一。"
+source: "works"
+summary: "ダーク基調のUI、MDX記事、ブログ一覧・詳細、タイポ、モバイルヘッダー挙動を整備。"
+tags: ["nextjs", "react", "mdx", "tailwind", "portfolio", "vercel"]
+href: "https://my-site-five-flame.vercel.app/"
+repo: "https://github.com/ko-nagai-0801/my-site"
+note: "継続改善中"
+order: 1
 image:
-  src: "/images/works/my-site.webp"
-  alt: "My Site（Next.js + MDX）のサムネイル"
-order: 10
+  src: "/works/my-site.png"
+  alt: "My Site"
 ---
 
 ## 概要
-（ここに本文）
+Next.js（App Router）+ MDX で、ポートフォリオ兼ブログを構築しています。  
+“暗いトーンでも読みやすい” を最優先に、余白・線・タイポの設計を揃えました。
+
+## 実装メモ
+- Header：モバイル時にスクロール方向で表示制御（見切れ/チラつきを抑制）
+- Blog：一覧 / 詳細の最小構成（MDX運用）
+- Works：カード + 詳細ページ（リンク/メタ情報の整理）
+- Meta：OGP / Twitter Card / favicon / manifest を整備
+
+## 次に改善したい点
+- /blog：タグ・検索・ページネーション
+- /works：実績カードの追加（外部リンク・役割・技術）
+- 404 / error：最低限の導線（Homeへ戻す）

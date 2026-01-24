@@ -1,32 +1,30 @@
-/* lib/works.ts */
+// lib/works.ts
 import "server-only";
 
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
 
-export type WorkImage = {
-  src: string;
-  alt: string;
-};
-
 export type WorkMeta = {
   title: string;
   summary: string;
-  tags: string[];
+  tags: string[]; // ここは常に配列（無ければ []）
   href?: string;
   repo?: string;
   note?: string;
   order?: number;
-  image?: WorkImage;
+  image?: {
+    src: string;
+    alt: string;
+  };
 };
 
-export type WorkIndexItem = {
+export type WorkItem = {
   slug: string;
   meta: WorkMeta;
 };
 
-export type WorkDoc = WorkIndexItem & {
+export type WorkDetail = WorkItem & {
   content: string;
 };
 
@@ -43,25 +41,32 @@ const trimNonEmpty = (v: unknown): string | undefined => {
   return s.length > 0 ? s : undefined;
 };
 
-function assertWorkMeta(meta: unknown, slug: string): WorkMeta {
+function assertWorkMeta(meta: unknown, slugFromFile: string): WorkMeta {
   if (!isRecord(meta)) {
-    throw new Error(`Invalid frontmatter: ${slug}`);
+    throw new Error(`Invalid frontmatter: ${slugFromFile}`);
   }
 
   const title = trimNonEmpty(meta.title) ?? "";
-  if (!title) throw new Error(`Missing title: ${slug}`);
+  if (!title) throw new Error(`Missing title: ${slugFromFile}`);
 
   const summary = trimNonEmpty(meta.summary) ?? "";
-  if (!summary) throw new Error(`Missing summary: ${slug}`);
+  if (!summary) throw new Error(`Missing summary: ${slugFromFile}`);
 
-  const rawTags = meta.tags;
-  if (
-    !Array.isArray(rawTags) ||
-    !rawTags.every((t) => typeof t === "string" && t.trim().length > 0)
-  ) {
-    throw new Error(`Invalid tags: ${slug}`);
+  // ✅ tags は任意：無ければ []
+  const rawTags = (meta as Record<string, unknown>).tags;
+  let tags: string[] = [];
+
+  if (rawTags === undefined || rawTags === null) {
+    tags = [];
+  } else if (Array.isArray(rawTags)) {
+    if (!rawTags.every((t) => typeof t === "string" && t.trim().length > 0)) {
+      throw new Error(`Invalid tags: ${slugFromFile}`);
+    }
+    tags = rawTags.map((t) => t.trim());
+  } else {
+    // string 等は弾く（運用が崩れるので）
+    throw new Error(`Invalid tags: ${slugFromFile}`);
   }
-  const tags = rawTags.map((t) => t.trim());
 
   const href = trimNonEmpty(meta.href);
   const repo = trimNonEmpty(meta.repo);
@@ -72,22 +77,29 @@ function assertWorkMeta(meta: unknown, slug: string): WorkMeta {
       ? meta.order
       : undefined;
 
-  const rawImage = meta.image;
+  const imageRaw = (meta as Record<string, unknown>).image;
   const image =
-    isRecord(rawImage) &&
-    typeof rawImage.src === "string" &&
-    typeof rawImage.alt === "string" &&
-    rawImage.src.trim().length > 0 &&
-    rawImage.alt.trim().length > 0
-      ? { src: rawImage.src.trim(), alt: rawImage.alt.trim() }
+    isRecord(imageRaw) &&
+    typeof imageRaw.src === "string" &&
+    typeof imageRaw.alt === "string" &&
+    imageRaw.src.trim().length > 0 &&
+    imageRaw.alt.trim().length > 0
+      ? { src: imageRaw.src.trim(), alt: imageRaw.alt.trim() }
       : undefined;
 
-  return { title, summary, tags, href, repo, note, order, image };
+  return {
+    title,
+    summary,
+    tags,
+    href,
+    repo,
+    note,
+    order,
+    image,
+  };
 }
 
-async function readWorkFile(
-  slug: string
-): Promise<{ filePath: string; source: string } | null> {
+async function readWorkFile(slug: string) {
   const mdxPath = path.join(WORKS_DIR, `${slug}.mdx`);
   const mdPath = path.join(WORKS_DIR, `${slug}.md`);
 
@@ -95,7 +107,7 @@ async function readWorkFile(
     const source = await readFile(mdxPath, "utf8");
     return { filePath: mdxPath, source };
   } catch {
-    // .mdx が無ければ .md を試す（将来用）
+    // .mdx が無ければ .md を試す
   }
 
   try {
@@ -106,23 +118,26 @@ async function readWorkFile(
   }
 }
 
-export async function getAllWorks(): Promise<WorkIndexItem[]> {
+async function getWorkSlugs() {
   const entries = await readdir(WORKS_DIR, { withFileTypes: true });
-  const files = entries
+  return entries
     .filter((e) => e.isFile() && /\.mdx?$/.test(e.name))
-    .map((e) => e.name);
+    .map((e) => toSlug(e.name));
+}
 
+export async function getAllWorks(): Promise<WorkItem[]> {
+  const slugs = await getWorkSlugs();
   const items = await Promise.all(
-    files.map(async (name) => {
-      const slug = toSlug(name);
-      const source = await readFile(path.join(WORKS_DIR, name), "utf8");
-      const { data } = matter(source);
+    slugs.map(async (slug) => {
+      const file = await readWorkFile(slug);
+      if (!file) throw new Error(`Missing work file: ${slug}`);
+      const { data } = matter(file.source);
       const meta = assertWorkMeta(data, slug);
-      return { slug, meta } satisfies WorkIndexItem;
+      return { slug, meta };
     })
   );
 
-  // order があるものは昇順、無いものは後ろ。次に title で安定ソート
+  // order 昇順 → title で安定
   items.sort((a, b) => {
     const ao = a.meta.order ?? Number.POSITIVE_INFINITY;
     const bo = b.meta.order ?? Number.POSITIVE_INFINITY;
@@ -133,7 +148,7 @@ export async function getAllWorks(): Promise<WorkIndexItem[]> {
   return items;
 }
 
-export async function getWorkBySlug(slug: string): Promise<WorkDoc | null> {
+export async function getWorkBySlug(slug: string): Promise<WorkDetail | null> {
   const file = await readWorkFile(slug);
   if (!file) return null;
 

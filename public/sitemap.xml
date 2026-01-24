@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://my-site-five-flame.vercel.app/</loc></url>
+  <url><loc>https://my-site-five-flame.vercel.app/about</loc></url>
+  <url><loc>https://my-site-five-flame.vercel.app/works</loc></url>
+  <url><loc>https://my-site-five-flame.vercel.app/blog</loc></url>
+
+  <!-- いま実在している記事（確認できた分） -->
+  <url><loc>https://my-site-five-flame.vercel.app/blog/linebreak</loc></url>
+  <url><loc>https://my-site-five-flame.vercel.app/blog/hello</loc></url>
+
+  <!-- works の詳細（確認できた分） -->
+  <url><loc>https://my-site-five-flame.vercel.app/works/my-site</loc></url>
+  <url><loc>https://my-site-five-flame.vercel.app/works/lp-sample</loc></url>
+  <url><loc>https://my-site-five-flame.vercel.app/works/secure-form</loc></url>
+</urlset>
