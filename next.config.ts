@@ -11,6 +11,16 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 const nextConfig: NextConfig = {
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
+
+  async redirects() {
+    return [
+      {
+        source: "/works/lp-sample",
+        destination: "/works/lunchette",
+        permanent: true, // Next.js は恒久リダイレクトを 308 で返す
+      },
+    ];
+  },
 };
 
 const withMDX = createMDX({
