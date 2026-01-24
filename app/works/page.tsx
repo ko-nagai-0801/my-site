@@ -26,8 +26,18 @@ const toInt = (v: string | undefined) => {
 // 表示用（見た目）は trim のみ
 const normalizeLabel = (s: string) => s.trim();
 
-// 比較用（重複排除・一致判定）だけ lower して揃える
-const normalizeKey = (s: string) => s.trim().toLowerCase();
+/**
+ * 比較用（重複排除・一致判定）を強める
+ * - NFKC：全角/半角などのゆれを吸収
+ * - 連続空白を1つに潰す
+ * - lower：大小文字ゆれを吸収（比較用だけ）
+ */
+const normalizeKey = (s: string) =>
+  s
+    .normalize("NFKC")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 
 export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
@@ -65,7 +75,7 @@ export default async function WorksPage({ searchParams }: Props) {
     );
   }
 
-  // ✅ フィルタ用タグ一覧：キー（比較用）で重複排除しつつ、表示ラベルは最初に見つけたものを採用
+  // ✅ フィルタ用タグ一覧：比較keyで重複排除しつつ、表示ラベルは最初の表記を採用
   const tagMap = new Map<string, string>(); // key -> label
   for (const w of works) {
     for (const t of w.meta.tags ?? []) {
@@ -78,7 +88,6 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const allTags = Array.from(tagMap.entries())
     .map(([key, label]) => ({ key, label }))
-    // 大文字小文字を意識しない並び（sensitivity: "base"）
     .sort((a, b) => a.label.localeCompare(b.label, "ja", { sensitivity: "base" }));
 
   const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
@@ -99,7 +108,7 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const hrefForPage = (n: number) => {
     const params = new URLSearchParams();
-    // 表示ラベルをURLに入れる（ユーザーが読める）
+    // 表示ラベルをURLに入れる（人間が読める）
     if (activeLabel) params.set("tag", activeLabel);
     if (n > 1) params.set("page", String(n));
     const qs = params.toString();

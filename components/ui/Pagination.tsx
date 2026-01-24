@@ -43,14 +43,22 @@ export function Pagination({
 
   const items = buildItems(current, total);
 
-  const prevHref = current > 1 ? hrefForPage(current - 1) : null;
-  const nextHref = current < total ? hrefForPage(current + 1) : null;
+  const prevPage = current - 1;
+  const nextPage = current + 1;
+
+  const prevHref = current > 1 ? hrefForPage(prevPage) : null;
+  const nextHref = current < total ? hrefForPage(nextPage) : null;
 
   return (
-    <nav aria-label="Pagination" className={className}>
+    <nav aria-label={`Pagination, page ${current} of ${total}`} className={className}>
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
         {prevHref ? (
-          <Link href={prevHref} className="nav-link" aria-label="Previous page">
+          <Link
+            href={prevHref}
+            className="nav-link"
+            aria-label={`Previous page, page ${prevPage} of ${total}`}
+            rel="prev"
+          >
             ← Prev
           </Link>
         ) : (
@@ -83,7 +91,7 @@ export function Pagination({
                 ) : (
                   <Link
                     href={hrefForPage(it)}
-                    aria-label={`Page ${it} of ${total}`}
+                    aria-label={`Go to page ${it} of ${total}`}
                     className="inline-flex min-w-9 items-center justify-center rounded-md border border-border bg-panel px-3 py-1 text-sm hover:opacity-80"
                   >
                     {it}
@@ -95,7 +103,12 @@ export function Pagination({
         </ul>
 
         {nextHref ? (
-          <Link href={nextHref} className="nav-link" aria-label="Next page">
+          <Link
+            href={nextHref}
+            className="nav-link"
+            aria-label={`Next page, page ${nextPage} of ${total}`}
+            rel="next"
+          >
             Next →
           </Link>
         ) : (
