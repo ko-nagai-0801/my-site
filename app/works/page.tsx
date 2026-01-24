@@ -29,7 +29,8 @@ export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
-  const activeTag = typeof sp.tag === "string" ? normalize(decodeURIComponent(sp.tag)) : "";
+  // ✅ decodeURIComponent は外す（Next側でデコード済みのケースがある）
+  const activeTag = typeof sp.tag === "string" ? normalize(sp.tag) : "";
 
   const works = await getAllWorks();
 
@@ -89,10 +90,8 @@ export default async function WorksPage({ searchParams }: Props) {
     return qs ? `/works?${qs}` : "/works";
   };
 
-  const chipBase =
-    "chip hover:opacity-80";
-  const chipActive =
-    "chip ring-1 ring-foreground/20";
+  const chipBase = "chip hover:opacity-80";
+  const chipActive = "chip ring-1 ring-foreground/20";
 
   return (
     <main className="container py-14">
@@ -121,7 +120,9 @@ export default async function WorksPage({ searchParams }: Props) {
       <div className="mt-10 hairline" />
 
       {/* ✅ タグフィルタ（/tags と同じ “chip” UI） */}
-      <div className="mt-8">
+      <section className="mt-8" aria-label="Tag filter">
+        <h2 className="sr-only">Filter by tag</h2>
+
         <div className="flex flex-wrap gap-2">
           <Link href="/works" className={activeTag ? chipBase : chipActive}>
             All
@@ -141,18 +142,13 @@ export default async function WorksPage({ searchParams }: Props) {
         {activeTag && filtered.length === 0 ? (
           <p className="mt-4 text-sm text-muted">このタグの作品はありません。</p>
         ) : null}
-      </div>
+      </section>
 
       <div className="mt-8">
         <WorksGrid works={items} />
       </div>
 
-      <Pagination
-        className="mt-10"
-        current={requested}
-        total={totalPages}
-        hrefForPage={hrefForPage}
-      />
+      <Pagination className="mt-10" current={requested} total={totalPages} hrefForPage={hrefForPage} />
     </main>
   );
 }

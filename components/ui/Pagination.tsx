@@ -50,7 +50,7 @@ export function Pagination({
     <nav aria-label="Pagination" className={className}>
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
         {prevHref ? (
-          <Link href={prevHref} className="nav-link">
+          <Link href={prevHref} className="nav-link" aria-label="Previous page">
             ← Prev
           </Link>
         ) : (
@@ -62,7 +62,11 @@ export function Pagination({
         <ul className="flex flex-wrap items-center justify-center gap-2">
           {items.map((it, idx) =>
             it === "ellipsis" ? (
-              <li key={`e-${idx}`} className="px-2 text-sm text-muted opacity-70">
+              <li
+                key={`e-${idx}`}
+                className="px-2 text-sm text-muted opacity-70"
+                aria-hidden="true"
+              >
                 …
               </li>
             ) : (
@@ -70,6 +74,7 @@ export function Pagination({
                 {it === current ? (
                   <span
                     aria-current="page"
+                    aria-label={`Page ${it}`}
                     className="inline-flex min-w-9 items-center justify-center rounded-md border border-border bg-panel px-3 py-1 text-sm font-semibold"
                   >
                     {it}
@@ -77,6 +82,7 @@ export function Pagination({
                 ) : (
                   <Link
                     href={hrefForPage(it)}
+                    aria-label={`Page ${it}`}
                     className="inline-flex min-w-9 items-center justify-center rounded-md border border-border bg-panel px-3 py-1 text-sm hover:opacity-80"
                   >
                     {it}
@@ -88,7 +94,7 @@ export function Pagination({
         </ul>
 
         {nextHref ? (
-          <Link href={nextHref} className="nav-link">
+          <Link href={nextHref} className="nav-link" aria-label="Next page">
             Next →
           </Link>
         ) : (
