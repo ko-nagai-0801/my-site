@@ -27,12 +27,21 @@ export type PostDoc = PostIndexItem & {
   content: string;
 };
 
-const POSTS_DIR = path.join(process.cwd(), "content", "posts");
+// ✅ content/posts → content/blog に変更
+const POSTS_DIR = path.join(process.cwd(), "content", "blog");
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
 
-const toSlug = (filename: string) => filename.replace(/\.mdx?$/, "");
+/**
+ * ファイル名 → slug
+ * - 2026-01-18-hello.mdx → hello
+ * - hello.mdx → hello
+ */
+const toSlug = (filename: string) => {
+  const base = filename.replace(/\.mdx?$/, "");
+  return base.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+};
 
 const trimNonEmpty = (v: unknown): string | undefined => {
   if (typeof v !== "string") return undefined;
@@ -87,40 +96,55 @@ function assertPostMeta(meta: unknown, slugFromFile: string): PostMeta {
   return { title, slug, source, date, description, tags, draft };
 }
 
-async function readPostFile(
+/**
+ * ディレクトリ内の md/mdx を走査して slug→filename を構築
+ * - YYYY-MM-DD-hello.mdx でも slug=hello として扱う
+ * - slug重複（例: hello.mdx と 2026-...-hello.mdx）があればエラーで止める
+ */
+async function getPostFileMap(): Promise<Map<string, string>> {
+  const entries = await readdir(POSTS_DIR, { withFileTypes: true });
+
+  const files = entries
+    .filter((e) => e.isFile() && /\.mdx?$/.test(e.name))
+    .map((e) => e.name);
+
+  const map = new Map<string, string>();
+  for (const filename of files) {
+    const slug = toSlug(filename);
+    if (map.has(slug)) {
+      throw new Error(
+        `Duplicate slug detected: slug=${slug} files=${map.get(slug)} & ${filename}`
+      );
+    }
+    map.set(slug, filename);
+  }
+  return map;
+}
+
+async function readPostFileBySlug(
   slug: string
 ): Promise<{ filePath: string; source: string } | null> {
-  const mdxPath = path.join(POSTS_DIR, `${slug}.mdx`);
-  const mdPath = path.join(POSTS_DIR, `${slug}.md`);
+  const map = await getPostFileMap();
+  const filename = map.get(slug);
+  if (!filename) return null;
 
-  try {
-    const source = await readFile(mdxPath, "utf8");
-    return { filePath: mdxPath, source };
-  } catch {
-    // .mdx が無ければ .md を試す（将来用）
-  }
-
-  try {
-    const source = await readFile(mdPath, "utf8");
-    return { filePath: mdPath, source };
-  } catch {
-    return null;
-  }
+  const filePath = path.join(POSTS_DIR, filename);
+  const source = await readFile(filePath, "utf8");
+  return { filePath, source };
 }
 
 export async function getPostSlugs(): Promise<string[]> {
-  const entries = await readdir(POSTS_DIR, { withFileTypes: true });
-  return entries
-    .filter((e) => e.isFile() && /\.mdx?$/.test(e.name))
-    .map((e) => toSlug(e.name));
+  const map = await getPostFileMap();
+  return [...map.keys()];
 }
 
 export async function getAllPosts(): Promise<PostIndexItem[]> {
-  const slugs = await getPostSlugs();
+  const map = await getPostFileMap();
+  const slugs = [...map.keys()];
 
   const items = await Promise.all(
     slugs.map(async (slug) => {
-      const file = await readPostFile(slug);
+      const file = await readPostFileBySlug(slug);
       if (!file) throw new Error(`Missing post file: ${slug}`);
 
       const { data } = matter(file.source);
@@ -148,7 +172,7 @@ export async function getLatestPosts(limit = 3): Promise<PostIndexItem[]> {
 }
 
 export async function getPostBySlug(slug: string): Promise<PostDoc | null> {
-  const file = await readPostFile(slug);
+  const file = await readPostFileBySlug(slug);
   if (!file) return null;
 
   const { data, content } = matter(file.source);
