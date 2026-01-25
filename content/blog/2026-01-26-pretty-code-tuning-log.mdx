@@ -1,0 +1,195 @@
+---
+# content/blog/2026-01-26-pretty-code-tuning-log.mdx
+title: pretty-code（rehype-pretty-code）調整ログ：ハイライト最適化〜余白詰めまで
+slug: pretty-code-tuning-log
+source: blog
+date: "2026-01-26T00:00:00+09:00"
+description: rehype-pretty-codeの行ハイライトを視認できる状態にし、tokens化・連続ハイライトの自然化・UI統一・行番号余白の最適化までをまとめた作業ログ。
+tags:
+  - Next.js
+  - MDX
+  - CSS
+  - rehype-pretty-code
+  - Shiki
+draft: false
+---
+
+「pretty-code、見えるようになったけど違和感あるよね」から始まって、**視認性 → 洗練 → 統一感 → 余白調整**まで一気に詰めたログ。
+
+---
+
+## 目的
+
+- 行ハイライトを「ちゃんと行全体がハイライトされている」見た目にする  
+- 色味は**グリーン or オレンジ**（最終的に **オレンジ**採用）
+- ハイライト色を `tokens.css` に移して、テーマ側で一元管理
+- Copyボタン/言語ラベルも tokens 化して、UIの統一感を上げる
+- 最後に「行番号の左側の余白」を詰めて、実機でも気持ちよくする
+
+---
+
+## 変更の流れ（ざっくり）
+
+### 1) 行ハイライトが見えない → 見えるようにする
+- `data-highlighted-line` を拾って、行ハイライトの背景（薄い面）+ 左バーを表示
+- 当初は疑似要素も試したが、最終的に **行そのものに背景を乗せる**方式が安定
+
+### 2) 色の方針
+- 目立たせたいので **オレンジ系**に寄せる  
+- HSL tuple を採用（例：`24 94% 52%`）
+
+### 3) 角丸を外す
+- 行の角丸が「ハイライトの塊感」を出しすぎていたので、角丸は無しへ
+
+### 4) tokens.css へ移動
+- ハイライト色を `--pretty-code-hl` として tokens 化  
+- Copyボタン/言語ラベルも tokens 化して、ボタン系の見た目を揃える
+
+### 5) outline を削除
+- 境界線の主張が強く、全体のトーンを壊すので削除
+
+### 6) 連続ハイライトの“つながり感”を改善
+- `pre` 側に縦paddingを寄せて、行ごとの上下paddingを消し、連続行の境界を自然に
+
+### 7) 行番号の左余白を詰める（最終調整）
+- `data-line` の `padding-left` を削り、行番号幅と余白を詰めて見た目を最適化
+
+---
+
+## 実装（最終形）
+
+### styles/tokens.css（pretty-code tokens 追加）
+
+```css
+/* =========================
+   pretty-code（Shiki）tokens
+   ========================= */
+
+/* 行ハイライト色（HSL tuple） */
+/* vivid orange: 24 94% 52% */
+--pretty-code-hl: 24 94% 52%;
+
+/* 言語ラベル / Copyボタン（見た目統一用） */
+--pretty-code-ui-bg: color-mix(in oklab, var(--panel) 86%, var(--background));
+--pretty-code-ui-border: color-mix(in oklab, var(--border) 92%, var(--background));
+--pretty-code-ui-fg: color-mix(in oklab, var(--foreground) 72%, var(--background));
+
+--pretty-code-ui-bg-hover: color-mix(in oklab, var(--panel) 70%, var(--foreground) 30%);
+--pretty-code-ui-border-hover: color-mix(in oklab, var(--border) 70%, var(--foreground) 30%);
+--pretty-code-ui-fg-hover: color-mix(in oklab, var(--foreground) 90%, var(--background));
+```
+
+---
+
+### styles/pretty-code.css（行ハイライト + UI tokens 化 + 余白調整）
+
+```css
+/* ✅ 行ハイライト色は tokens.css から参照（なければ orange fallback） */
+.prose {
+  --pc-hl: var(--pretty-code-hl, 24 94% 52%);
+
+  --pc-hl-bg: hsl(var(--pc-hl) / 0.14);
+  --pc-hl-bg2: hsl(var(--pc-hl) / 0.1);
+  --pc-hl-bar: hsl(var(--pc-hl) / 0.95);
+}
+
+/* dark は少し強め（色相は同じでOK） */
+.prose.prose-invert {
+  --pc-hl-bg: hsl(var(--pc-hl) / 0.24);
+  --pc-hl-bg2: hsl(var(--pc-hl) / 0.16);
+  --pc-hl-bar: hsl(var(--pc-hl) / 0.98);
+}
+
+/* pre（縦paddingはpre側へ移動＝連続ハイライトの“つながり感”を安定） */
+.prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) pre {
+  margin: 0;
+  padding: 1rem 0;
+  background: hsl(var(--panel));
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+/* 1行（span[data-line]） */
+.prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) [data-line] {
+  display: block;
+  width: 100%;
+  min-width: 100%;
+
+  /* 左余白を詰める */
+  padding: 0 1.1rem 0 0;
+
+  box-sizing: border-box;
+}
+
+/* 行番号 */
+.prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) code[data-line-numbers] {
+  counter-reset: line;
+}
+.prose
+  :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+  code[data-line-numbers]
+  > [data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+
+  display: inline-block;
+  width: 2.2rem;
+  margin-right: 0.75rem;
+
+  text-align: right;
+  color: hsl(var(--foreground) / 0.45);
+  user-select: none;
+}
+
+/* ✅ 行ハイライト（outline削除 / 角丸なし） */
+.prose
+  :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+  :is([data-line][data-highlighted-line], [data-line].highlighted, .line--highlight) {
+  background: linear-gradient(90deg, var(--pc-hl-bg) 0%, var(--pc-hl-bg2) 100%);
+  box-shadow: inset 5px 0 0 var(--pc-hl-bar);
+  border-radius: 0;
+}
+```
+
+---
+
+## コマンドログ
+
+### ① tokensへ移動＋オレンジ化＋角丸なし
+```bash
+git add -A
+git commit -m "pretty-codeのハイライト色をtokensへ移動し、オレンジ＋角丸なしに統一"
+git push
+```
+
+### ② outline削除＋連続ハイライト改善＋UI tokens化
+```bash
+git add -A
+git commit -m "pretty-codeのoutline削除と連続ハイライト改善、Copy/言語ラベルをtokens化"
+git push
+```
+
+### ③ 行番号左余白を詰めて最終調整
+```bash
+git add -A
+git commit -m "pretty-codeの行番号左余白を詰めてレイアウトを最適化"
+git push
+```
+
+---
+
+## ここまでの結果
+
+- ハイライトが「左だけ目立つ」から「行全体が自然に乗る」へ
+- オレンジで視認性確保しつつ、ダークトーンの雰囲気も崩さない
+- tokens化で、UI全体の統一感が上がった
+- 実機での余白ストレスも解消
+
+---
+
+## 次にやるなら（メモ）
+
+- 行番号の幅 `2.2rem` を `2.0rem` にしても良い（よりタイトに）
+- `margin-right: 0.75rem` を `0.6rem` にするとさらに詰まる（詰めすぎ注意）
+
