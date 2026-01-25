@@ -4,14 +4,13 @@ import "server-only";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
+import { cache } from "react";
 
 export type PostMeta = {
-  // 共通
   title: string;
   slug: string;
-  source: string;
 
-  // posts 用
+  // posts/blog 用
   date: string; // ISO 8601 推奨: "2026-01-19T21:30:00+09:00"
   description: string;
   tags: string[];
@@ -27,7 +26,7 @@ export type PostDoc = PostIndexItem & {
   content: string;
 };
 
-// ✅ content/posts → content/blog に変更
+// ✅ content/blog を参照
 const POSTS_DIR = path.join(process.cwd(), "content", "blog");
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
@@ -72,9 +71,6 @@ function assertPostMeta(meta: unknown, slugFromFile: string): PostMeta {
     );
   }
 
-  const source = trimNonEmpty(meta.source) ?? "";
-  if (!source) throw new Error(`Missing source: ${slugFromFile}`);
-
   const date = trimNonEmpty(meta.date) ?? "";
   if (!date) throw new Error(`Missing date: ${slugFromFile}`);
   if (!isValidDateString(date)) throw new Error(`Invalid date: ${slugFromFile}`);
@@ -93,15 +89,17 @@ function assertPostMeta(meta: unknown, slugFromFile: string): PostMeta {
 
   const draft = typeof meta.draft === "boolean" ? meta.draft : undefined;
 
-  return { title, slug, source, date, description, tags, draft };
+  return { title, slug, date, description, tags, draft };
 }
 
 /**
  * ディレクトリ内の md/mdx を走査して slug→filename を構築
  * - YYYY-MM-DD-hello.mdx でも slug=hello として扱う
  * - slug重複（例: hello.mdx と 2026-...-hello.mdx）があればエラーで止める
+ *
+ * ✅ cache() で同一リクエスト内の再計算を抑制
  */
-async function getPostFileMap(): Promise<Map<string, string>> {
+const getPostFileMap = cache(async (): Promise<Map<string, string>> => {
   const entries = await readdir(POSTS_DIR, { withFileTypes: true });
 
   const files = entries
@@ -119,7 +117,7 @@ async function getPostFileMap(): Promise<Map<string, string>> {
     map.set(slug, filename);
   }
   return map;
-}
+});
 
 async function readPostFileBySlug(
   slug: string
@@ -139,8 +137,7 @@ export async function getPostSlugs(): Promise<string[]> {
 }
 
 export async function getAllPosts(): Promise<PostIndexItem[]> {
-  const map = await getPostFileMap();
-  const slugs = [...map.keys()];
+  const slugs = await getPostSlugs();
 
   const items = await Promise.all(
     slugs.map(async (slug) => {
