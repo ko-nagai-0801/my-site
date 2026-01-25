@@ -24,7 +24,7 @@
     --tw-prose-hr: hsl(var(--border));
     --tw-prose-quotes: hsl(var(--foreground) / 0.92);
     --tw-prose-quote-borders: hsl(var(--border));
-    --tw-prose-captions: hsl(var(--foreground) / 0.70);
+    --tw-prose-captions: hsl(var(--foreground) / 0.7);
 
     --tw-prose-code: hsl(var(--foreground) / 0.96);
     --tw-prose-pre-code: hsl(var(--foreground));
@@ -40,7 +40,9 @@
 
   .prose h2,
   .prose h3,
-  .prose h4 {
+  .prose h4,
+  .prose h5,
+  .prose h6 {
     scroll-margin-top: 96px;
   }
 
@@ -108,16 +110,57 @@
     border-color: hsl(var(--border));
   }
 
-  /* 見出しアンカー（rehype-autolink-headings の append 用） */
+  /* 見出しアンカー（rehype-autolink-headings の append 用）
+     - hover だけでなく focus-within / focus-visible にも対応
+     - クリック範囲（padding）を広げる
+  */
   .prose .heading-anchor {
     text-decoration: none !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     margin-left: 0.5rem;
-    opacity: 0.55;
-    font-weight: 400;
-    color: hsl(var(--foreground) / 0.55);
+    padding: 0.12rem 0.48rem;
+
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    line-height: 1;
+
+    color: hsl(var(--foreground) / 0.6);
+    opacity: 0;
+    transform: translateY(-1px);
+    transition:
+      opacity 120ms ease,
+      color 120ms ease,
+      background-color 120ms ease,
+      border-color 120ms ease;
   }
-  .prose :is(h2, h3, h4, h5, h6):hover .heading-anchor {
+
+  .prose :is(h2, h3, h4, h5, h6):hover .heading-anchor,
+  .prose :is(h2, h3, h4, h5, h6):focus-within .heading-anchor {
     opacity: 1;
-    color: hsl(var(--foreground) / 0.9);
+  }
+
+  .prose .heading-anchor:hover {
+    opacity: 1;
+    background: hsl(var(--foreground) / 0.06);
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground) / 0.92);
+  }
+
+  .prose .heading-anchor:focus-visible {
+    opacity: 1;
+    background: hsl(var(--foreground) / 0.06);
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground) / 0.96);
+
+    outline: 2px solid hsl(var(--foreground) / 0.25);
+    outline-offset: 2px;
   }
 }

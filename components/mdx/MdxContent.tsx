@@ -20,7 +20,17 @@ export default function MdxContent({ source }: Props) {
           remarkPlugins: [remarkGfm],
           rehypePlugins: [
             rehypeSlug,
-            [rehypeAutolinkHeadings, { behavior: "wrap" }],
+            [
+              rehypeAutolinkHeadings,
+              {
+                behavior: "append",
+                properties: {
+                  className: ["heading-anchor"],
+                  "aria-label": "見出しへのリンク",
+                },
+                content: { type: "text", value: "#" },
+              },
+            ],
           ],
         },
       }}
