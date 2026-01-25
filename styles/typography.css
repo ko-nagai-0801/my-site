@@ -1,15 +1,9 @@
 /* styles/typography.css */
 @layer components {
-  /* Typography（MDX / prose）
-     - ダーク基調のUIで、OSがライトでも読みやすさを崩さないため
-       MDX本文は基本 `prose-invert` を使う運用にする
-  */
-
   .prose {
     text-wrap: pretty;
   }
 
-  /* prose-invert を「より白寄り」に寄せて可読性を上げる */
   .prose.prose-invert {
     --tw-prose-body: hsl(var(--foreground) / 0.94);
     --tw-prose-headings: hsl(var(--foreground));
@@ -38,11 +32,7 @@
     color: hsl(var(--foreground));
   }
 
-  .prose h2,
-  .prose h3,
-  .prose h4,
-  .prose h5,
-  .prose h6 {
+  .prose :is(h2, h3, h4, h5, h6) {
     scroll-margin-top: 96px;
   }
 
@@ -62,10 +52,10 @@
     content: "";
   }
 
-  /* Code block（素のpre用：pretty-code導入後も一応残す） */
+  /* fallbackのpre（pretty-code以外用） */
   .prose pre {
-    background: hsl(var(--pre-bg));
-    border: 1px solid hsl(var(--pre-border));
+    background: hsl(var(--panel));
+    border: 1px solid hsl(var(--border));
     border-radius: 16px;
     padding: 1rem 1.1rem;
     overflow-x: auto;
@@ -74,120 +64,6 @@
     color: hsl(var(--foreground));
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.92em;
-  }
-
-  /* ================================
-     rehype-pretty-code（Shiki）専用
-     - 行番号 / ファイル名(title) / ハイライト
-     ================================ */
-
-  /* 余白はfigure側で管理（pre側のmarginは抑える） */
-  .prose [data-rehype-pretty-code-fragment] {
-    margin: 1.6rem 0;
-  }
-
-  /* ファイル名（title="..."） */
-  .prose [data-rehype-pretty-code-title] {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    padding: 0.55rem 0.85rem;
-
-    border: 1px solid hsl(var(--pre-border));
-    border-bottom: none;
-
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-
-    background: hsl(var(--pre-bg));
-    color: hsl(var(--foreground) / 0.8);
-
-    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.82em;
-    line-height: 1.2;
-  }
-
-  /* caption="..."（必要なら使う） */
-  .prose [data-rehype-pretty-code-caption] {
-    margin-top: 0.6rem;
-    color: hsl(var(--foreground) / 0.7);
-    font-size: 0.9em;
-  }
-
-  /* pretty-codeのpreは padding を line 側に寄せる */
-  .prose [data-rehype-pretty-code-fragment] pre {
-    margin: 0;
-    padding: 0;
-
-    background: hsl(var(--pre-bg));
-    border: 1px solid hsl(var(--pre-border));
-    border-radius: 16px;
-
-    overflow-x: auto;
-  }
-
-  /* titleがある場合は、preの角を上だけ落として一体化 */
-  .prose [data-rehype-pretty-code-title] + pre {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-  }
-
-  .prose [data-rehype-pretty-code-fragment] pre code {
-    display: grid; /* 行単位を積む */
-    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.92em;
-    line-height: 1.75;
-  }
-
-  /* 1行（data-line） */
-  .prose [data-rehype-pretty-code-fragment] [data-line] {
-    padding: 0 1.1rem;
-    box-sizing: border-box;
-  }
-  /* 上下の余白（pre paddingの代わり） */
-  .prose [data-rehype-pretty-code-fragment] [data-line]:first-child {
-    padding-top: 1rem;
-  }
-  .prose [data-rehype-pretty-code-fragment] [data-line]:last-child {
-    padding-bottom: 1rem;
-  }
-
-  /* 行番号（showLineNumbers を付けたときだけ data-line-numbers が付く） */
-  .prose [data-rehype-pretty-code-fragment] pre > code {
-    counter-reset: line;
-  }
-  .prose
-    [data-rehype-pretty-code-fragment]
-    [data-line-numbers]
-    > [data-line]::before {
-    counter-increment: line;
-    content: counter(line);
-
-    display: inline-block;
-    width: 2.6rem;
-    margin-right: 1.1rem;
-
-    text-align: right;
-    color: hsl(var(--foreground) / 0.35);
-
-    user-select: none;
-  }
-
-  /* 行ハイライト（```ts {2,4-6} など） */
-  .prose [data-rehype-pretty-code-fragment] [data-highlighted-line],
-  .prose [data-rehype-pretty-code-fragment] .line--highlight {
-    background: hsl(var(--foreground) / 0.06);
-    border-left: 3px solid hsl(var(--foreground) / 0.28);
-  }
-
-  /* 単語ハイライト（rehype-pretty-code対応：必要なら使う） */
-  .prose [data-rehype-pretty-code-fragment] [data-highlighted-chars],
-  .prose [data-rehype-pretty-code-fragment] .word--highlight {
-    background: hsl(var(--foreground) / 0.1);
-    border: 1px solid hsl(var(--border));
-    border-radius: 6px;
-    padding: 0.06em 0.18em;
   }
 
   /* Blockquote */
@@ -199,7 +75,7 @@
     color: inherit;
   }
 
-  /* Table（縦線ありグリッド） */
+  /* Table */
   .prose table {
     width: 100%;
     border-collapse: collapse;
@@ -219,15 +95,11 @@
     font-weight: 600;
   }
 
-  /* 区切り線 */
   .prose hr {
     border-color: hsl(var(--border));
   }
 
-  /* 見出しアンカー（rehype-autolink-headings の append 用）
-     - hover だけでなく focus-within / focus-visible にも対応
-     - クリック範囲（padding）を広げる
-  */
+  /* 見出しアンカー */
   .prose .heading-anchor {
     text-decoration: none !important;
 

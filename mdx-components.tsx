@@ -1,6 +1,6 @@
 /* /mdx-components.tsx */
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ReactElement, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 import type { MDXComponents } from "mdx/types";
 
@@ -9,7 +9,6 @@ import CopyButton from "@/components/mdx/CopyButton";
 type AnchorProps = ComponentProps<"a">;
 
 function isExternal(href: string) {
-  // http(s) / protocol-relative / mailto / tel を外部扱い
   return (
     /^(https?:)?\/\//.test(href) ||
     href.startsWith("mailto:") ||
@@ -22,7 +21,6 @@ function cx(...classes: Array<string | undefined>) {
 }
 
 function A({ href = "", className, children, ...props }: AnchorProps) {
-  // ページ内アンカーはそのまま <a>
   if (href.startsWith("#")) {
     return (
       <a
@@ -38,10 +36,8 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
     );
   }
 
-  // 外部リンク：新規タブ + rel を自動付与
   if (isExternal(href)) {
     const isHttp = /^(https?:)?\/\//.test(href);
-
     return (
       <a
         href={href}
@@ -58,7 +54,6 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
     );
   }
 
-  // 内部リンク：Next の Link
   return (
     <Link
       href={href}
@@ -89,7 +84,6 @@ function Img({ className, alt = "", ...props }: ImgProps) {
 
 /**
  * ✅ children を再帰的に探索して `language-xxx` を拾う
- * - Codeコンポーネントに差し替わっていても拾える
  */
 type LangProps = { className?: unknown; children?: ReactNode };
 
@@ -116,7 +110,6 @@ function findLanguage(node: ReactNode): string | null {
 
 /**
  * ✅ コード本文を再帰的に抽出（Copy用）
- * - Shiki 等で span が増えてもテキストだけ拾える
  */
 function extractText(node: ReactNode): string {
   let out = "";
@@ -135,16 +128,87 @@ function extractText(node: ReactNode): string {
   return out;
 }
 
+function getDataString(
+  props: Record<string, unknown>,
+  key: string
+): string | null {
+  const v = props[key];
+  return typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
+}
+
+/** ✅ ReactNode を潜って最初に見つかった data-* を拾う（pre/codeどっちに付いててもOK） */
+function findDataAttrDeep(node: ReactNode, key: string): string | null {
+  for (const child of Children.toArray(node)) {
+    if (!isValidElement(child)) continue;
+
+    const props = child.props as Record<string, unknown>;
+    const v = getDataString(props, key);
+    if (v) return v;
+
+    const nested = props.children as ReactNode | undefined;
+    if (nested != null) {
+      const found = findDataAttrDeep(nested, key);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+/** ✅ 最初にマッチした要素を深掘りで探す（ReactElementで返す） */
+function findFirstElementDeep(
+  node: ReactNode,
+  predicate: (el: ReactElement) => boolean
+): ReactElement | null {
+  for (const child of Children.toArray(node)) {
+    if (!isValidElement(child)) continue;
+
+    const el = child as ReactElement;
+
+    if (predicate(el)) return el;
+
+    const nested = (el.props as { children?: ReactNode }).children;
+    if (nested != null) {
+      const found = findFirstElementDeep(nested, predicate);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 type PreProps = ComponentProps<"pre">;
 
 function Pre({ className, children, ...props }: PreProps) {
+  /**
+   * ✅ pretty-code の pre は “絶対にラップしない”
+   * - data-theme / data-language が pre 側に無い場合もあるので
+   *   children 側も探索して判定する
+   */
+  const record = props as Record<string, unknown>;
+  const classNameStr = typeof className === "string" ? className : "";
+
+  const isPretty =
+    record["data-theme"] !== undefined ||
+    record["data-language"] !== undefined ||
+    classNameStr.includes("shiki") ||
+    findDataAttrDeep(children, "data-theme") !== null ||
+    findDataAttrDeep(children, "data-language") !== null ||
+    findDataAttrDeep(children, "data-line-numbers") !== null ||
+    findDataAttrDeep(children, "data-line-numbers-max-digits") !== null;
+
+  if (isPretty) {
+    return (
+      <pre className={className} {...props}>
+        {children}
+      </pre>
+    );
+  }
+
   const lang = findLanguage(children);
   const codeText = extractText(children);
   const canCopy = codeText.trim().length > 0;
 
   return (
     <div className="not-prose my-6">
-      {/* ✅ 角丸は「外側コンテナ」で一括管理（上だけ/下だけが自然に揃う） */}
       <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
         {(lang || canCopy) && (
           <div className="flex items-center gap-3 border-b border-white/10 bg-white/5 px-3 py-2">
@@ -177,6 +241,24 @@ function Pre({ className, children, ...props }: PreProps) {
 type CodeProps = ComponentProps<"code">;
 
 function Code({ className, children, ...props }: CodeProps) {
+  // ✅ pretty-code の code は data-line-numbers 等が付くので inline 装飾を当てない
+  const record = props as Record<string, unknown>;
+  const isPretty =
+    record["data-theme"] !== undefined ||
+    record["data-language"] !== undefined ||
+    record["data-line-numbers"] !== undefined ||
+    record["data-line-numbers-max-digits"] !== undefined ||
+    record["data-highlighted-chars"] !== undefined ||
+    (typeof className === "string" && className.includes("shiki"));
+
+  if (isPretty) {
+    return (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  }
+
   const text =
     typeof children === "string"
       ? children
@@ -198,6 +280,106 @@ function Code({ className, children, ...props }: CodeProps) {
     >
       {children}
     </code>
+  );
+}
+
+/**
+ * ✅ rehype-pretty-code 用：figure を再構成
+ * - 「title（ファイル名）/ 言語 / Copy」を同じバーに統合
+ * - “titleノードだけ” 除外して二重表示を防ぐ
+ * - Copy は「code要素の中身」だけをコピーする
+ */
+type FigureProps = ComponentProps<"figure">;
+
+function Figure({ children, ...props }: FigureProps) {
+  const record = props as Record<string, unknown>;
+
+  const isPretty =
+    record["data-rehype-pretty-code-fragment"] !== undefined ||
+    record["data-rehype-pretty-code-figure"] !== undefined;
+
+  if (!isPretty) return <figure {...props}>{children}</figure>;
+
+  const nodes = Children.toArray(children);
+
+  // title は “直下” に来る想定
+  let titleEl: ReactElement | null = null;
+
+  for (const n of nodes) {
+    if (!isValidElement(n)) continue;
+    const p = n.props as Record<string, unknown>;
+    if (p["data-rehype-pretty-code-title"] !== undefined) {
+      titleEl = n as ReactElement;
+      break;
+    }
+  }
+
+  // ✅ pre は「preタグ or Preコンポーネント」に限定（titleを拾う事故防止）
+  const preEl = findFirstElementDeep(children, (el) => {
+    const t = el.type;
+    const isPreTag = typeof t === "string" && t === "pre";
+    const isPreComp = t === Pre;
+    return isPreTag || isPreComp;
+  });
+
+  // ✅ code も同様に限定して拾う
+  const codeEl = preEl
+    ? findFirstElementDeep(preEl, (el) => {
+        const t = el.type;
+        const isCodeTag = typeof t === "string" && t === "code";
+        const isCodeComp = t === Code;
+        return isCodeTag || isCodeComp;
+      })
+    : null;
+
+  const titleText = titleEl ? extractText(titleEl).trim() : "";
+
+  const lang =
+    (preEl ? findDataAttrDeep(preEl, "data-language") : null) ||
+    (codeEl ? findDataAttrDeep(codeEl, "data-language") : null) ||
+    (preEl ? findLanguage(preEl) : null) ||
+    (codeEl ? findLanguage(codeEl) : null);
+
+  // ✅ Copy は “code要素の中身” を最優先（title混入を防ぐ）
+  const codeText = codeEl
+    ? extractText(codeEl)
+    : preEl
+      ? extractText(preEl)
+      : "";
+  const canCopy = codeText.trim().length > 0;
+
+  const showHeader = Boolean(titleText || lang || canCopy);
+
+  // ✅ titleノードだけ除外して二重化防止
+  const contentNodes = titleEl ? nodes.filter((n) => n !== titleEl) : nodes;
+
+  return (
+    <figure {...props}>
+      {showHeader ? (
+        <div
+          data-rehype-pretty-code-title=""
+          className="flex items-center gap-3"
+        >
+          <div className="min-w-0 flex-1">
+            {titleText ? (
+              <span className="block truncate">{titleText}</span>
+            ) : (
+              <span className="sr-only">code block</span>
+            )}
+          </div>
+
+          {lang ? (
+            <span className="font-mono text-xs tracking-wider opacity-80">
+              {lang}
+            </span>
+          ) : null}
+
+          {canCopy ? <CopyButton text={codeText} className="ml-auto" /> : null}
+        </div>
+      ) : null}
+
+      {contentNodes}
+    </figure>
   );
 }
 
@@ -262,15 +444,12 @@ function Td({ className, ...props }: TdProps) {
   );
 }
 
-/**
- * ✅ Hookではなく「components生成関数」
- * - Server Component の async 内でも安全に呼べる
- */
 export function getMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...components,
     a: A,
     img: Img,
+    figure: Figure,
     pre: Pre,
     code: Code,
     blockquote: Blockquote,

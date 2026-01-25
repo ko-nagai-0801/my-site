@@ -68,6 +68,10 @@
   /* mobile nav height（2x2の高さを固定で確保） */
   --mobile-nav-max: 9rem;
 
+  /* pretty-code highlight（HSL tuple） */
+  /* vivid orange: 24 94% 52% */
+  --pretty-code-hl: 24 94% 52%;
+
   color-scheme: dark;
 }
 

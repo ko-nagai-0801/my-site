@@ -1,0 +1,185 @@
+/* styles/pretty-code.css */
+@layer components {
+  /* ================================
+     rehype-pretty-code（Shiki）専用
+     - 行番号 / ファイル名(title) / 行ハイライト
+     ================================ */
+
+  /* ✅ ハイライト色は tokens.css から参照（なければ orange fallback） */
+  .prose {
+    /* HSLの「3つ組」想定（例: 24 94% 52%） */
+    --pc-hl: var(--pretty-code-hl, 24 94% 52%);
+
+    /* light */
+    --pc-hl-bg: hsl(var(--pc-hl) / 0.14); /* 行全体の薄い面 */
+    --pc-hl-bg2: hsl(var(--pc-hl) / 0.1); /* 右側に向けて少し落とす用 */
+    --pc-hl-bar: hsl(var(--pc-hl) / 0.95); /* 左バーの濃い色 */
+    --pc-hl-outline: hsl(var(--pc-hl) / 0.22); /* 輪郭（必要なら） */
+  }
+
+  /* dark は少し強め（色相は同じでOK） */
+  .prose.prose-invert {
+    --pc-hl-bg: hsl(var(--pc-hl) / 0.24);
+    --pc-hl-bg2: hsl(var(--pc-hl) / 0.16);
+    --pc-hl-bar: hsl(var(--pc-hl) / 0.98);
+    --pc-hl-outline: hsl(var(--pc-hl) / 0.18);
+  }
+
+  /* fragment / figure 共通 */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) {
+    margin: 1.6rem 0;
+  }
+
+  /* title */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-rehype-pretty-code-title] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    padding: 0.55rem 0.85rem;
+
+    border: 1px solid hsl(var(--border));
+    border-bottom: none;
+
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+
+    background: hsl(var(--panel));
+    color: hsl(var(--foreground) / 0.8);
+
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.82em;
+    line-height: 1.2;
+  }
+
+  /* caption（必要なら） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-rehype-pretty-code-caption] {
+    margin-top: 0.6rem;
+    color: hsl(var(--foreground) / 0.7);
+    font-size: 0.9em;
+  }
+
+  /* pre（pretty-code側は“行にpadding”を寄せる） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    pre {
+    margin: 0;
+    padding: 0;
+
+    background: hsl(var(--panel));
+    border: 1px solid hsl(var(--border));
+    border-radius: 16px;
+
+    overflow-x: auto;
+  }
+
+  /* titleがある場合は角を落として一体化 */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-rehype-pretty-code-title]
+    + pre {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  /* code */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    pre
+    code {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+
+    width: 100%;
+    min-width: 100%;
+
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.92em;
+    line-height: 1.75;
+  }
+
+  /* 1行（span[data-line]） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-line] {
+    display: block;
+    width: 100%;
+    min-width: 100%;
+
+    padding: 0 1.1rem;
+    box-sizing: border-box;
+  }
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-line]:first-child {
+    padding-top: 1rem;
+  }
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-line]:last-child {
+    padding-bottom: 1rem;
+  }
+
+  /* 行番号（※ここは ::before を使うので、ハイライトで ::before は使わない） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    code[data-line-numbers] {
+    counter-reset: line;
+  }
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    code[data-line-numbers]
+    > [data-line]::before {
+    counter-increment: line;
+    content: counter(line);
+
+    display: inline-block;
+    width: 2.6rem;
+    margin-right: 1.1rem;
+
+    text-align: right;
+    color: hsl(var(--foreground) / 0.45);
+    user-select: none;
+  }
+
+  /* ✅ 行ハイライト（角丸なし） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    :is(
+      [data-line][data-highlighted-line],
+      [data-line].highlighted,
+      .line--highlight
+    ) {
+    /* 行全体に薄く色 */
+    background: linear-gradient(
+      90deg,
+      var(--pc-hl-bg) 0%,
+      var(--pc-hl-bg2) 80%,
+      var(--pc-hl-bg2) 100%
+    );
+
+    /* 左端を濃く（バー） */
+    box-shadow: inset 5px 0 0 var(--pc-hl-bar);
+
+    /* ほんのり輪郭（不要なら消してOK） */
+    outline: 1px solid var(--pc-hl-outline);
+    outline-offset: -1px;
+
+    border-radius: 0; /* ← 角丸なし */
+  }
+
+  /* 任意：差を出したい場合だけ（強すぎたら削除） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    pre
+    code
+    > [data-line]:not([data-highlighted-line]) {
+    opacity: 0.92;
+  }
+}
