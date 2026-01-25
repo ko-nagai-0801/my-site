@@ -1,0 +1,259 @@
+---
+# content/blog/mdx-codeblock-label.mdx
+title: "MDXのコードブロックに言語ラベルを付けて、角丸を上下で自然に分離する"
+slug: "mdx-codeblock-language-label"
+source: "blog"
+date: "2026-01-25T13:00:00+09:00"
+description: "Next.js(App Router) + MDX で、コードブロック上部に言語ラベルを表示し、角丸を上(ラベル)・下(コード)で自然に分ける実装メモ。"
+tags: ["Next.js", "MDX", "TypeScript", "TailwindCSS"]
+draft: false
+---
+
+記事を書いていると、コードブロックの見た目って地味に気になりますよね。  
+今回は **「言語ラベル（ts/js…）」を表示**しつつ、**角丸を上下で自然に分離**するところまで整えました。
+
+---
+
+## 今日やったこと
+
+- `language-ts` のようなクラスから **言語名を拾って表示**
+- **角丸は外側コンテナで一括管理**して、上下の見た目を破綻させない
+- Server Component の async 内で Hook を呼ばないように、`getMDXComponents()` に変更
+- `className / children が型 '{}' に存在しない` の TS エラーを解消
+
+---
+
+## 実装のポイント
+
+**角丸・枠線は「外側の1つの箱」に寄せる**のが一番安定します。
+
+- 外側：`overflow-hidden rounded-xl border ...`
+- 上（ラベル）：`border-b ...`
+- 下（pre）：`m-0 ...`（pre 自体に border/radius を付けない）
+
+---
+
+## フルコード：`/mdx-components.tsx`
+
+```tsx
+/* /mdx-components.tsx */
+import Link from "next/link";
+import type { ComponentProps, ReactNode } from "react";
+import { Children, isValidElement } from "react";
+import type { MDXComponents } from "mdx/types";
+
+type AnchorProps = ComponentProps<"a">;
+
+function isExternal(href: string) {
+  return (
+    /^(https?:)?\/\//.test(href) ||
+    href.startsWith("mailto:") ||
+    href.startsWith("tel:")
+  );
+}
+
+function cx(...classes: Array<string | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function A({ href = "", className, children, ...props }: AnchorProps) {
+  if (href.startsWith("#")) {
+    return (
+      <a
+        href={href}
+        className={cx("underline underline-offset-4 opacity-90 hover:opacity-100", className)}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  }
+
+  if (isExternal(href)) {
+    const isHttp = /^(https?:)?\/\//.test(href);
+    return (
+      <a
+        href={href}
+        className={cx("underline underline-offset-4 opacity-90 hover:opacity-100", className)}
+        target={isHttp ? "_blank" : props.target}
+        rel={isHttp ? "noopener noreferrer" : props.rel}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className={cx("underline underline-offset-4 opacity-90 hover:opacity-100", className)}
+    >
+      {children}
+    </Link>
+  );
+}
+
+type ImgProps = ComponentProps<"img">;
+
+function Img({ className, alt = "", ...props }: ImgProps) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className={cx("my-6 w-full rounded-xl border border-white/10", className)}
+      {...props}
+    />
+  );
+}
+
+type LangProps = { className?: unknown; children?: ReactNode };
+
+function findLanguage(node: ReactNode): string | null {
+  for (const child of Children.toArray(node)) {
+    if (!isValidElement(child)) continue;
+
+    const props = child.props as LangProps;
+
+    const className = props.className;
+    if (typeof className === "string") {
+      const m = className.match(/language-([a-z0-9-]+)/i);
+      if (m?.[1]) return m[1].toLowerCase();
+    }
+
+    const nested = props.children;
+    if (nested != null) {
+      const found = findLanguage(nested);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+type PreProps = ComponentProps<"pre">;
+
+function Pre({ className, children, ...props }: PreProps) {
+  const lang = findLanguage(children);
+
+  return (
+    <div className="not-prose my-6">
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+        {lang && (
+          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
+            <span className="font-mono text-xs tracking-wider opacity-80">{lang}</span>
+          </div>
+        )}
+
+        <pre
+          className={cx("m-0 overflow-x-auto p-4 text-sm leading-relaxed", className)}
+          {...props}
+        >
+          {children}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+type CodeProps = ComponentProps<"code">;
+
+function Code({ className, children, ...props }: CodeProps) {
+  const text =
+    typeof children === "string"
+      ? children
+      : Array.isArray(children)
+        ? children.join("")
+        : "";
+
+  const isBlock = className?.includes("language-") || text.includes("\n");
+
+  return (
+    <code
+      className={cx(
+        isBlock ? undefined : "rounded bg-foreground/6 px-1.5 py-0.5 font-mono text-[0.95em]",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </code>
+  );
+}
+
+type BlockquoteProps = ComponentProps<"blockquote">;
+
+function Blockquote({ className, ...props }: BlockquoteProps) {
+  return (
+    <blockquote
+      className={cx("my-6 border-l-2 border-white/20 pl-4 italic opacity-90", className)}
+      {...props}
+    />
+  );
+}
+
+type HrProps = ComponentProps<"hr">;
+
+function Hr({ className, ...props }: HrProps) {
+  return <hr className={cx("my-10 border-white/10", className)} {...props} />;
+}
+
+type TableProps = ComponentProps<"table">;
+
+function Table({ className, ...props }: TableProps) {
+  return (
+    <div className="not-prose my-6 overflow-x-auto">
+      <table
+        className={cx("w-full border-collapse rounded-xl border border-white/10 text-sm", className)}
+        {...props}
+      />
+    </div>
+  );
+}
+
+type ThProps = ComponentProps<"th">;
+
+function Th({ className, ...props }: ThProps) {
+  return (
+    <th
+      className={cx("border border-white/10 bg-white/5 px-3 py-2 text-left font-semibold", className)}
+      {...props}
+    />
+  );
+}
+
+type TdProps = ComponentProps<"td">;
+
+function Td({ className, ...props }: TdProps) {
+  return (
+    <td className={cx("border border-white/10 px-3 py-2 align-top", className)} {...props} />
+  );
+}
+
+export function getMDXComponents(components: MDXComponents): MDXComponents {
+  return {
+    ...components,
+    a: A,
+    img: Img,
+    pre: Pre,
+    code: Code,
+    blockquote: Blockquote,
+    hr: Hr,
+    table: Table,
+    th: Th,
+    td: Td,
+  };
+}
+```
+
+---
+
+## 今日のコマンド（コミット〜Push）
+
+```bash
+git status
+git add .
+git commit -m "MDXブログ更新"
+git push
+```
