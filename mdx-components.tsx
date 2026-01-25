@@ -4,6 +4,8 @@ import type { ComponentProps, ReactNode } from "react";
 import { Children, isValidElement } from "react";
 import type { MDXComponents } from "mdx/types";
 
+import CopyButton from "@/components/mdx/CopyButton";
+
 type AnchorProps = ComponentProps<"a">;
 
 function isExternal(href: string) {
@@ -112,20 +114,49 @@ function findLanguage(node: ReactNode): string | null {
   return null;
 }
 
+/**
+ * ✅ コード本文を再帰的に抽出（Copy用）
+ * - Shiki 等で span が増えてもテキストだけ拾える
+ */
+function extractText(node: ReactNode): string {
+  let out = "";
+
+  for (const child of Children.toArray(node)) {
+    if (typeof child === "string" || typeof child === "number") {
+      out += String(child);
+      continue;
+    }
+    if (!isValidElement(child)) continue;
+
+    const props = child.props as { children?: ReactNode };
+    if (props.children != null) out += extractText(props.children);
+  }
+
+  return out;
+}
+
 type PreProps = ComponentProps<"pre">;
 
 function Pre({ className, children, ...props }: PreProps) {
   const lang = findLanguage(children);
+  const codeText = extractText(children);
+  const canCopy = codeText.trim().length > 0;
 
   return (
     <div className="not-prose my-6">
       {/* ✅ 角丸は「外側コンテナ」で一括管理（上だけ/下だけが自然に揃う） */}
       <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
-        {lang && (
-          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
-            <span className="font-mono text-xs tracking-wider opacity-80">
-              {lang}
-            </span>
+        {(lang || canCopy) && (
+          <div className="flex items-center gap-3 border-b border-white/10 bg-white/5 px-3 py-2">
+            {lang ? (
+              <span className="font-mono text-xs tracking-wider opacity-80">
+                {lang}
+              </span>
+            ) : (
+              <span className="sr-only">code block</span>
+            )}
+
+            {canCopy && <CopyButton text={codeText} className="ml-auto" />}
           </div>
         )}
 
