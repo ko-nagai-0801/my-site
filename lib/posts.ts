@@ -1,179 +1,156 @@
 // lib/posts.ts
-import "server-only";
-
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
-import { cache } from "react";
 
 export type PostMeta = {
   title: string;
   slug: string;
-
-  // posts/blog 用
-  date: string; // ISO 8601 推奨: "2026-01-19T21:30:00+09:00"
-  description: string;
-  tags: string[];
+  source: "blog";
+  date: string; // ISO string (ex: "2026-01-26T00:00:00+09:00" or "2026-01-25T15:00:00.000Z")
+  description?: string;
+  tags?: string[];
   draft?: boolean;
 };
 
-export type PostIndexItem = {
-  slug: string;
+export type Post = {
   meta: PostMeta;
-};
-
-export type PostDoc = PostIndexItem & {
   content: string;
 };
 
-// ✅ content/blog を参照
-const POSTS_DIR = path.join(process.cwd(), "content", "blog");
+const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null;
+function trimNonEmpty(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const v = value.trim();
+  return v.length ? v : undefined;
+}
+
+function toStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const arr = value
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+  return arr.length ? arr : undefined;
+}
 
 /**
- * ファイル名 → slug
- * - 2026-01-18-hello.mdx → hello
- * - hello.mdx → hello
+ * gray-matter が YAML を Date として解釈することがあるため、
+ * date は string / Date を許容して最終的に string に正規化する。
  */
-const toSlug = (filename: string) => {
-  const base = filename.replace(/\.mdx?$/, "");
-  return base.replace(/^\d{4}-\d{2}-\d{2}-/, "");
-};
-
-const trimNonEmpty = (v: unknown): string | undefined => {
-  if (typeof v !== "string") return undefined;
-  const s = v.trim();
-  return s.length > 0 ? s : undefined;
-};
-
-const isValidDateString = (v: string) => {
-  const t = Date.parse(v);
-  return !Number.isNaN(t);
-};
-
-function assertPostMeta(meta: unknown, slugFromFile: string): PostMeta {
-  if (!isRecord(meta)) {
-    throw new Error(`Invalid frontmatter: ${slugFromFile}`);
+function normalizeDate(value: unknown): string {
+  if (typeof value === "string") return value.trim();
+  if (value instanceof Date) return value.toISOString();
+  // まれに number (timestamp) になるケースも保険で吸収
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return new Date(value).toISOString();
   }
+  return "";
+}
 
-  const title = trimNonEmpty(meta.title) ?? "";
+function isValidDateString(value: string): boolean {
+  // "YYYY-MM-DD" / ISO 8601 / "....Z" などを許容して Date.parse で判定
+  const t = Date.parse(value);
+  return !Number.isNaN(t);
+}
+
+function slugFromFilename(filename: string): string {
+  // 例: "2026-01-26-pretty-code-tuning-log.mdx" -> "pretty-code-tuning-log"
+  const base = filename.replace(/\.(md|mdx)$/i, "");
+  return base.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+}
+
+function assertPostMeta(meta: Record<string, unknown>, slugFromFile: string): PostMeta {
+  const title = trimNonEmpty(meta.title);
   if (!title) throw new Error(`Missing title: ${slugFromFile}`);
 
-  const slug = trimNonEmpty(meta.slug) ?? "";
-  if (!slug) throw new Error(`Missing slug: ${slugFromFile}`);
+  const source = trimNonEmpty(meta.source);
+  if (source !== "blog") throw new Error(`Invalid source: ${slugFromFile}`);
 
-  // ファイル名(slug) と frontmatter.slug の不一致を防ぐ（運用が崩れにくい）
+  const slug = trimNonEmpty(meta.slug) ?? slugFromFile;
+  if (!slug) throw new Error(`Missing slug: ${slugFromFile}`);
   if (slug !== slugFromFile) {
-    throw new Error(
-      `Slug mismatch: file=${slugFromFile} frontmatter.slug=${slug}`
-    );
+    // ファイル名由来slugとfrontmatterのslugがズレたら気づけるように
+    throw new Error(`Slug mismatch: ${slugFromFile} (frontmatter: ${slug})`);
   }
 
-  const date = trimNonEmpty(meta.date) ?? "";
+  const date = normalizeDate(meta.date);
   if (!date) throw new Error(`Missing date: ${slugFromFile}`);
   if (!isValidDateString(date)) throw new Error(`Invalid date: ${slugFromFile}`);
 
-  const description = trimNonEmpty(meta.description) ?? "";
-  if (!description) throw new Error(`Missing description: ${slugFromFile}`);
+  const description = trimNonEmpty(meta.description);
+  const tags = toStringArray(meta.tags);
+  const draft = Boolean(meta.draft);
 
-  const rawTags = meta.tags;
-  if (
-    !Array.isArray(rawTags) ||
-    !rawTags.every((t) => typeof t === "string" && t.trim().length > 0)
-  ) {
-    throw new Error(`Invalid tags: ${slugFromFile}`);
-  }
-  const tags = rawTags.map((t) => t.trim());
-
-  const draft = typeof meta.draft === "boolean" ? meta.draft : undefined;
-
-  return { title, slug, date, description, tags, draft };
+  return {
+    title,
+    slug,
+    source: "blog",
+    date,
+    description,
+    tags,
+    draft,
+  };
 }
 
-/**
- * ディレクトリ内の md/mdx を走査して slug→filename を構築
- * - YYYY-MM-DD-hello.mdx でも slug=hello として扱う
- * - slug重複（例: hello.mdx と 2026-...-hello.mdx）があればエラーで止める
- *
- * ✅ cache() で同一リクエスト内の再計算を抑制
- */
-const getPostFileMap = cache(async (): Promise<Map<string, string>> => {
-  const entries = await readdir(POSTS_DIR, { withFileTypes: true });
+async function readPostFileBySlug(slug: string): Promise<{ filename: string; fullpath: string } | null> {
+  const files = await readdir(BLOG_DIR);
+  const candidates = files.filter((f) => /\.(md|mdx)$/i.test(f));
 
-  const files = entries
-    .filter((e) => e.isFile() && /\.mdx?$/.test(e.name))
-    .map((e) => e.name);
-
-  const map = new Map<string, string>();
-  for (const filename of files) {
-    const slug = toSlug(filename);
-    if (map.has(slug)) {
-      throw new Error(
-        `Duplicate slug detected: slug=${slug} files=${map.get(slug)} & ${filename}`
-      );
+  for (const filename of candidates) {
+    const s = slugFromFilename(filename);
+    if (s === slug) {
+      return { filename, fullpath: path.join(BLOG_DIR, filename) };
     }
-    map.set(slug, filename);
   }
-  return map;
-});
-
-async function readPostFileBySlug(
-  slug: string
-): Promise<{ filePath: string; source: string } | null> {
-  const map = await getPostFileMap();
-  const filename = map.get(slug);
-  if (!filename) return null;
-
-  const filePath = path.join(POSTS_DIR, filename);
-  const source = await readFile(filePath, "utf8");
-  return { filePath, source };
+  return null;
 }
 
-export async function getPostSlugs(): Promise<string[]> {
-  const map = await getPostFileMap();
-  return [...map.keys()];
+export async function getAllPosts(): Promise<PostMeta[]> {
+  const files = await readdir(BLOG_DIR);
+  const targets = files.filter((f) => /\.(md|mdx)$/i.test(f));
+
+  const metas: PostMeta[] = [];
+
+  for (const filename of targets) {
+    const fullpath = path.join(BLOG_DIR, filename);
+    const raw = await readFile(fullpath, "utf8");
+    const { data } = matter(raw);
+
+    const slugFromFile = slugFromFilename(filename);
+    const meta = assertPostMeta(data as Record<string, unknown>, slugFromFile);
+
+    // draft は一覧から除外
+    if (meta.draft) continue;
+
+    metas.push(meta);
+  }
+
+  // 新しい順
+  metas.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
+  return metas;
 }
 
-export async function getAllPosts(): Promise<PostIndexItem[]> {
-  const slugs = await getPostSlugs();
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const found = await readPostFileBySlug(slug);
+  if (!found) return null;
 
-  const items = await Promise.all(
-    slugs.map(async (slug) => {
-      const file = await readPostFileBySlug(slug);
-      if (!file) throw new Error(`Missing post file: ${slug}`);
+  const raw = await readFile(found.fullpath, "utf8");
+  const { data, content } = matter(raw);
 
-      const { data } = matter(file.source);
-      const meta = assertPostMeta(data, slug);
-      return { slug, meta } satisfies PostIndexItem;
-    })
-  );
+  const meta = assertPostMeta(data as Record<string, unknown>, slug);
+  if (meta.draft) return null;
 
-  // draft を除外 → 日付降順 → slugで安定
-  const published = items.filter((p) => !p.meta.draft);
-
-  published.sort((a, b) => {
-    const ad = Date.parse(a.meta.date);
-    const bd = Date.parse(b.meta.date);
-    if (bd !== ad) return bd - ad;
-    return a.slug.localeCompare(b.slug, "ja");
-  });
-
-  return published;
+  return { meta, content };
 }
 
-export async function getLatestPosts(limit = 3): Promise<PostIndexItem[]> {
+export async function getPostBySlugOrThrow(slug: string): Promise<Post> {
+  const post = await getPostBySlug(slug);
+  if (!post) throw new Error(`Post not found: ${slug}`);
+  return post;
+}
+
+export async function getAllPostSlugs(): Promise<string[]> {
   const posts = await getAllPosts();
-  return posts.slice(0, limit);
-}
-
-export async function getPostBySlug(slug: string): Promise<PostDoc | null> {
-  const file = await readPostFileBySlug(slug);
-  if (!file) return null;
-
-  const { data, content } = matter(file.source);
-  const meta = assertPostMeta(data, slug);
-
-  return { slug, meta, content };
+  return posts.map((p) => p.slug);
 }
