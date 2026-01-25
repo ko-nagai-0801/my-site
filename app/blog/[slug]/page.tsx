@@ -2,13 +2,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { compileMDX } from "next-mdx-remote/rsc";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
-import { getMDXComponents } from "@/mdx-components";
+import { mdxComponents, mdxOptions } from "@/lib/mdx";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -37,30 +34,11 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  // ✅ asyncでもOK（Hookではない）
-  const components = getMDXComponents({});
-
   const { content } = await compileMDX({
     source: post.content,
-    components,
+    components: mdxComponents,
     options: {
-      mdxOptions: {
-        remarkPlugins: [remarkGfm],
-        rehypePlugins: [
-          rehypeSlug,
-          [
-            rehypeAutolinkHeadings,
-            {
-              behavior: "append",
-              properties: {
-                className: ["heading-anchor"],
-                "aria-label": "見出しへのリンク",
-              },
-              content: { type: "text", value: "#" },
-            },
-          ],
-        ],
-      },
+      mdxOptions,
     },
   });
 
