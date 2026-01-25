@@ -1,20 +1,11 @@
 /* components/mdx/MdxContent.tsx */
-import { MDXRemote } from "next-mdx-remote/rsc";
-
-import { mdxComponents, mdxOptions } from "@/lib/mdx";
+import { renderMdx } from "@/lib/render-mdx";
 
 type Props = {
   source: string;
 };
 
-export default function MdxContent({ source }: Props) {
-  return (
-    <MDXRemote
-      source={source}
-      options={{
-        mdxOptions,
-      }}
-      components={mdxComponents}
-    />
-  );
+export default async function MdxContent({ source }: Props) {
+  const content = await renderMdx(source);
+  return <>{content}</>;
 }

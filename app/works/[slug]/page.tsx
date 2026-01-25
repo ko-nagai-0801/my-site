@@ -3,10 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { compileMDX } from "next-mdx-remote/rsc";
-
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
-import { mdxComponents, mdxOptions } from "@/lib/mdx";
+import { renderMdx } from "@/lib/render-mdx";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -40,13 +38,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
   const work = await getWorkBySlug(slug);
   if (!work) notFound();
 
-  const { content } = await compileMDX({
-    source: work.content,
-    components: mdxComponents,
-    options: {
-      mdxOptions,
-    },
-  });
+  const content = await renderMdx(work.content);
 
   return (
     <main className="container py-14">

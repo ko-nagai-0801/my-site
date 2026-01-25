@@ -1,11 +1,10 @@
 /* app/blog/[slug]/page.tsx */
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { compileMDX } from "next-mdx-remote/rsc";
 
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
-import { mdxComponents, mdxOptions } from "@/lib/mdx";
+import { renderMdx } from "@/lib/render-mdx";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -34,13 +33,7 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  const { content } = await compileMDX({
-    source: post.content,
-    components: mdxComponents,
-    options: {
-      mdxOptions,
-    },
-  });
+  const content = await renderMdx(post.content);
 
   return (
     <main className="container py-14">
