@@ -1,5 +1,5 @@
 ---
-# content/blog/mdx-codeblock-label.mdx
+# content/blog/mdx-codeblock-language-label.mdx
 title: "MDXのコードブロックに言語ラベルを付けて、角丸を上下で自然に分離する"
 slug: "mdx-codeblock-language-label"
 source: "blog"
@@ -61,7 +61,10 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
     return (
       <a
         href={href}
-        className={cx("underline underline-offset-4 opacity-90 hover:opacity-100", className)}
+        className={cx(
+          "underline underline-offset-4 opacity-90 hover:opacity-100",
+          className
+        )}
         {...props}
       >
         {children}
@@ -74,7 +77,10 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
     return (
       <a
         href={href}
-        className={cx("underline underline-offset-4 opacity-90 hover:opacity-100", className)}
+        className={cx(
+          "underline underline-offset-4 opacity-90 hover:opacity-100",
+          className
+        )}
         target={isHttp ? "_blank" : props.target}
         rel={isHttp ? "noopener noreferrer" : props.rel}
         {...props}
@@ -87,7 +93,10 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
   return (
     <Link
       href={href}
-      className={cx("underline underline-offset-4 opacity-90 hover:opacity-100", className)}
+      className={cx(
+        "underline underline-offset-4 opacity-90 hover:opacity-100",
+        className
+      )}
     >
       {children}
     </Link>
@@ -109,6 +118,10 @@ function Img({ className, alt = "", ...props }: ImgProps) {
   );
 }
 
+/**
+ * ✅ children を再帰的に探索して `language-xxx` を拾う
+ * - Codeコンポーネントに差し替わっていても拾える
+ */
 type LangProps = { className?: unknown; children?: ReactNode };
 
 function findLanguage(node: ReactNode): string | null {
@@ -139,15 +152,21 @@ function Pre({ className, children, ...props }: PreProps) {
 
   return (
     <div className="not-prose my-6">
+      {/* ✅ 角丸/枠線は外側で一括管理（上:ラベルが上だけ丸い / 下:コードが下だけ丸い） */}
       <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
         {lang && (
           <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
-            <span className="font-mono text-xs tracking-wider opacity-80">{lang}</span>
+            <span className="font-mono text-xs tracking-wider opacity-80">
+              {lang}
+            </span>
           </div>
         )}
 
         <pre
-          className={cx("m-0 overflow-x-auto p-4 text-sm leading-relaxed", className)}
+          className={cx(
+            "m-0 overflow-x-auto p-4 text-sm leading-relaxed",
+            className
+          )}
           {...props}
         >
           {children}
@@ -172,7 +191,9 @@ function Code({ className, children, ...props }: CodeProps) {
   return (
     <code
       className={cx(
-        isBlock ? undefined : "rounded bg-foreground/6 px-1.5 py-0.5 font-mono text-[0.95em]",
+        isBlock
+          ? undefined
+          : "rounded bg-foreground/6 px-1.5 py-0.5 font-mono text-[0.95em]",
         className
       )}
       {...props}
@@ -187,7 +208,10 @@ type BlockquoteProps = ComponentProps<"blockquote">;
 function Blockquote({ className, ...props }: BlockquoteProps) {
   return (
     <blockquote
-      className={cx("my-6 border-l-2 border-white/20 pl-4 italic opacity-90", className)}
+      className={cx(
+        "my-6 border-l-2 border-white/20 pl-4 italic opacity-90",
+        className
+      )}
       {...props}
     />
   );
@@ -205,7 +229,10 @@ function Table({ className, ...props }: TableProps) {
   return (
     <div className="not-prose my-6 overflow-x-auto">
       <table
-        className={cx("w-full border-collapse rounded-xl border border-white/10 text-sm", className)}
+        className={cx(
+          "w-full border-collapse rounded-xl border border-white/10 text-sm",
+          className
+        )}
         {...props}
       />
     </div>
@@ -217,7 +244,10 @@ type ThProps = ComponentProps<"th">;
 function Th({ className, ...props }: ThProps) {
   return (
     <th
-      className={cx("border border-white/10 bg-white/5 px-3 py-2 text-left font-semibold", className)}
+      className={cx(
+        "border border-white/10 bg-white/5 px-3 py-2 text-left font-semibold",
+        className
+      )}
       {...props}
     />
   );
@@ -227,7 +257,10 @@ type TdProps = ComponentProps<"td">;
 
 function Td({ className, ...props }: TdProps) {
   return (
-    <td className={cx("border border-white/10 px-3 py-2 align-top", className)} {...props} />
+    <td
+      className={cx("border border-white/10 px-3 py-2 align-top", className)}
+      {...props}
+    />
   );
 }
 
