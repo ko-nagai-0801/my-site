@@ -14,11 +14,7 @@
   --link: color-mix(in oklab, var(--foreground) 92%, var(--background));
   --link-hover: color-mix(in oklab, var(--foreground) 78%, var(--background));
   --link-underline: color-mix(in oklab, var(--foreground) 28%, transparent);
-  --link-underline-hover: color-mix(
-    in oklab,
-    var(--foreground) 46%,
-    transparent
-  );
+  --link-underline-hover: color-mix(in oklab, var(--foreground) 46%, transparent);
 
   /* focus / selection */
   --ring: color-mix(in oklab, var(--foreground) 38%, transparent);
@@ -34,11 +30,7 @@
   --chip-bg: color-mix(in oklab, var(--panel) 78%, var(--background));
   --chip-border: color-mix(in oklab, var(--border) 92%, var(--background));
   --chip-text: color-mix(in oklab, var(--foreground) 74%, var(--background));
-  --chip-bg-hover: color-mix(
-    in oklab,
-    var(--chip-bg) 72%,
-    var(--foreground) 28%
-  );
+  --chip-bg-hover: color-mix(in oklab, var(--chip-bg) 72%, var(--foreground) 28%);
 
   /* hero overlay */
   --hero-overlay: linear-gradient(
@@ -47,11 +39,7 @@
       color-mix(in oklab, #000 28%, transparent) 58%,
       transparent
     ),
-    linear-gradient(
-      to right,
-      color-mix(in oklab, #000 58%, transparent),
-      transparent 62%
-    );
+    linear-gradient(to right, color-mix(in oklab, #000 58%, transparent), transparent 62%);
 
   --hero-overlay-mobile: linear-gradient(
       to top,
@@ -59,18 +47,27 @@
       color-mix(in oklab, #000 34%, transparent) 56%,
       transparent
     ),
-    linear-gradient(
-      to right,
-      color-mix(in oklab, #000 66%, transparent),
-      transparent 60%
-    );
+    linear-gradient(to right, color-mix(in oklab, #000 66%, transparent), transparent 60%);
 
   /* mobile nav height（2x2の高さを固定で確保） */
   --mobile-nav-max: 9rem;
 
-  /* pretty-code highlight（HSL tuple） */
+  /* =========================
+     pretty-code（Shiki）tokens
+     ========================= */
+
+  /* 行ハイライト色（HSL tuple） */
   /* vivid orange: 24 94% 52% */
   --pretty-code-hl: 24 94% 52%;
+
+  /* 言語ラベル / Copyボタン（見た目統一用） */
+  --pretty-code-ui-bg: color-mix(in oklab, var(--panel) 86%, var(--background));
+  --pretty-code-ui-border: color-mix(in oklab, var(--border) 92%, var(--background));
+  --pretty-code-ui-fg: color-mix(in oklab, var(--foreground) 72%, var(--background));
+
+  --pretty-code-ui-bg-hover: color-mix(in oklab, var(--panel) 70%, var(--foreground) 30%);
+  --pretty-code-ui-border-hover: color-mix(in oklab, var(--border) 70%, var(--foreground) 30%);
+  --pretty-code-ui-fg-hover: color-mix(in oklab, var(--foreground) 90%, var(--background));
 
   color-scheme: dark;
 }
