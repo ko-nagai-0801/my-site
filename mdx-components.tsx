@@ -82,100 +82,82 @@ function Img({ className, alt = "", ...props }: ImgProps) {
   );
 }
 
-/**
- * ✅ children を再帰的に探索して `language-xxx` を拾う
- */
-type LangProps = { className?: unknown; children?: ReactNode };
-
-function findLanguage(node: ReactNode): string | null {
-  for (const child of Children.toArray(node)) {
-    if (!isValidElement(child)) continue;
-
-    const props = child.props as LangProps;
-
-    const className = props.className;
-    if (typeof className === "string") {
-      const m = className.match(/language-([a-z0-9-]+)/i);
-      if (m?.[1]) return m[1].toLowerCase();
-    }
-
-    const nested = props.children;
-    if (nested != null) {
-      const found = findLanguage(nested);
-      if (found) return found;
-    }
-  }
-  return null;
-}
+type PreProps = ComponentProps<"pre">;
 
 /**
- * ✅ コード本文を再帰的に抽出（Copy用）
+ * ✅ React型定義の都合で isValidElement 後の props が unknown になりやすいので
+ * 「children を持つ可能性がある props」として安全に扱う
  */
-function extractText(node: ReactNode): string {
-  let out = "";
+type AnyProps = Record<string, unknown> & {
+  children?: ReactNode;
+  className?: string;
+};
+type AnyElement = ReactElement<AnyProps>;
 
-  for (const child of Children.toArray(node)) {
-    if (typeof child === "string" || typeof child === "number") {
-      out += String(child);
-      continue;
-    }
-    if (!isValidElement(child)) continue;
-
-    const props = child.props as { children?: ReactNode };
-    if (props.children != null) out += extractText(props.children);
-  }
-
-  return out;
+function toAnyElement(el: ReactElement): AnyElement {
+  return el as AnyElement;
 }
 
-function getDataString(
-  props: Record<string, unknown>,
-  key: string
-): string | null {
-  const v = props[key];
-  return typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
-}
-
-/** ✅ ReactNode を潜って最初に見つかった data-* を拾う（pre/codeどっちに付いててもOK） */
-function findDataAttrDeep(node: ReactNode, key: string): string | null {
-  for (const child of Children.toArray(node)) {
-    if (!isValidElement(child)) continue;
-
-    const props = child.props as Record<string, unknown>;
-    const v = getDataString(props, key);
-    if (v) return v;
-
-    const nested = props.children as ReactNode | undefined;
-    if (nested != null) {
-      const found = findDataAttrDeep(nested, key);
-      if (found) return found;
-    }
-  }
-  return null;
-}
-
-/** ✅ 最初にマッチした要素を深掘りで探す（ReactElementで返す） */
+/** 深さ優先で最初にマッチする要素を探す */
 function findFirstElementDeep(
   node: ReactNode,
-  predicate: (el: ReactElement) => boolean
-): ReactElement | null {
-  for (const child of Children.toArray(node)) {
-    if (!isValidElement(child)) continue;
+  predicate: (el: AnyElement) => boolean
+): AnyElement | null {
+  const arr = Children.toArray(node);
 
-    const el = child as ReactElement;
+  for (const n of arr) {
+    if (!isValidElement(n)) continue;
 
+    const el = toAnyElement(n as ReactElement);
     if (predicate(el)) return el;
 
-    const nested = (el.props as { children?: ReactNode }).children;
-    if (nested != null) {
-      const found = findFirstElementDeep(nested, predicate);
-      if (found) return found;
-    }
+    const children = (el.props as AnyProps).children;
+    const found = findFirstElementDeep(children, predicate);
+    if (found) return found;
   }
+
   return null;
 }
 
-type PreProps = ComponentProps<"pre">;
+/** 深さ優先で data-* 属性値を探す */
+function findDataAttrDeep(node: ReactNode, key: string): string | null {
+  const el = findFirstElementDeep(node, (e) => {
+    const p = e.props as AnyProps;
+    return p[key] !== undefined;
+  });
+  if (!el) return null;
+
+  const props = el.props as AnyProps;
+  const val = props[key];
+  return typeof val === "string" ? val : val != null ? String(val) : null;
+}
+
+/** className から language-xxx を拾う */
+function findLanguage(node: ReactNode): string | null {
+  const el = findFirstElementDeep(node, (e) => {
+    const p = e.props as AnyProps;
+    return typeof p.className === "string" && p.className.includes("language-");
+  });
+  if (!el) return null;
+
+  const props = el.props as AnyProps;
+  const className = typeof props.className === "string" ? props.className : "";
+  const m = className.match(/language-([a-z0-9+-]+)/i);
+  return m?.[1] ?? null;
+}
+
+/** 要素ツリーからテキストだけ抽出 */
+function extractText(node: ReactNode): string {
+  if (node == null) return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (isValidElement(node)) {
+    const el = toAnyElement(node as ReactElement);
+    const children = (el.props as AnyProps).children;
+    return extractText(children);
+  }
+  return "";
+}
 
 function Pre({ className, children, ...props }: PreProps) {
   /**
@@ -251,6 +233,7 @@ function Code({ className, children, ...props }: CodeProps) {
     record["data-highlighted-chars"] !== undefined ||
     (typeof className === "string" && className.includes("shiki"));
 
+  // ✅ 見た目は CSS（typography.css / pretty-code.css）に寄せる
   if (isPretty) {
     return (
       <code className={className} {...props}>
@@ -259,25 +242,8 @@ function Code({ className, children, ...props }: CodeProps) {
     );
   }
 
-  const text =
-    typeof children === "string"
-      ? children
-      : Array.isArray(children)
-        ? children.join("")
-        : "";
-
-  const isBlock = className?.includes("language-") || text.includes("\n");
-
   return (
-    <code
-      className={cx(
-        isBlock
-          ? undefined
-          : "rounded bg-foreground/6 px-1.5 py-0.5 font-mono text-[0.95em]",
-        className
-      )}
-      {...props}
-    >
+    <code className={className} {...props}>
       {children}
     </code>
   );
@@ -286,10 +252,30 @@ function Code({ className, children, ...props }: CodeProps) {
 /**
  * ✅ rehype-pretty-code 用：figure を再構成
  * - 「title（ファイル名）/ 言語 / Copy」を同じバーに統合
- * - “titleノードだけ” 除外して二重表示を防ぐ
- * - Copy は「code要素の中身」だけをコピーする
+ * - “titleノードだけ”を除外して二重化防止
  */
 type FigureProps = ComponentProps<"figure">;
+
+function findDataAttrDeepOnElement(el: AnyElement, key: string): string | null {
+  const p = el.props as AnyProps;
+  const direct = p[key];
+
+  if (direct !== undefined) {
+    return typeof direct === "string"
+      ? direct
+      : direct != null
+        ? String(direct)
+        : null;
+  }
+
+  const children = (p as AnyProps).children;
+  return findDataAttrDeep(children, key);
+}
+
+/** pre/code 直下 or 深い階層から data-language を拾う */
+function findLanguageDataAttr(el: AnyElement, key: string): string | null {
+  return findDataAttrDeepOnElement(el, key);
+}
 
 function Figure({ children, ...props }: FigureProps) {
   const record = props as Record<string, unknown>;
@@ -303,13 +289,15 @@ function Figure({ children, ...props }: FigureProps) {
   const nodes = Children.toArray(children);
 
   // title は “直下” に来る想定
-  let titleEl: ReactElement | null = null;
+  let titleEl: AnyElement | null = null;
 
   for (const n of nodes) {
     if (!isValidElement(n)) continue;
-    const p = n.props as Record<string, unknown>;
+    const el = toAnyElement(n as ReactElement);
+    const p = el.props as AnyProps;
+
     if (p["data-rehype-pretty-code-title"] !== undefined) {
-      titleEl = n as ReactElement;
+      titleEl = el;
       break;
     }
   }
@@ -324,7 +312,7 @@ function Figure({ children, ...props }: FigureProps) {
 
   // ✅ code も同様に限定して拾う
   const codeEl = preEl
-    ? findFirstElementDeep(preEl, (el) => {
+    ? findFirstElementDeep((preEl.props as AnyProps).children, (el) => {
         const t = el.type;
         const isCodeTag = typeof t === "string" && t === "code";
         const isCodeComp = t === Code;
@@ -335,8 +323,8 @@ function Figure({ children, ...props }: FigureProps) {
   const titleText = titleEl ? extractText(titleEl).trim() : "";
 
   const lang =
-    (preEl ? findDataAttrDeep(preEl, "data-language") : null) ||
-    (codeEl ? findDataAttrDeep(codeEl, "data-language") : null) ||
+    (preEl ? findLanguageDataAttr(preEl, "data-language") : null) ||
+    (codeEl ? findLanguageDataAttr(codeEl, "data-language") : null) ||
     (preEl ? findLanguage(preEl) : null) ||
     (codeEl ? findLanguage(codeEl) : null);
 
@@ -356,10 +344,7 @@ function Figure({ children, ...props }: FigureProps) {
   return (
     <figure {...props}>
       {showHeader ? (
-        <div
-          data-rehype-pretty-code-title=""
-          className="flex items-center gap-3"
-        >
+        <div data-rehype-pretty-code-title="">
           <div className="min-w-0 flex-1">
             {titleText ? (
               <span className="block truncate">{titleText}</span>
@@ -368,11 +353,7 @@ function Figure({ children, ...props }: FigureProps) {
             )}
           </div>
 
-          {lang ? (
-            <span className="font-mono text-xs tracking-wider opacity-80">
-              {lang}
-            </span>
-          ) : null}
+          {lang ? <span data-language={lang}>{lang}</span> : null}
 
           {canCopy ? <CopyButton text={codeText} className="ml-auto" /> : null}
         </div>
