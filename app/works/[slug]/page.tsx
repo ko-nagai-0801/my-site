@@ -3,12 +3,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { MDXRemote } from "next-mdx-remote/rsc";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import { compileMDX } from "next-mdx-remote/rsc";
 
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
+import { mdxComponents, mdxOptions } from "@/lib/mdx";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -41,6 +39,14 @@ export default async function WorkDetailPage({ params }: PageProps) {
 
   const work = await getWorkBySlug(slug);
   if (!work) notFound();
+
+  const { content } = await compileMDX({
+    source: work.content,
+    components: mdxComponents,
+    options: {
+      mdxOptions,
+    },
+  });
 
   return (
     <main className="container py-14">
@@ -103,30 +109,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
       )}
 
       {/* ★ iPhoneがライトでも暗背景なら読めるよう、常に prose-invert */}
-      <article className="prose prose-invert mt-10 max-w-none">
-        <MDXRemote
-          source={work.content}
-          options={{
-            mdxOptions: {
-              remarkPlugins: [remarkGfm],
-              rehypePlugins: [
-                rehypeSlug,
-                [
-                  rehypeAutolinkHeadings,
-                  {
-                    behavior: "append",
-                    properties: {
-                      className: ["heading-anchor"],
-                      "aria-label": "見出しへのリンク",
-                    },
-                    content: { type: "text", value: "#" },
-                  },
-                ],
-              ],
-            },
-          }}
-        />
-      </article>
+      <article className="prose prose-invert mt-10 max-w-none">{content}</article>
     </main>
   );
 }
