@@ -1,0 +1,173 @@
+---
+# content/blog/2026-01-25-mdx-config-centralize.mdx
+title: "MDX描画設定（remark/rehype/components）をlibに集約して二重管理をやめた"
+slug: "mdx-config-centralize"
+source: "blog"
+date: "2026-01-25T13:55:00+09:00"
+description: "compileMDX と MDXRemote が別々に持っていた mdxOptions/components を lib/mdx.ts に集約。readonly型エラーと SerializeOptions 未export問題も解決。"
+tags: ["Next.js", "MDX", "next-mdx-remote", "TypeScript", "rehype"]
+draft: true
+---
+
+## やったこと（要点）
+- `compileMDX` と `MDXRemote` の **mdxOptions / components を単一ソース化**
+- `lib/mdx.ts` を新規作成して **MDX描画設定の集約ポイント**を作成
+- 型エラー（readonly配列 / SerializeOptions未export）を回避するため、型を **`@mdx-js/mdx` の `CompileOptions` ベース**で定義
+
+## 背景
+MDXの描画設定が以下2箇所に分散していると、**rehype/remark の差分**が出た瞬間に挙動がズレて事故りやすい。
+
+- `components/mdx/MdxContent.tsx`（MDXRemote）
+- `app/blog/[slug]/page.tsx`（compileMDX）
+
+そこで、設定を `lib/mdx.ts` に集約して、**どこで描画しても同じMDX挙動**になるようにした。
+
+## つまずきポイント（重要）
+- `as const` を付けると、配列が `readonly` 推論されて `Pluggable[]` と合わなくなる
+- `next-mdx-remote/rsc` には `SerializeOptions` が export されていない
+
+→ なので、`@mdx-js/mdx` の `CompileOptions` から型を作るのが安全。
+
+## 実装（最終形）
+### 1) 集約ファイルを追加
+```ts
+/* lib/mdx.ts */
+import type { CompileOptions } from "@mdx-js/mdx";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+
+import { getMDXComponents } from "@/mdx-components";
+
+export type MdxOptions = Omit<
+  CompileOptions,
+  "outputFormat" | "providerImportSource"
+> & {
+  useDynamicImport?: boolean;
+};
+
+export const mdxOptions: MdxOptions = {
+  remarkPlugins: [remarkGfm],
+  rehypePlugins: [
+    rehypeSlug,
+    [
+      rehypeAutolinkHeadings,
+      {
+        behavior: "append",
+        properties: {
+          className: ["heading-anchor"],
+          "aria-label": "見出しへのリンク",
+        },
+        content: { type: "text", value: "#" },
+      },
+    ],
+  ],
+};
+
+export const mdxComponents = getMDXComponents({});
+```
+
+### 2) MDXRemote 側を集約設定へ差し替え
+```tsx
+/* components/mdx/MdxContent.tsx */
+import { MDXRemote } from "next-mdx-remote/rsc";
+
+import { mdxComponents, mdxOptions } from "@/lib/mdx";
+
+type Props = {
+  source: string;
+};
+
+export default function MdxContent({ source }: Props) {
+  return (
+    <MDXRemote
+      source={source}
+      options={{
+        mdxOptions,
+      }}
+      components={mdxComponents}
+    />
+  );
+}
+```
+
+### 3) compileMDX 側を集約設定へ差し替え
+```tsx
+/* app/blog/[slug]/page.tsx */
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { compileMDX } from "next-mdx-remote/rsc";
+
+import { getPostBySlug, getAllPosts } from "@/lib/posts";
+import { formatDate } from "@/lib/formatDate";
+import { mdxComponents, mdxOptions } from "@/lib/mdx";
+
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export async function generateStaticParams() {
+  const posts = await getAllPosts();
+  return posts.map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+
+  const post = await getPostBySlug(slug);
+  if (!post) return { title: "Not Found | My Site" };
+
+  return {
+    title: `${post.meta.title} | My Site`,
+    description: post.meta.description,
+  };
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+
+  const post = await getPostBySlug(slug);
+  if (!post) notFound();
+
+  const { content } = await compileMDX({
+    source: post.content,
+    components: mdxComponents,
+    options: {
+      mdxOptions,
+    },
+  });
+
+  return (
+    <main className="container py-14">
+      <header className="max-w-3xl">
+        <p className="text-xs tracking-[0.22em] uppercase text-muted">Blog</p>
+
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+          {post.meta.title}
+        </h1>
+
+        <p className="mt-3 text-xs tracking-[0.16em] text-muted">
+          {formatDate(post.meta.date)}
+        </p>
+
+        <p className="mt-4 text-sm leading-relaxed text-muted">
+          {post.meta.description}
+        </p>
+      </header>
+
+      <article className="prose prose-invert mt-10 max-w-none">{content}</article>
+    </main>
+  );
+}
+```
+
+## コマンドログ
+```bash
+git status -sb
+git add -A
+git commit -m "fix: mdxOptions型定義を@mdx-js/mdxベースに修正"
+git push
+```
+
+## 参照コミット
+- `a0d3fa9` — fix: mdxOptions型定義を@mdx-js/mdxベースに修正

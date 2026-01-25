@@ -1,0 +1,150 @@
+---
+# content/blog/2026-01-25-heading-anchor-accessibility.mdx
+title: "見出しアンカー（#）の表示とアクセシビリティを改善した"
+slug: "heading-anchor-accessibility"
+source: "blog"
+date: "2026-01-25T13:40:00+09:00"
+description: "rehype-autolink-headings を append 方式に統一し、hover/focus で自然に表示される見出しアンカーを実装。クリック範囲とフォーカス可視化も調整。"
+tags: ["Next.js", "MDX", "rehype", "アクセシビリティ", "TailwindCSS"]
+draft: true
+---
+
+## やったこと（要点）
+- `rehype-autolink-headings` を **append方式**に統一（見出し末尾に `#` を付与）
+- `#` を **普段は非表示**にし、`hover` / `focus-within` / `focus-visible` で表示
+- `#` の **クリック範囲（padding）** を広げ、**キーボード操作時のフォーカス可視化**を追加
+- 見出しへ飛んだとき、ヘッダーに隠れにくいよう **scroll-margin** を設定
+
+## 背景
+MDXで見出しリンク（#）を付けたいが、常時表示だとノイズになりがち。  
+また、マウスだけでなくキーボードでも迷わない見た目（フォーカスリング）にしたい。
+
+## 変更点
+- `components/mdx/MdxContent.tsx`：`wrap` → **`append`** へ変更し、Blogページ側と統一
+- `styles/typography.css`：`.heading-anchor` の見た目＆表示条件を追加
+
+## 実装（最終形）
+### 1) rehypeAutolinkHeadings を append に統一
+```tsx
+/* components/mdx/MdxContent.tsx */
+import { MDXRemote } from "next-mdx-remote/rsc";
+
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+
+import { getMDXComponents } from "@/mdx-components";
+
+type Props = {
+  source: string;
+};
+
+export default function MdxContent({ source }: Props) {
+  return (
+    <MDXRemote
+      source={source}
+      options={{
+        mdxOptions: {
+          remarkPlugins: [remarkGfm],
+          rehypePlugins: [
+            rehypeSlug,
+            [
+              rehypeAutolinkHeadings,
+              {
+                behavior: "append",
+                properties: {
+                  className: ["heading-anchor"],
+                  "aria-label": "見出しへのリンク",
+                },
+                content: { type: "text", value: "#" },
+              },
+            ],
+          ],
+        },
+      }}
+      components={getMDXComponents({})}
+    />
+  );
+}
+```
+
+### 2) 見出しアンカーのUI/UXを改善
+```css
+/* styles/typography.css（追加した部分） */
+@layer components {
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    scroll-margin-top: 96px;
+  }
+
+  .prose .heading-anchor {
+    text-decoration: none !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: 0.5rem;
+    padding: 0.12rem 0.48rem;
+
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    line-height: 1;
+
+    color: hsl(var(--foreground) / 0.6);
+    opacity: 0;
+    transform: translateY(-1px);
+    transition:
+      opacity 120ms ease,
+      color 120ms ease,
+      background-color 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .prose :is(h2, h3, h4, h5, h6):hover .heading-anchor,
+  .prose :is(h2, h3, h4, h5, h6):focus-within .heading-anchor {
+    opacity: 1;
+  }
+
+  .prose .heading-anchor:hover {
+    opacity: 1;
+    background: hsl(var(--foreground) / 0.06);
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground) / 0.92);
+  }
+
+  .prose .heading-anchor:focus-visible {
+    opacity: 1;
+    background: hsl(var(--foreground) / 0.06);
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground) / 0.96);
+
+    outline: 2px solid hsl(var(--foreground) / 0.25);
+    outline-offset: 2px;
+  }
+}
+```
+
+## 動作確認
+- 見出しにマウスを乗せると `#` が表示される
+- Tabキーで見出し内リンクへフォーカスしたときも `#` が表示され、リングが見える
+- `#` をクリックすると該当見出しへ移動し、位置がヘッダーに隠れにくい
+
+## コマンドログ
+```bash
+git status -sb
+git diff
+git add -A
+git commit -m "feat: 見出しアンカーの表示とアクセシビリティを改善"
+git push
+```
+
+## 参照コミット
+- `f561c47` — feat: 見出しアンカーの表示とアクセシビリティを改善
