@@ -1,5 +1,7 @@
+/* /mdx-components.tsx */
 import Link from "next/link";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { Children, isValidElement } from "react";
 import type { MDXComponents } from "mdx/types";
 
 type AnchorProps = ComponentProps<"a">;
@@ -54,7 +56,7 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
     );
   }
 
-  // 内部リンク：Next の Link を使う（/blog など）
+  // 内部リンク：Next の Link
   return (
     <Link
       href={href}
@@ -68,7 +70,6 @@ function A({ href = "", className, children, ...props }: AnchorProps) {
   );
 }
 
-/* 既存の cx() を流用します */
 type ImgProps = ComponentProps<"img">;
 
 function Img({ className, alt = "", ...props }: ImgProps) {
@@ -84,28 +85,73 @@ function Img({ className, alt = "", ...props }: ImgProps) {
   );
 }
 
-type PreProps = ComponentProps<"pre">;
-type CodeProps = ComponentProps<"code">;
+/**
+ * ✅ children を再帰的に探索して `language-xxx` を拾う
+ * - Codeコンポーネントに差し替わっていても拾える
+ */
+type LangProps = { className?: unknown; children?: ReactNode };
 
-function Pre({ className, ...props }: PreProps) {
+function findLanguage(node: ReactNode): string | null {
+  for (const child of Children.toArray(node)) {
+    if (!isValidElement(child)) continue;
+
+    const props = child.props as LangProps;
+
+    const className = props.className;
+    if (typeof className === "string") {
+      const m = className.match(/language-([a-z0-9-]+)/i);
+      if (m?.[1]) return m[1].toLowerCase();
+    }
+
+    const nested = props.children;
+    if (nested != null) {
+      const found = findLanguage(nested);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+type PreProps = ComponentProps<"pre">;
+
+function Pre({ className, children, ...props }: PreProps) {
+  const lang = findLanguage(children);
+
   return (
-    <pre
-      className={cx(
-        "not-prose my-6 overflow-x-auto rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed",
-        className
-      )}
-      {...props}
-    />
+    <div className="not-prose my-6">
+      {/* ✅ 角丸は「外側コンテナ」で一括管理（上だけ/下だけが自然に揃う） */}
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+        {lang && (
+          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
+            <span className="font-mono text-xs tracking-wider opacity-80">
+              {lang}
+            </span>
+          </div>
+        )}
+
+        <pre
+          className={cx(
+            "m-0 overflow-x-auto p-4 text-sm leading-relaxed",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </pre>
+      </div>
+    </div>
   );
 }
+
+type CodeProps = ComponentProps<"code">;
 
 function Code({ className, children, ...props }: CodeProps) {
   const text =
     typeof children === "string"
       ? children
       : Array.isArray(children)
-      ? children.join("")
-      : "";
+        ? children.join("")
+        : "";
 
   const isBlock = className?.includes("language-") || text.includes("\n");
 
@@ -124,8 +170,8 @@ function Code({ className, children, ...props }: CodeProps) {
   );
 }
 
-
 type BlockquoteProps = ComponentProps<"blockquote">;
+
 function Blockquote({ className, ...props }: BlockquoteProps) {
   return (
     <blockquote
@@ -139,11 +185,13 @@ function Blockquote({ className, ...props }: BlockquoteProps) {
 }
 
 type HrProps = ComponentProps<"hr">;
+
 function Hr({ className, ...props }: HrProps) {
   return <hr className={cx("my-10 border-white/10", className)} {...props} />;
 }
 
 type TableProps = ComponentProps<"table">;
+
 function Table({ className, ...props }: TableProps) {
   return (
     <div className="not-prose my-6 overflow-x-auto">
@@ -159,6 +207,7 @@ function Table({ className, ...props }: TableProps) {
 }
 
 type ThProps = ComponentProps<"th">;
+
 function Th({ className, ...props }: ThProps) {
   return (
     <th
@@ -172,6 +221,7 @@ function Th({ className, ...props }: ThProps) {
 }
 
 type TdProps = ComponentProps<"td">;
+
 function Td({ className, ...props }: TdProps) {
   return (
     <td
@@ -181,8 +231,11 @@ function Td({ className, ...props }: TdProps) {
   );
 }
 
-
-export function useMDXComponents(components: MDXComponents): MDXComponents {
+/**
+ * ✅ Hookではなく「components生成関数」
+ * - Server Component の async 内でも安全に呼べる
+ */
+export function getMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...components,
     a: A,
