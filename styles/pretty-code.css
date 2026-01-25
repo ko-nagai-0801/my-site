@@ -157,15 +157,17 @@
     line-height: 1.75;
   }
 
-  /* 1行（span[data-line]） */
-  .prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) [data-line] {
-    display: block;
-    width: 100%;
-    min-width: 100%;
+/* 1行（span[data-line]） */
+.prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) [data-line] {
+  display: block;
+  width: 100%;
+  min-width: 100%;
 
-    padding: 0 1.1rem;
-    box-sizing: border-box;
-  }
+  /* padding: 0 1.1rem; */
+  padding: 0 1.1rem 0 0; /* ← 左だけ詰める（おすすめ） */
+
+  box-sizing: border-box;
+}
 
   /* 行番号（※ここは ::before を使うので、ハイライトで ::before は使わない） */
   .prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) code[data-line-numbers] {
@@ -179,8 +181,8 @@
     content: counter(line);
 
     display: inline-block;
-    width: 2.6rem;
-    margin-right: 1.1rem;
+    width: 2.2rem;
+    margin-right: 0.75rem;
 
     text-align: right;
     color: hsl(var(--foreground) / 0.45);
