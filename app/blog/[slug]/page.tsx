@@ -8,6 +8,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
+import { getMDXComponents } from "@/mdx-components";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -36,8 +37,12 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
+  // ✅ asyncでもOK（Hookではない）
+  const components = getMDXComponents({});
+
   const { content } = await compileMDX({
     source: post.content,
+    components,
     options: {
       mdxOptions: {
         remarkPlugins: [remarkGfm],
@@ -77,7 +82,6 @@ export default async function BlogPostPage({ params }: Props) {
         </p>
       </header>
 
-      {/* ★ ここも同じく常に prose-invert */}
       <article className="prose prose-invert mt-10 max-w-none">{content}</article>
     </main>
   );
