@@ -45,14 +45,14 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-kou-nagai-studio-1200x630.png",
+        url: "/og-kns-1200x630.png",
         width: 1200,
         height: 630,
         alt: "Kou Nagai Studio",
       },
       // 任意：高解像度も並べておく（無くてもOK）
       {
-        url: "/og-kou-nagai-studio-2400x1260.png",
+        url: "/og-kns-2400x1260.png",
         width: 2400,
         height: 1260,
         alt: "Kou Nagai Studio",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Kou Nagai Studio",
     description: "Portfolio & Blog",
-    images: ["/og-kou-nagai-studio-1200x630.png"],
+    images: ["/og-kns-1200x630.png"],
   },
 
   // robots.txt を置くなら必須ではないが、メタでも明示しておくと安心
