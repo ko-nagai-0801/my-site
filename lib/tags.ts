@@ -1,7 +1,7 @@
-// lib/tags.ts
+/* lib/tags.ts */
 import "server-only";
 
-import { getAllPosts, type PostIndexItem } from "@/lib/posts";
+import { getAllPostLikes, type PostLike } from "@/lib/posts";
 import { getAllWorks, type WorkItem } from "@/lib/works";
 
 export type TagSummary = {
@@ -18,7 +18,7 @@ export const tagToSlug = (tag: string) => encodeURIComponent(tag.trim());
 export const slugToTag = (slug: string) => decodeURIComponent(slug);
 
 export async function getAllTags(): Promise<TagSummary[]> {
-  const [posts, works] = await Promise.all([getAllPosts(), getAllWorks()]);
+  const [posts, works] = await Promise.all([getAllPostLikes(), getAllWorks()]);
 
   const map = new Map<string, { tag: string; posts: number; works: number }>();
 
@@ -66,13 +66,16 @@ export async function getAllTags(): Promise<TagSummary[]> {
 export async function getTagDetail(tagParam: string): Promise<{
   tag: string;
   normalized: string;
-  posts: PostIndexItem[];
+  posts: PostLike[];
   works: WorkItem[];
 }> {
   const tag = slugToTag(tagParam).trim();
   const normalized = normalize(tag);
 
-  const [postsAll, worksAll] = await Promise.all([getAllPosts(), getAllWorks()]);
+  const [postsAll, worksAll] = await Promise.all([
+    getAllPostLikes(),
+    getAllWorks(),
+  ]);
 
   const posts = postsAll.filter((p) =>
     (p.meta.tags ?? []).some((t) => normalize(t) === normalized)
