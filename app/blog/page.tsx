@@ -37,18 +37,16 @@ export default async function BlogPage({ searchParams }: Props) {
       <main className="container py-14">
         <header className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-xs tracking-[0.22em] uppercase text-muted">
-              Index
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
+            <p className="kns-page-kicker">Index</p>
+            <h1 className="mt-3 kns-page-title">Blog</h1>
           </div>
 
-          <Link href="/" className="text-xs tracking-[0.22em] uppercase">
+          <Link href="/" className="nav-link">
             Home
           </Link>
         </header>
 
-        <p className="mt-10 text-sm text-muted">記事がまだありません。</p>
+        <p className="mt-10 text-sm text-muted-foreground">記事がまだありません。</p>
       </main>
     );
   }
@@ -63,14 +61,14 @@ export default async function BlogPage({ searchParams }: Props) {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-muted">Index</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
-          <p className="mt-2 text-xs tracking-[0.18em] text-muted">
+          <p className="kns-page-kicker">Index</p>
+          <h1 className="mt-3 kns-page-title">Blog</h1>
+          <p className="mt-2 text-xs tracking-[0.18em] text-muted-foreground">
             Page {requested} / {totalPages}
           </p>
         </div>
 
-        <Link href="/" className="text-xs tracking-[0.22em] uppercase">
+        <Link href="/" className="nav-link">
           Home
         </Link>
       </header>

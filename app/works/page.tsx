@@ -54,23 +54,20 @@ export default async function WorksPage({ searchParams }: Props) {
       <main className="container py-14">
         <header className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-xs tracking-[0.22em] uppercase text-muted">Portfolio</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">Works</h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
+            <p className="kns-page-kicker">Portfolio</p>
+            <h1 className="mt-3 kns-page-title">Works</h1>
+            <p className="mt-4 kns-lead">
               制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
             </p>
           </div>
 
-          <Link
-            href="/"
-            className="text-xs tracking-[0.22em] uppercase text-muted hover:text-foreground"
-          >
+          <Link href="/" className="nav-link">
             Home
           </Link>
         </header>
 
         <div className="mt-10 hairline" />
-        <p className="mt-8 text-sm text-muted">作品がまだありません。</p>
+        <p className="mt-8 text-sm text-muted-foreground">作品がまだありません。</p>
       </main>
     );
   }
@@ -122,22 +119,19 @@ export default async function WorksPage({ searchParams }: Props) {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-muted">Portfolio</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Works</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
+          <p className="kns-page-kicker">Portfolio</p>
+          <h1 className="mt-3 kns-page-title">Works</h1>
+          <p className="mt-4 kns-lead">
             制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
           </p>
 
-          <p className="mt-2 text-xs tracking-[0.18em] text-muted">
+          <p className="mt-2 text-xs tracking-[0.18em] text-muted-foreground">
             Page {requested} / {totalPages}
             {activeLabel ? <> ・ Tag: {activeLabel}</> : null}
           </p>
         </div>
 
-        <Link
-          href="/"
-          className="text-xs tracking-[0.22em] uppercase text-muted hover:text-foreground"
-        >
+        <Link href="/" className="nav-link">
           Home
         </Link>
       </header>
@@ -165,7 +159,7 @@ export default async function WorksPage({ searchParams }: Props) {
         </div>
 
         {activeKey && filtered.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">このタグの作品はありません。</p>
+          <p className="mt-4 text-sm text-muted-foreground">このタグの作品はありません。</p>
         ) : null}
       </section>
 
