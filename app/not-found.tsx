@@ -4,9 +4,9 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main className="container py-20">
-      <p className="text-xs tracking-[0.22em] uppercase text-muted">404</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Not Found</h1>
-      <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
+      <p className="kns-page-kicker">404</p>
+      <h1 className="mt-3 kns-page-title">Not Found</h1>
+      <p className="mt-4 kns-lead">
         ページが見つかりませんでした。URLが変更されたか、削除された可能性があります。
       </p>
 

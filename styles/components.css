@@ -131,4 +131,19 @@
   .kns-section-label {
     @apply uppercase text-xs tracking-[0.22em] text-muted sm:text-sm;
   }
+
+  /* ---------------------------------------------
+   * KNS Page Heading（一覧 / 検索 / エラー等）
+   * --------------------------------------------- */
+  .kns-page-kicker {
+    @apply uppercase text-xs tracking-[0.22em] text-muted;
+  }
+
+  .kns-page-title {
+    @apply text-3xl font-semibold tracking-tight text-foreground sm:text-4xl;
+  }
+
+  .kns-lead {
+    @apply max-w-2xl text-sm leading-8 text-muted-foreground sm:text-base sm:leading-9;
+  }
 }

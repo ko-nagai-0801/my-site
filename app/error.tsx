@@ -12,17 +12,14 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // 必要ならここでログ送信など
     console.error(error);
   }, [error]);
 
   return (
     <main className="container py-20">
-      <p className="text-xs tracking-[0.22em] uppercase text-muted">Error</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-        予期しないエラーが発生しました
-      </h1>
-      <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
+      <p className="kns-page-kicker">Error</p>
+      <h1 className="mt-3 kns-page-title">予期しないエラーが発生しました</h1>
+      <p className="mt-4 kns-lead">
         もう一度お試しください。改善が必要な場合は後ほど修正します。
       </p>
 
