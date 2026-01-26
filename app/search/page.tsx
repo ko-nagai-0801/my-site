@@ -1,6 +1,6 @@
 // app/search/page.tsx
 import type { Metadata } from "next";
-import { getAllPosts } from "@/lib/posts";
+import { getAllPostLikes } from "@/lib/posts";
 import { getAllWorks } from "@/lib/works";
 import SearchClient from "./SearchClient";
 
@@ -32,7 +32,10 @@ type WorkLite = {
 };
 
 export default async function SearchPage() {
-  const [postsAll, worksAll] = await Promise.all([getAllPosts(), getAllWorks()]);
+  const [postsAll, worksAll] = await Promise.all([
+    getAllPostLikes(),
+    getAllWorks(),
+  ]);
 
   // ✅ client へ渡す用に「必要最小限でシリアライズ可能」な形に整形
   const posts: PostLite[] = postsAll.map((p) => ({
