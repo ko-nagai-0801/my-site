@@ -5,15 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-type NavItem = { href: string; label: string };
-
-const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Home" },
-  { href: "/blog", label: "Blog" },
-  { href: "/search", label: "Search" },
-  { href: "/about", label: "About" },
-  { href: "/works", label: "Works" },
-];
+function SearchIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M21 21l-4.35-4.35" />
+      <circle cx="11" cy="11" r="7" />
+    </svg>
+  );
+}
 
 export default function SiteHeader() {
   const pathname = usePathname();
@@ -42,13 +48,17 @@ export default function SiteHeader() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     const y = window.scrollY || 0;
     lastYRef.current = y;
     dirRef.current = null;
     dirStartYRef.current = y;
 
-    // 画面遷移したらモバイルnavは出しておく（体験優先）
-    applyHidden(false);
+    // ✅ route遷移時は「モバイルnavを出す」
+    if (hiddenRef.current) {
+      const id = window.requestAnimationFrame(() => applyHidden(false));
+      return () => window.cancelAnimationFrame(id);
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -155,9 +165,24 @@ export default function SiteHeader() {
           </div>
         </Link>
 
+        {/* Mobile: logo右にSearchアイコン */}
+        <Link
+          href="/search"
+          aria-label="Search"
+          className="grid h-10 w-10 place-items-center rounded-md border border-border text-muted hover:text-foreground sm:hidden"
+        >
+          <SearchIcon className="h-5 w-5" />
+        </Link>
+
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 sm:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item) => {
+          {/* 並び：HOME, ABOUT, WORKS, BLOG */}
+          {[
+            { href: "/", label: "Home" },
+            { href: "/about", label: "About" },
+            { href: "/works", label: "Works" },
+            { href: "/blog", label: "Blog" },
+          ].map((item) => {
             const active = isActive(item.href);
             return (
               <Link
@@ -170,10 +195,25 @@ export default function SiteHeader() {
               </Link>
             );
           })}
+
+          {/* Desktop Search：アイコン＋テキストボックス風（リンク） */}
+          <Link
+            href="/search"
+            aria-label="Search"
+            className={`group flex items-center gap-2 rounded-full border border-border px-3 py-2 text-sm ${
+              isActive("/search") ? "text-foreground" : "text-muted"
+            } hover:text-foreground`}
+          >
+            <SearchIcon className="h-4 w-4" />
+            <span className="text-xs tracking-[0.12em]">Search</span>
+            <span className="ml-1 hidden text-xs text-muted/70 group-hover:text-foreground/70 lg:inline">
+              keyword...
+            </span>
+          </Link>
         </nav>
       </div>
 
-      {/* Mobile nav（2列×3段：Searchだけ横2列） */}
+      {/* Mobile nav：2×2（Home/About , Works/Blog） */}
       <nav
         className={`mobile-nav border-t border-border sm:hidden ${
           isMobileHidden ? "is-hidden" : ""
@@ -181,7 +221,7 @@ export default function SiteHeader() {
         aria-label="Primary mobile"
       >
         <ul className="grid grid-cols-2">
-          {/* Home */}
+          {/* Row1: Home / About */}
           <li className="border-b border-r border-border">
             <Link
               href="/"
@@ -190,38 +230,11 @@ export default function SiteHeader() {
                 isActive("/") ? "text-foreground" : "text-muted"
               }`}
             >
-              Home
+              HOME
             </Link>
           </li>
 
-          {/* Blog */}
           <li className="border-b border-border">
-            <Link
-              href="/blog"
-              aria-current={isActive("/blog") ? "page" : undefined}
-              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
-                isActive("/blog") ? "text-foreground" : "text-muted"
-              }`}
-            >
-              Blog
-            </Link>
-          </li>
-
-          {/* Search (span 2) */}
-          <li className="col-span-2 border-b border-border">
-            <Link
-              href="/search"
-              aria-current={isActive("/search") ? "page" : undefined}
-              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
-                isActive("/search") ? "text-foreground" : "text-muted"
-              }`}
-            >
-              Search
-            </Link>
-          </li>
-
-          {/* About */}
-          <li className="border-r border-border">
             <Link
               href="/about"
               aria-current={isActive("/about") ? "page" : undefined}
@@ -229,12 +242,12 @@ export default function SiteHeader() {
                 isActive("/about") ? "text-foreground" : "text-muted"
               }`}
             >
-              About
+              ABOUT
             </Link>
           </li>
 
-          {/* Works */}
-          <li>
+          {/* Row2: Works / Blog */}
+          <li className="border-r border-border">
             <Link
               href="/works"
               aria-current={isActive("/works") ? "page" : undefined}
@@ -242,7 +255,19 @@ export default function SiteHeader() {
                 isActive("/works") ? "text-foreground" : "text-muted"
               }`}
             >
-              Works
+              WORKS
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              href="/blog"
+              aria-current={isActive("/blog") ? "page" : undefined}
+              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
+                isActive("/blog") ? "text-foreground" : "text-muted"
+              }`}
+            >
+              BLOG
             </Link>
           </li>
         </ul>
