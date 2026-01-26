@@ -31,8 +31,9 @@ type WorkLite = {
   };
 };
 
+// ✅ Next.js 16の型生成に合わせて Promise で受ける
 type PageProps = {
-  searchParams?: { q?: string };
+  searchParams?: Promise<{ q?: string }>;
 };
 
 export default async function SearchPage({ searchParams }: PageProps) {
@@ -59,7 +60,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
     },
   }));
 
-  const initialQuery = (searchParams?.q ?? "").toString();
+  // ✅ /search?q= を初期値として SearchClient に渡す（URL同期の起点）
+  const sp = (await searchParams) ?? {};
+  const initialQuery = typeof sp.q === "string" ? sp.q : "";
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
