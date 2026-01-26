@@ -36,6 +36,11 @@
     align-items: center;
     gap: 0.5rem;
 
+    /* ✅ モバイルで崩れないように折返し許可 */
+    flex-wrap: wrap;
+    row-gap: 0.35rem;
+    min-width: 0;
+
     padding: 0.55rem 0.85rem;
 
     border: 1px solid hsl(var(--border));
@@ -50,6 +55,10 @@
     font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.82em;
     line-height: 1.2;
+
+    /* ✅ 長いファイル名でも壊れにくく */
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   /* ✅ 言語ラベル（tokens化） */
@@ -70,6 +79,7 @@
     font-size: 0.78em;
     line-height: 1;
     user-select: none;
+    flex-shrink: 0;
   }
 
   /* ✅ Copyボタン（tokens化） */
@@ -89,6 +99,15 @@
     border-radius: 10px;
     font-size: 0.82em;
     line-height: 1;
+
+    /* ✅ ラベルが Copy/Copied で幅ブレしない */
+    min-width: 4.6rem;
+    text-align: center;
+    letter-spacing: 0.06em;
+
+    /* ✅ 右寄せ（折返しても右に寄る） */
+    margin-left: auto;
+    flex-shrink: 0;
 
     transition:
       background-color 120ms ease,
@@ -111,6 +130,25 @@
     button:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+
+  /* ✅ Copied / Error 状態（data-state を拾う） */
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-rehype-pretty-code-title]
+    button[data-state="copied"] {
+    background: var(--pretty-code-ui-success-bg);
+    border-color: var(--pretty-code-ui-success-border);
+    color: var(--pretty-code-ui-success-fg);
+  }
+
+  .prose
+    :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure])
+    [data-rehype-pretty-code-title]
+    button[data-state="error"] {
+    background: var(--pretty-code-ui-danger-bg);
+    border-color: var(--pretty-code-ui-danger-border);
+    color: var(--pretty-code-ui-danger-fg);
   }
 
   /* caption（必要なら） */
@@ -157,17 +195,17 @@
     line-height: 1.75;
   }
 
-/* 1行（span[data-line]） */
-.prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) [data-line] {
-  display: block;
-  width: 100%;
-  min-width: 100%;
+  /* 1行（span[data-line]） */
+  .prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) [data-line] {
+    display: block;
+    width: 100%;
+    min-width: 100%;
 
-  /* padding: 0 1.1rem; */
-  padding: 0 1.1rem 0 0; /* ← 左だけ詰める（おすすめ） */
+    /* padding: 0 1.1rem; */
+    padding: 0 1.1rem 0 0; /* ← 左だけ詰める（おすすめ） */
 
-  box-sizing: border-box;
-}
+    box-sizing: border-box;
+  }
 
   /* 行番号（※ここは ::before を使うので、ハイライトで ::before は使わない） */
   .prose :where([data-rehype-pretty-code-fragment], [data-rehype-pretty-code-figure]) code[data-line-numbers] {

@@ -81,13 +81,23 @@ export default function CopyButton({ text, className }: Props) {
         ? "Copy failed"
         : "";
 
+  const aria =
+    state === "copied"
+      ? "コピーしました"
+      : state === "error"
+        ? "コピーに失敗しました"
+        : "コードをコピー";
+
+  const title =
+    state === "copied" ? "Copied" : state === "error" ? "Copy failed" : "Copy code";
+
   return (
     <button
       type="button"
       onClick={handleCopy}
       disabled={!text}
-      aria-label="コードをコピー"
-      title="Copy code"
+      aria-label={aria}
+      title={title}
       className={cx(
         "inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1",
         "font-mono text-xs tracking-wider opacity-90 hover:opacity-100",

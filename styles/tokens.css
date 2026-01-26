@@ -69,6 +69,18 @@
   --pretty-code-ui-border-hover: color-mix(in oklab, var(--border) 70%, var(--foreground) 30%);
   --pretty-code-ui-fg-hover: color-mix(in oklab, var(--foreground) 90%, var(--background));
 
+  /* ✅ 状態色（Copied / Error） */
+  --status-success: 142 72% 45%;
+  --status-danger: 0 84% 60%;
+
+  --pretty-code-ui-success-bg: hsl(var(--status-success) / 0.14);
+  --pretty-code-ui-success-border: hsl(var(--status-success) / 0.55);
+  --pretty-code-ui-success-fg: hsl(var(--status-success) / 0.92);
+
+  --pretty-code-ui-danger-bg: hsl(var(--status-danger) / 0.14);
+  --pretty-code-ui-danger-border: hsl(var(--status-danger) / 0.55);
+  --pretty-code-ui-danger-fg: hsl(var(--status-danger) / 0.92);
+
   color-scheme: dark;
 }
 
