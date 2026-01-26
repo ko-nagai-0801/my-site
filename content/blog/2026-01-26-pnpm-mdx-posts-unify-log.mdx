@@ -1,0 +1,130 @@
+---
+# content/blog/2026-01-26-pnpm-mdx-posts-unify-log.mdx
+title: "pnpm移行とMDX基盤の型統一ログ（approve-builds / source必須化 / pretty-code改善）"
+slug: "pnpm-mdx-posts-unify-log"
+source: "blog"
+date: "2026-01-26T13:00:00+09:00"
+description: "pnpm移行で出た警告（approve-builds）対応、frontmatterのsource必須化、PostsList向けの型統一、pretty-code（rehype-pretty-code）のUI改善までをまとめた作業ログ。"
+tags: ["Next.js", "pnpm", "MDX", "TypeScript", "rehype-pretty-code", "Shiki"]
+draft: false
+---
+
+このログは、**ローカル開発（pnpm）→ ビルド成功 → 表示品質（pretty-code）改善**までの一連の対応を、再現できる形でまとめたものです。
+
+---
+
+## やったこと（結論）
+
+- **pnpmへ移行**し、`packageManager: "pnpm@10.28.1"` を固定
+- `pnpm install` 時に出る警告（**Ignored build scripts**）を **approve-builds** で解消  
+  → `sharp` / `unrs-resolver` の build scripts を許可
+- MDXの frontmatter を **`source: "blog"` 必須**に揃え、`Invalid source` を解消
+- `PostsList` に合わせて、posts取得を **`getAllPostLikes()`（{ slug, meta } 形式）**に統一
+- `search / sitemap / tags` など、参照先を統一して **型エラーを根絶**
+- `rehype-pretty-code` の見た目を調整し、**Copyボタンの状態表示（Copied/Error）** と **モバイル折返し** を改善
+
+---
+
+## 1) pnpm移行（Corepack + packageManager固定）
+
+```bash
+corepack enable
+corepack prepare pnpm@latest --activate
+pnpm -v
+
+npm pkg set packageManager="pnpm@10.28.1"
+rm -rf node_modules
+pnpm install
+pnpm dev
+```
+
+### `No version specified for 10.28.1` の原因
+`packageManager` は **`pnpm@10.28.1` の形式が必要**で、`"10.28.1"` だけだと解釈できないため。
+
+---
+
+## 2) 警告：Ignored build scripts の意味と対応
+
+### 警告内容
+> Ignored build scripts: sharp, unrs-resolver  
+> Run "pnpm approve-builds" ...
+
+これは **セキュリティのために、依存パッケージの postinstall / install スクリプトを pnpm が勝手に実行しない**設定による警告です。  
+特に `sharp` はネイティブバイナリを扱うので、環境によってビルド手順が走ります。
+
+### 対応（許可する）
+```bash
+pnpm approve-builds
+# スペースで sharp / unrs-resolver を選択 → y
+pnpm install
+```
+
+---
+
+## 3) Invalid source: hello の原因（frontmatter不足）
+
+`lib/posts.ts` の `assertPostMeta()` が `source === "blog"` を要求しているため、  
+`source` が無い記事（例：hello / linebreak）があると `Invalid source` で落ちます。
+
+### 修正（例）
+```md
+---
+title: "はじめてのMDXブログ"
+slug: "hello"
+source: "blog"
+date: "2026-01-18T21:30:00+09:00"
+...
+---
+```
+
+---
+
+## 4) PostsList向けの型統一（getAllPostLikes）
+
+`PostsList` 側が **top-level の `slug`** を要求していたため、posts取得を `{ slug, meta }` 形式に統一。
+
+- `getAllPosts(): PostMeta[]`
+- `getAllPostLikes(): PostLike[]`（PostsList向け）
+- `getLatestPosts(n): PostLike[]`（TOPの最新n件向け）
+
+---
+
+## 5) 影響範囲の修正（Search / Sitemap / Tags）
+
+posts取得がページごとにバラけると、どこかで `p.meta` / `p.date` の参照がズレて型エラーになります。
+
+- `Search`: `getAllPostLikes()` を使い、`p.meta.title` 参照に統一
+- `Sitemap`: `getAllPosts()` を使うなら `p.date`（PostMeta）を参照（`p.meta` は存在しない）
+- `Tags`: posts取得を `getAllPostLikes()` に統一し、タグ集計も `p.meta.tags` で完結
+
+---
+
+## 6) pretty-code 最終見た目調整（Copy状態表示・モバイル折返し）
+
+- Copyボタンに **Copied / Error** の状態を出す
+- モバイル幅で code block の **title が崩れない**よう折返しを調整
+
+確認手順：
+```bash
+pnpm dev
+# DevToolsでモバイル幅にして code block title / Copied / Error を確認
+```
+
+---
+
+## 7) 最終チェック
+
+```bash
+pnpm build
+```
+
+✅ ビルドが通れば「型の整合」「静的生成」「ルート生成」までOK。
+
+---
+
+## まとめ
+
+- pnpm移行後の **Ignored build scripts** は「危険だから止めた」ではなく **“許可制”**の通知
+- frontmatter は `source: "blog"` を必須化して `assertPostMeta` と揃える
+- posts取得は `{ slug, meta }` に統一すると、`PostsList / Search / Tags` が安定する
+- pretty-code は最後に「見た目」を詰めると体験が一段上がる
