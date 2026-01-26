@@ -37,11 +37,14 @@ export function HeroSection() {
       </div>
 
       <div className="mt-8 sm:mt-10">
-        <p className="text-xs tracking-[0.22em] uppercase text-muted">
-        Studio / Portfolio / Blog
-        </p>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Kou Nagai Studio</h1>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
+        <p className="kns-section-label">Studio / Portfolio / Blog</p>
+
+        {/* HeroのH1も Service の空気（font-light + tracking）に寄せる */}
+        <h1 className="mt-4 text-3xl font-light tracking-[0.08em] text-foreground sm:text-4xl">
+          Kou Nagai Studio
+        </h1>
+
+        <p className="mt-4 max-w-2xl kns-body">
           セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
         </p>
       </div>

@@ -8,29 +8,25 @@ export default function HeroLeadSection() {
         <div className="grid gap-6 sm:grid-cols-[1.2fr_0.8fr] sm:items-start">
           {/* Copy */}
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              静かなデザインに、強い実装。
-            </h2>
+            <h2 className="kns-item-title">静かなデザインに、強い実装。</h2>
 
-            <p className="mt-3 text-sm leading-relaxed text-foreground/80 sm:text-base">
+            <p className="mt-4 kns-body text-foreground/80">
               デザイン意図を崩さず、コーディングでサイトの完成度を引き上げます。
               WordPress / LP / HP の制作から、既存サイトの改修・バグフィクスまで幅広く対応します。
             </p>
 
-            <ul className="mt-5 space-y-2 text-sm text-foreground/75">
+            <ul className="mt-5 space-y-2 kns-body text-foreground/75">
               <li className="flex gap-2">
                 <span
-                  className="mt-[0.35rem] h-1 w-1 shrink-0 rounded-full bg-border"
+                  className="mt-[0.65rem] h-1 w-1 shrink-0 rounded-full bg-border"
                   aria-hidden="true"
                 />
-                <span>
-                  デザインデータを忠実にコーディング
-                </span>
+                <span>デザインデータを忠実にコーディング</span>
               </li>
 
               <li className="flex gap-2">
                 <span
-                  className="mt-[0.35rem] h-1 w-1 shrink-0 rounded-full bg-border"
+                  className="mt-[0.65rem] h-1 w-1 shrink-0 rounded-full bg-border"
                   aria-hidden="true"
                 />
                 <span>WordPress改修（テーマ調整 / 表示崩れ / 軽微改善）</span>
@@ -38,7 +34,7 @@ export default function HeroLeadSection() {
 
               <li className="flex gap-2">
                 <span
-                  className="mt-[0.35rem] h-1 w-1 shrink-0 rounded-full bg-border"
+                  className="mt-[0.65rem] h-1 w-1 shrink-0 rounded-full bg-border"
                   aria-hidden="true"
                 />
                 <span>既存サイトの改修・バグ対応・運用しやすい形に整備</span>

@@ -26,7 +26,6 @@ export function KnsWordmark(props: Props) {
           fontSize="56"
           fontWeight="650"
           fill="currentColor"
-          fontFamily='ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif'
           letterSpacing="0.02em"
         >
           Kou Nagai Studio
@@ -37,7 +36,6 @@ export function KnsWordmark(props: Props) {
           fontSize="14"
           fill="currentColor"
           opacity="0.78"
-          fontFamily='ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Hiragino Sans", "Yu Gothic", sans-serif'
           letterSpacing="0.22em"
         >
           K N S

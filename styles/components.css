@@ -1,4 +1,10 @@
 /* styles/components.css */
+
+/* ✅ Tailwind v4: @apply で使えるように「ユーティリティ」として登録 */
+@utility text-muted-foreground {
+  color: var(--muted-foreground, var(--muted));
+}
+
 @layer components {
   /* ページ共通の横幅と余白 */
   .container {
@@ -100,5 +106,29 @@
       max-height: 12.5rem;
       white-space: normal;
     }
+  }
+
+  /* ---------------------------------------------
+   * KNS Typography utilities（Service基準）
+   * --------------------------------------------- */
+  .kns-section-title {
+    @apply text-5xl font-light tracking-[0.08em] text-foreground sm:text-6xl;
+  }
+
+  .kns-item-title {
+    @apply text-2xl font-medium tracking-wide text-foreground sm:text-3xl;
+  }
+
+  .kns-kicker {
+    @apply text-xs tracking-[0.28em] text-muted-foreground;
+  }
+
+  .kns-body {
+    @apply text-sm leading-8 text-muted-foreground sm:text-base sm:leading-9;
+  }
+
+  /* セクションの小見出し（Homeの各ブロック見出し等） */
+  .kns-section-label {
+    @apply uppercase text-xs tracking-[0.22em] text-muted sm:text-sm;
   }
 }
