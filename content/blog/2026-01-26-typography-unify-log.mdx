@@ -1,0 +1,195 @@
+---
+# 2026-01-26-typography-unify-log.mdx
+title: "タイポ統一ログ：Kou Nagai Studio の Typography v1"
+slug: "typography-unify-log"
+source: "my-site"
+date: "2026-01-26T13:30:00+09:00"
+description: "Next.js(App Router) + Tailwind v4(CSS-first) + MDX のサイトで、ページ見出し・トップセクション・トークンを整理して「タイポの型」を完成させた作業ログ。"
+tags: ["Next.js", "TailwindCSS", "MDX", "DesignSystem", "CSS"]
+draft: false
+---
+
+## このログでわかること
+
+- サイト全体の**タイポを「型（Utility）」で統一**する進め方
+- `kns-*` ユーティリティを追加して、**ページ見出し・トップ・詳細ページまで揃える**手順
+- トークン `--muted-foreground` を明示して、**色ブレの原因（フォールバック）を潰す**方法
+
+---
+
+## 前提
+
+- Next.js 16.1.3（App Router / Webpack）
+- Tailwind v4（CSS-first）で `app/globals.css` は `@import "tailwindcss";`
+- `styles/components.css` に `@utility text-muted-foreground` を登録済み  
+  → `color: var(--muted-foreground, var(--muted));` の形で `@apply` 可能
+
+---
+
+## ゴール
+
+目的は「タイポの統一」を最後まで仕上げること。  
+方針は **C：個人色を少し（スタジオらしさ）**。
+
+やったことは大きく3ステップ：
+
+1. **ページ見出しの型を作る**
+2. **トップの統一を完成させる**
+3. **tokens.css を整理して色ブレをなくす**
+
+---
+
+## Step1：ページ見出しの型を作る
+
+### 追加したユーティリティ（`styles/components.css`）
+
+ページ（Blog/Works/Tags/Search/404/Error）で使う見出しを「型」にしました。
+
+- `kns-page-kicker`
+- `kns-page-title`
+- `kns-lead`
+
+```css
+/* KNS Page Heading（一覧 / 検索 / エラー等） */
+.kns-page-kicker {
+  @apply uppercase text-xs tracking-[0.28em] text-muted;
+}
+
+.kns-page-title {
+  @apply text-3xl font-semibold tracking-[0.04em] text-foreground sm:text-4xl;
+}
+
+.kns-lead {
+  @apply max-w-2xl text-sm leading-8 text-muted-foreground sm:text-base sm:leading-9;
+}
+```
+
+### 置換したページ
+
+- `app/blog/page.tsx`
+- `app/works/page.tsx`
+- `app/tags/page.tsx`
+- `app/search/page.tsx`
+- `app/not-found.tsx`
+- `app/error.tsx`
+
+ポイントは「どのページでも **kicker → title → lead** の並び」を固定し、余白の違いだけに集中できるようにしたこと。
+
+---
+
+## Step2：トップの統一を完成させる
+
+トップ（Home）は、同じ「型」を使って揃えるのが一番効きます。
+
+### 統一対象
+
+- `HeroSection`
+- `HeroLeadSection`
+- `LatestWorksSection`
+- `LatestPostsSection`
+
+### 揃えたルール
+
+- ラベル：`kns-section-label`
+- 本文：`kns-body`
+
+```css
+.kns-section-label {
+  @apply uppercase text-xs tracking-[0.28em] text-muted sm:text-sm;
+}
+
+.kns-body {
+  @apply text-sm leading-8 text-muted-foreground sm:text-base sm:leading-9;
+}
+```
+
+Homeの各ブロックが「同じ空気」で揃うので、ページ全体の統一感が一気に上がりました。
+
+---
+
+## Step3：tokens.css を整理して色ブレをなくす
+
+`text-muted-foreground` は、これまで `var(--muted-foreground, var(--muted))` の**フォールバック**を使っていました。  
+ここを「明示定義」にして、**色ブレの種を潰す**のがStep3。
+
+```css
+:root {
+  --muted: color-mix(in oklab, var(--foreground) 72%, var(--background));
+  --muted-foreground: var(--muted); /* ✅ 明示定義（フォールバック卒業） */
+}
+```
+
+さらに Tailwind v4 の `@theme inline` にも流し込み：
+
+```css
+@theme inline {
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+}
+```
+
+これで `muted-foreground` を軸にした設計が安定します。
+
+---
+
+## 追加改善：文字間隔が「詰まりすぎる」問題の調整
+
+見た目の最終チェックで「文字間隔が詰まりすぎる」感覚が出たため、**ServiceSectionの気持ち良さ**を基準に合わせました。
+
+- `kns-page-title` を `tracking-tight` から外し、**少し余裕のある tracking に**
+- さらに、詳細ページの header も `kns-page-*` に寄せて統一
+- ServiceSection も `kns-*` で実装し直して「基準」をコード側に固定
+
+この調整で、「ページ間で急に詰まった感じがする」違和感が解消しました。
+
+---
+
+## 変更したファイル一覧
+
+- `styles/components.css`
+- `styles/tokens.css`
+- `app/blog/page.tsx`
+- `app/works/page.tsx`
+- `app/tags/page.tsx`
+- `app/search/page.tsx`
+- `app/not-found.tsx`
+- `app/error.tsx`
+- `app/blog/[slug]/page.tsx`
+- `app/works/[slug]/page.tsx`
+- `components/sections/HeroLeadSection.tsx`
+- `components/sections/LatestWorksSection.tsx`
+- `components/sections/LatestPostsSection.tsx`
+- `components/sections/ServiceSection.tsx`
+
+---
+
+## 作業のコツ
+
+- 「型（kns-*)」は増やしすぎない  
+  → **一覧/詳細/トップ**で本当に共通化できるところだけ作る
+- 詰まり/余白の違和感は「1箇所のユーティリティ」を直す  
+  → ページ側に `text-sm` などが散ると、全体調整が難しくなる
+- 色は tokens 側に戻す  
+  → CSSの小手先より、**tokenの一貫性**が最終的に勝ちます
+
+---
+
+## コミットログ（要点）
+
+- `style: kns-page-* を追加し Search/404/Error の見出しタイポを統一`
+- `style: Blog/Works/Tags のページ見出しを kns-page-* に統一`
+- `style: トップの HeroLead/Latest* を kns-section-label と kns-body に統一`
+- `style: tokens に --muted-foreground を明示定義してフォールバックを卒業`
+- `style: kns-page-title の tracking を緩めてタイポの詰まりを解消`
+
+---
+
+## 次のステップでやること（優先度順・3つ）
+
+1. **“最終の基準”を決める**：`kns-page-title` の tracking を `0.03〜0.05em` で最終固定（好みで微調整）
+2. **MDX本文（prose）側の統一**：見出し/段落/コードブロックの見え方をチェックして、必要なら `prose` の token を整備
+3. **Lightテーマを本気で入れるなら**：`data-theme="light"` を設計して `--muted-foreground` の light 値を確定
+
+---
+
+**「タイポの型」が決まると、サイト全体の“統一感”は一気に安定します。ここからは、微調整が気持ちよくなるフェーズ。**
