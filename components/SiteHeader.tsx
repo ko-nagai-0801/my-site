@@ -1,10 +1,19 @@
 /* components/SiteHeader.tsx */
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+
+type NavItem = { href: string; label: string };
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/", label: "Home" },
+  { href: "/blog", label: "Blog" },
+  { href: "/search", label: "Search" },
+  { href: "/about", label: "About" },
+  { href: "/works", label: "Works" },
+];
 
 export default function SiteHeader() {
   const pathname = usePathname();
@@ -26,12 +35,20 @@ export default function SiteHeader() {
     setIsMobileHidden(next);
   };
 
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const y = window.scrollY || 0;
     lastYRef.current = y;
     dirRef.current = null;
     dirStartYRef.current = y;
+
+    // 画面遷移したらモバイルnavは出しておく（体験優先）
+    applyHidden(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -87,11 +104,7 @@ export default function SiteHeader() {
 
         const dist = Math.abs(y - dirStartYRef.current);
 
-        if (
-          !hiddenRef.current &&
-          direction === "down" &&
-          dist >= HIDE_DISTANCE
-        ) {
+        if (!hiddenRef.current && direction === "down" && dist >= HIDE_DISTANCE) {
           applyHidden(true);
           cooldownUntilRef.current = t + COOLDOWN_MS;
           dirStartYRef.current = y;
@@ -133,7 +146,7 @@ export default function SiteHeader() {
           />
 
           <div className="leading-none">
-            <span className="block text-[13px] sm:text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground">
+            <span className="block text-[13px] font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground sm:text-sm">
               Kou Nagai Studio
             </span>
             <span className="mt-1 block text-[10px] tracking-[0.35em] text-muted">
@@ -143,61 +156,91 @@ export default function SiteHeader() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden sm:flex items-center gap-8" aria-label="Primary">
-          <Link className="nav-link" href="/">
-            Home
-          </Link>
-          <Link className="nav-link" href="/blog">
-            Blog
-          </Link>
-          <Link className="nav-link" href="/about">
-            About
-          </Link>
-          <Link className="nav-link" href="/works">
-            Works
-          </Link>
+        <nav className="hidden items-center gap-8 sm:flex" aria-label="Primary">
+          {NAV_ITEMS.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                className={`nav-link ${active ? "text-foreground" : ""}`}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
-      {/* Mobile grid nav（2×2） */}
+      {/* Mobile nav（2列×3段：Searchだけ横2列） */}
       <nav
-        className={`mobile-nav sm:hidden border-t border-border ${
+        className={`mobile-nav border-t border-border sm:hidden ${
           isMobileHidden ? "is-hidden" : ""
         }`}
         aria-label="Primary mobile"
       >
         <ul className="grid grid-cols-2">
+          {/* Home */}
           <li className="border-b border-r border-border">
             <Link
               href="/"
-              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+              aria-current={isActive("/") ? "page" : undefined}
+              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
+                isActive("/") ? "text-foreground" : "text-muted"
+              }`}
             >
               Home
             </Link>
           </li>
 
+          {/* Blog */}
           <li className="border-b border-border">
             <Link
               href="/blog"
-              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+              aria-current={isActive("/blog") ? "page" : undefined}
+              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
+                isActive("/blog") ? "text-foreground" : "text-muted"
+              }`}
             >
               Blog
             </Link>
           </li>
 
+          {/* Search (span 2) */}
+          <li className="col-span-2 border-b border-border">
+            <Link
+              href="/search"
+              aria-current={isActive("/search") ? "page" : undefined}
+              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
+                isActive("/search") ? "text-foreground" : "text-muted"
+              }`}
+            >
+              Search
+            </Link>
+          </li>
+
+          {/* About */}
           <li className="border-r border-border">
             <Link
               href="/about"
-              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+              aria-current={isActive("/about") ? "page" : undefined}
+              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
+                isActive("/about") ? "text-foreground" : "text-muted"
+              }`}
             >
               About
             </Link>
           </li>
 
+          {/* Works */}
           <li>
             <Link
               href="/works"
-              className="block py-4 text-center text-sm tracking-[0.12em] text-muted hover:text-foreground"
+              aria-current={isActive("/works") ? "page" : undefined}
+              className={`block py-4 text-center text-sm tracking-[0.12em] hover:text-foreground ${
+                isActive("/works") ? "text-foreground" : "text-muted"
+              }`}
             >
               Works
             </Link>
