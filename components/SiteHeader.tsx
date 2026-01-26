@@ -95,7 +95,9 @@ export default function SiteHeader() {
   // モバイル検索バー：開いたらフォーカス
   useEffect(() => {
     if (!mobileSearchOpen) return;
-    const id = window.requestAnimationFrame(() => mobileInputRef.current?.focus());
+    const id = window.requestAnimationFrame(() =>
+      mobileInputRef.current?.focus()
+    );
     return () => window.cancelAnimationFrame(id);
   }, [mobileSearchOpen]);
 
@@ -164,7 +166,11 @@ export default function SiteHeader() {
 
         const dist = Math.abs(y - dirStartYRef.current);
 
-        if (!hiddenRef.current && direction === "down" && dist >= HIDE_DISTANCE) {
+        if (
+          !hiddenRef.current &&
+          direction === "down" &&
+          dist >= HIDE_DISTANCE
+        ) {
           applyHidden(true);
           cooldownUntilRef.current = t + COOLDOWN_MS;
           dirStartYRef.current = y;
@@ -274,7 +280,7 @@ export default function SiteHeader() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search…"
-              className="w-[12rem] bg-transparent text-xs tracking-[0.12em] text-foreground/90 placeholder:text-muted/70 outline-none lg:w-[16rem]"
+              className="w-[4rem] bg-transparent text-xs tracking-[0.12em] text-foreground/90 placeholder:text-muted/70 outline-none lg:w-[6rem]"
             />
           </form>
         </nav>
