@@ -20,9 +20,10 @@ export type Post = {
 
 /**
  * ✅ 一覧表示用（PostsList向け）
- * - PostsList が { meta } 形式を要求しているため、ここで統一して供給する
+ * - PostsList 側が top-level の slug を要求するため、ここで供給する
  */
 export type PostLike = {
+  slug: string;
   meta: PostMeta;
 };
 
@@ -145,16 +146,15 @@ export async function getAllPosts(): Promise<PostMeta[]> {
 }
 
 /**
- * ✅ PostsList向け：{ meta } 形式で返す
+ * ✅ PostsList向け：{ slug, meta } 形式で返す
  */
 export async function getAllPostLikes(): Promise<PostLike[]> {
   const metas = await getAllPosts();
-  return metas.map((meta) => ({ meta }));
+  return metas.map((meta) => ({ slug: meta.slug, meta }));
 }
 
 /**
  * ✅ TOPなど「最新n件」向け
- * app/page.tsx が import している想定の関数名をここで提供する
  */
 export async function getLatestPosts(limit = 3): Promise<PostLike[]> {
   const all = await getAllPostLikes();
