@@ -1,6 +1,7 @@
 /* app/layout.tsx */
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,7 +16,6 @@ const siteUrl = getSiteUrl();
 const prod = isProduction();
 
 export const metadata: Metadata = {
-  // ✅ Netlify / Vercel / localhost を吸収（NEXT_PUBLIC_SITE_URL が常に最優先）
   metadataBase: new URL(siteUrl),
 
   title: {
@@ -24,7 +24,6 @@ export const metadata: Metadata = {
   },
   description: "Studio / Portfolio / Blog",
 
-  // favicon / icon / manifest（全部 public 直下に置く前提）
   icons: {
     icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
     apple: [{ url: "/icon.png" }],
@@ -51,17 +50,38 @@ export const metadata: Metadata = {
     images: ["/og-kns-1200x630.png"],
   },
 
-  // ✅ Netlify の deploy-preview / branch-deploy を index させない
-  robots: prod
-    ? { index: true, follow: true }
-    : { index: false, follow: false },
+  robots: prod ? { index: true, follow: true } : { index: false, follow: false },
 };
+
+function HeaderFallback() {
+  return (
+    <header className="hairline sticky top-0 z-50 bg-background/90 sm:bg-background/80 sm:backdrop-blur">
+      <div className="container flex items-center justify-between py-4">
+        <div className="flex items-center gap-3">
+          <div className="h-[35px] w-[35px] rounded-md bg-border/60" aria-hidden="true" />
+          <div className="leading-none">
+            <div className="h-4 w-44 rounded bg-border/60" aria-hidden="true" />
+            <div className="mt-2 h-3 w-16 rounded bg-border/40" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div className="hidden sm:block">
+          <div className="h-9 w-56 rounded-full border border-border opacity-40" aria-hidden="true" />
+        </div>
+
+        <div className="sm:hidden h-10 w-10 rounded-md border border-border opacity-40" aria-hidden="true" />
+      </div>
+    </header>
+  );
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ja">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <SiteHeader />
+        <Suspense fallback={<HeaderFallback />}>
+          <SiteHeader />
+        </Suspense>
         {children}
         <SiteFooter />
       </body>
