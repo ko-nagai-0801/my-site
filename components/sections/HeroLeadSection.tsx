@@ -4,18 +4,19 @@ import Link from "next/link";
 export default function HeroLeadSection() {
   return (
     <section className="border-t border-border/60">
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
+      <div className="container py-10 sm:py-14">
         <div className="grid gap-6 sm:grid-cols-[1.2fr_0.8fr] sm:items-start">
           {/* Copy */}
           <div>
-            <h2 className="kns-item-title">静かなデザインに、強い実装。</h2>
+            <p className="kns-section-label">Service</p>
+            <h2 className="mt-3 kns-item-title">静かなデザインに、強い実装。</h2>
 
-            <p className="mt-4 kns-body text-foreground/80">
+            <p className="mt-4 kns-body">
               デザイン意図を崩さず、コーディングでサイトの完成度を引き上げます。
               WordPress / LP / HP の制作から、既存サイトの改修・バグフィクスまで幅広く対応します。
             </p>
 
-            <ul className="mt-5 space-y-2 kns-body text-foreground/75">
+            <ul className="mt-5 space-y-2 kns-body">
               <li className="flex gap-2">
                 <span
                   className="mt-[0.65rem] h-1 w-1 shrink-0 rounded-full bg-border"
@@ -45,7 +46,7 @@ export default function HeroLeadSection() {
           {/* CTA */}
           <div className="sm:pt-1">
             <div className="rounded-2xl border border-border/70 bg-background/40 p-5">
-              <p className="text-sm text-foreground/70">
+              <p className="kns-body">
                 まずは制作物を見て、雰囲気や実装の方向性が合うか確認してください。
               </p>
 
@@ -58,7 +59,7 @@ export default function HeroLeadSection() {
                 </Link>
               </div>
 
-              <p className="mt-3 text-xs text-foreground/55">
+              <p className="mt-3 text-xs text-muted-foreground">
                 ※ 相談導線（Contact）は、次の段階で追加できます。
               </p>
             </div>
