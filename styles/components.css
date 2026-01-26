@@ -129,18 +129,19 @@
 
   /* セクションの小見出し（Homeの各ブロック見出し等） */
   .kns-section-label {
-    @apply uppercase text-xs tracking-[0.22em] text-muted sm:text-sm;
+    @apply uppercase text-xs tracking-[0.28em] text-muted sm:text-sm;
   }
 
   /* ---------------------------------------------
    * KNS Page Heading（一覧 / 検索 / エラー等）
    * --------------------------------------------- */
   .kns-page-kicker {
-    @apply uppercase text-xs tracking-[0.22em] text-muted;
+    @apply uppercase text-xs tracking-[0.28em] text-muted;
   }
 
+  /* ✅ tracking-tight をやめて、Serviceの“抜け”に寄せる */
   .kns-page-title {
-    @apply text-3xl font-semibold tracking-tight text-foreground sm:text-4xl;
+    @apply text-3xl font-semibold tracking-[0.04em] text-foreground sm:text-4xl;
   }
 
   .kns-lead {

@@ -10,56 +10,33 @@ type ServiceItem = {
 
 function IconPencil({ className }: { className?: string }) {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-    >
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none">
       <path
         d="M4 20l4.5-1 10-10a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0l-10 10L4 20z"
         stroke="currentColor"
         strokeWidth="1.5"
       />
-      <path
-        d="M13 6l5 5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
+      <path d="M13 6l5 5" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
 
 function IconMouse({ className }: { className?: string }) {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-    >
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none">
       <path
         d="M12 3c3 0 6 2.4 6 6.2V15c0 3.6-2.7 6-6 6s-6-2.4-6-6V9.2C6 5.4 9 3 12 3z"
         stroke="currentColor"
         strokeWidth="1.5"
       />
-      <path
-        d="M12 7v3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
+      <path d="M12 7v3" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
 
 function IconCode({ className }: { className?: string }) {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-    >
+    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none">
       <path
         d="M9 18l-6-6 6-6"
         stroke="currentColor"
@@ -106,28 +83,20 @@ export function ServiceSection() {
   return (
     <section id="service" className="py-20 sm:py-28">
       <header className="text-center">
-        <h2 className="text-5xl font-light tracking-[0.08em] text-foreground sm:text-6xl">
-          Service
-        </h2>
+        <h2 className="kns-section-title">Service</h2>
       </header>
 
       <ul className="mx-auto mt-14 max-w-3xl space-y-16 sm:mt-16 sm:space-y-20">
         {items.map(({ en, ja, Icon, body }) => (
           <li key={en} className="text-center">
-            <h3 className="text-2xl font-medium tracking-wide text-foreground sm:text-3xl">
-              {ja}
-            </h3>
-            <p className="mt-3 text-xs tracking-[0.28em] text-muted-foreground">
-              {en}
-            </p>
+            <h3 className="kns-item-title">{ja}</h3>
+            <p className="mt-3 kns-kicker">{en}</p>
 
             <div className="mt-6 flex justify-center">
               <Icon className="h-10 w-10 text-muted-foreground" />
             </div>
 
-            <p className="mx-auto mt-8 max-w-2xl text-left text-sm leading-8 text-muted-foreground sm:text-base sm:leading-9">
-              {body}
-            </p>
+            <p className="mx-auto mt-8 max-w-2xl text-left kns-body">{body}</p>
           </li>
         ))}
       </ul>

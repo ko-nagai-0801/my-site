@@ -38,19 +38,17 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <main className="container py-14">
       <header className="max-w-3xl">
-        <p className="text-xs tracking-[0.22em] uppercase text-muted">Blog</p>
+        <p className="kns-page-kicker">Blog</p>
 
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-          {post.meta.title}
-        </h1>
+        <h1 className="mt-3 kns-page-title">{post.meta.title}</h1>
 
-        <p className="mt-3 text-xs tracking-[0.16em] text-muted">
+        <p className="mt-3 text-xs tracking-[0.18em] text-muted-foreground">
           {formatDate(post.meta.date)}
         </p>
 
-        <p className="mt-4 text-sm leading-relaxed text-muted">
-          {post.meta.description}
-        </p>
+        {post.meta.description ? (
+          <p className="mt-4 kns-lead">{post.meta.description}</p>
+        ) : null}
       </header>
 
       <article className="prose prose-invert mt-10 max-w-none">{content}</article>

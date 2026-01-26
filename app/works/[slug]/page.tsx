@@ -44,23 +44,14 @@ export default async function WorkDetailPage({ params }: PageProps) {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-muted">
-            Portfolio
-          </p>
+          <p className="kns-page-kicker">Portfolio</p>
 
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            {work.meta.title}
-          </h1>
+          <h1 className="mt-3 kns-page-title">{work.meta.title}</h1>
 
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
-            {work.meta.summary}
-          </p>
+          <p className="mt-4 kns-lead">{work.meta.summary}</p>
         </div>
 
-        <Link
-          href="/works"
-          className="text-xs tracking-[0.22em] uppercase text-muted hover:text-foreground"
-        >
+        <Link href="/works" className="nav-link">
           Back
         </Link>
       </header>
@@ -70,7 +61,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
       {(work.meta.href || work.meta.repo || work.meta.note) && (
         <div className="mt-6 space-y-2">
           {(work.meta.href || work.meta.repo) && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.16em] text-muted">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs tracking-[0.18em] text-muted-foreground">
               {work.meta.href && (
                 <a
                   href={work.meta.href}
@@ -95,7 +86,9 @@ export default async function WorkDetailPage({ params }: PageProps) {
           )}
 
           {work.meta.note && (
-            <p className="text-xs leading-relaxed text-muted">{work.meta.note}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {work.meta.note}
+            </p>
           )}
         </div>
       )}
