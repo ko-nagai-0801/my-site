@@ -1,8 +1,9 @@
-// app/search/SearchClient.tsx
+/* app/search/SearchClient.tsx */
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 type PostLite = {
   slug: string;
@@ -27,6 +28,7 @@ type WorkLite = {
 type Props = {
   posts: PostLite[];
   works: WorkLite[];
+  initialQuery: string;
 };
 
 type Mode = "all" | "blog" | "works";
@@ -44,11 +46,40 @@ const normalize = (s: string) => s.trim().toLowerCase();
 
 const includesQuery = (haystack: string, q: string) => normalize(haystack).includes(q);
 
-export default function SearchClient({ posts, works }: Props) {
-  const [q, setQ] = useState("");
+export default function SearchClient({ posts, works, initialQuery }: Props) {
+  const router = useRouter();
+
+  const [q, setQ] = useState(initialQuery ?? "");
   const [mode, setMode] = useState<Mode>("all");
 
   const query = normalize(q);
+
+  // ✅ /search?q= を直叩き or 戻る/進む等でURLが変わった時、入力に追従
+  // （setState同期警告回避のため rAF）
+  useEffect(() => {
+    const next = initialQuery ?? "";
+    const id = window.requestAnimationFrame(() => setQ(next));
+    return () => window.cancelAnimationFrame(id);
+  }, [initialQuery]);
+
+  const goSearch = (raw: string) => {
+    const next = raw.trim();
+    if (!next) {
+      router.push("/search");
+      return;
+    }
+    router.push(`/search?q=${encodeURIComponent(next)}`);
+  };
+
+  // IME確定前Enter対策（any禁止に対応）
+  const isImeComposing = (e: React.SyntheticEvent) => {
+    const ne = e.nativeEvent;
+    // ReactのSyntheticEventはnativeEvent型が広いので、必要なプロパティだけ安全に参照
+    const composing = "isComposing" in ne ? Boolean((ne as Event & { isComposing?: boolean }).isComposing) : false;
+    const keyCode =
+      "keyCode" in ne ? Number((ne as Event & { keyCode?: number }).keyCode ?? 0) : 0;
+    return composing || keyCode === 229;
+  };
 
   const filtered = useMemo(() => {
     const matchPost = (p: PostLite) => {
@@ -125,23 +156,39 @@ export default function SearchClient({ posts, works }: Props) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* ✅ EnterでURL更新（/search?q=...）。空欄Enterは/searchへ */}
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (isImeComposing(e)) return;
+            goSearch(q);
+          }}
+          className="flex items-center gap-2"
+        >
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              if (isImeComposing(e)) e.preventDefault();
+            }}
             placeholder="例）mdx / bootstrap / lunchette ..."
             className="w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus:ring-0"
           />
           {q ? (
             <button
               type="button"
-              onClick={() => setQ("")}
+              onClick={() => {
+                setQ("");
+                router.push("/search");
+              }}
               className="rounded-lg border px-3 py-2 text-sm hover:opacity-80"
             >
               Clear
             </button>
           ) : null}
-        </div>
+        </form>
 
         <p className="text-xs opacity-70">
           ※ これは簡易検索（クライアント側）です。将来的にサーバー検索へ拡張できます。

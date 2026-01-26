@@ -1,4 +1,4 @@
-// app/search/page.tsx
+/* app/search/page.tsx */
 import type { Metadata } from "next";
 import { getAllPostLikes } from "@/lib/posts";
 import { getAllWorks } from "@/lib/works";
@@ -31,11 +31,12 @@ type WorkLite = {
   };
 };
 
-export default async function SearchPage() {
-  const [postsAll, worksAll] = await Promise.all([
-    getAllPostLikes(),
-    getAllWorks(),
-  ]);
+type PageProps = {
+  searchParams?: { q?: string };
+};
+
+export default async function SearchPage({ searchParams }: PageProps) {
+  const [postsAll, worksAll] = await Promise.all([getAllPostLikes(), getAllWorks()]);
 
   // ✅ client へ渡す用に「必要最小限でシリアライズ可能」な形に整形
   const posts: PostLite[] = postsAll.map((p) => ({
@@ -58,6 +59,8 @@ export default async function SearchPage() {
     },
   }));
 
+  const initialQuery = (searchParams?.q ?? "").toString();
+
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <header className="mb-6">
@@ -67,7 +70,7 @@ export default async function SearchPage() {
         </p>
       </header>
 
-      <SearchClient posts={posts} works={works} />
+      <SearchClient posts={posts} works={works} initialQuery={initialQuery} />
     </main>
   );
 }
