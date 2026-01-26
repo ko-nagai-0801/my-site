@@ -18,6 +18,14 @@ export type Post = {
   content: string;
 };
 
+/**
+ * ✅ 一覧表示用（PostsList向け）
+ * - PostsList が { meta } 形式を要求しているため、ここで統一して供給する
+ */
+export type PostLike = {
+  meta: PostMeta;
+};
+
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
 function trimNonEmpty(value: unknown): string | undefined {
@@ -60,7 +68,10 @@ function slugFromFilename(filename: string): string {
   return base.replace(/^\d{4}-\d{2}-\d{2}-/, "");
 }
 
-function assertPostMeta(meta: Record<string, unknown>, slugFromFile: string): PostMeta {
+function assertPostMeta(
+  meta: Record<string, unknown>,
+  slugFromFile: string
+): PostMeta {
   const title = trimNonEmpty(meta.title);
   if (!title) throw new Error(`Missing title: ${slugFromFile}`);
 
@@ -93,7 +104,9 @@ function assertPostMeta(meta: Record<string, unknown>, slugFromFile: string): Po
   };
 }
 
-async function readPostFileBySlug(slug: string): Promise<{ filename: string; fullpath: string } | null> {
+async function readPostFileBySlug(
+  slug: string
+): Promise<{ filename: string; fullpath: string } | null> {
   const files = await readdir(BLOG_DIR);
   const candidates = files.filter((f) => /\.(md|mdx)$/i.test(f));
 
@@ -129,6 +142,23 @@ export async function getAllPosts(): Promise<PostMeta[]> {
   // 新しい順
   metas.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
   return metas;
+}
+
+/**
+ * ✅ PostsList向け：{ meta } 形式で返す
+ */
+export async function getAllPostLikes(): Promise<PostLike[]> {
+  const metas = await getAllPosts();
+  return metas.map((meta) => ({ meta }));
+}
+
+/**
+ * ✅ TOPなど「最新n件」向け
+ * app/page.tsx が import している想定の関数名をここで提供する
+ */
+export async function getLatestPosts(limit = 3): Promise<PostLike[]> {
+  const all = await getAllPostLikes();
+  return all.slice(0, Math.max(0, limit));
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {

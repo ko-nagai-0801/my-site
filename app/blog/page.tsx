@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllPosts } from "@/lib/posts";
+
+import { getAllPostLikes } from "@/lib/posts";
 import { PostsList } from "@/components/blog/PostsList";
 import { Pagination } from "@/components/ui/Pagination";
 
@@ -29,14 +30,16 @@ export default async function BlogPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
-  const posts = await getAllPosts();
+  const posts = await getAllPostLikes();
 
   if (posts.length === 0) {
     return (
       <main className="container py-14">
         <header className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-xs tracking-[0.22em] uppercase text-muted">Index</p>
+            <p className="text-xs tracking-[0.22em] uppercase text-muted">
+              Index
+            </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight">Blog</h1>
           </div>
 
