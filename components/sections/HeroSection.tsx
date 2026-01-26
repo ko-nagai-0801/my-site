@@ -8,7 +8,7 @@ export function HeroSection() {
         <div className="relative aspect-[4/3] sm:aspect-[21/9]">
           <Image
             src="/images/hero.webp"
-            alt="Site hero visual"
+            alt="Kou Nagai Studio hero visual"
             fill
             priority
             sizes="(min-width: 1024px) 1024px, 100vw"
@@ -38,9 +38,9 @@ export function HeroSection() {
 
       <div className="mt-8 sm:mt-10">
         <p className="text-xs tracking-[0.22em] uppercase text-muted">
-          Portfolio &amp; Blog
+        Studio / Portfolio / Blog
         </p>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight">My Site</h1>
+        <h1 className="mt-4 text-3xl font-semibold tracking-tight">Kou Nagai Studio</h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
           セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
         </p>

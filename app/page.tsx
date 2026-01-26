@@ -1,10 +1,10 @@
 /* app/page.tsx */
 import { getLatestPosts } from "@/lib/posts";
 import { getAllWorks } from "@/lib/works";
-import { ServiceSection } from "@/components/sections/ServiceSection";
 import { HeroSection } from "@/components/sections/HeroSection";
-import { LatestPostsSection } from "@/components/sections/LatestPostsSection";
+import { ServiceSection } from "@/components/sections/ServiceSection";
 import { LatestWorksSection } from "@/components/sections/LatestWorksSection";
+import { LatestPostsSection } from "@/components/sections/LatestPostsSection";
 
 export default async function Home() {
   const [latest, worksAll] = await Promise.all([getLatestPosts(3), getAllWorks()]);
