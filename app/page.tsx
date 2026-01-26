@@ -2,6 +2,7 @@
 import { getLatestPosts } from "@/lib/posts";
 import { getAllWorks } from "@/lib/works";
 import { HeroSection } from "@/components/sections/HeroSection";
+import HeroLeadSection from "@/components/sections/HeroLeadSection";
 import { ServiceSection } from "@/components/sections/ServiceSection";
 import { LatestWorksSection } from "@/components/sections/LatestWorksSection";
 import { LatestPostsSection } from "@/components/sections/LatestPostsSection";
@@ -16,6 +17,8 @@ export default async function Home() {
   return (
     <main className="container py-14">
       <HeroSection />
+
+      <HeroLeadSection />
 
       <ServiceSection />
 
