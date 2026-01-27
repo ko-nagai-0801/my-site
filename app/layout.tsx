@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 
 import SiteHeader from "@/components/SiteHeader";
@@ -14,6 +15,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 const siteUrl = getSiteUrl();
 const prod = isProduction();
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -82,9 +84,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Suspense fallback={<HeaderFallback />}>
           <SiteHeader />
         </Suspense>
+
         {children}
+
         <SiteFooter />
       </body>
+
+      {prod && GA_ID ? <GoogleAnalytics gaId={GA_ID} /> : null}
     </html>
   );
 }
