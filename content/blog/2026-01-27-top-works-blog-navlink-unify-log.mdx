@@ -1,0 +1,136 @@
+---
+# 2026-01-27top-works-blog-navlink-unify-log.mdx
+title: "【作業ログ】TOPのWorks/Blogセクション命名整理＋nav-linkをView all運用で統一"
+slug: "top-works-blog-navlink-unify-log"
+source: "blog"
+date: "2026-01-27T10:30:00+09:00"
+description: "TOPページのLatest*をWorks/Blogへ整理し、nav-linkの文言と見た目をView all基準で統一。PaginationとBlog詳細にも導線を揃えたログ。"
+tags: ["Next.js", "TailwindCSS", "UI", "Refactor", "Portfolio"]
+draft: false
+---
+
+## 目的
+
+- TOPページの **Latest Works / Latest Posts** を、サイトの導線として自然な **Works / Blog** に統一する  
+- `nav-link`（小さめのナビリンク）の**文言ゆれ・見た目・挙動**を揃えて、UIの「決まり」を固める
+
+対象サイト：Kou Nagai Studio（Next.js App Router + Tailwind v4 + MDX）
+
+---
+
+## 変更ログ（要点）
+
+### 1. TOPのセクション命名を整理（Latest* → Works / Blog）
+
+- `components/sections/LatestWorksSection.tsx` / `LatestPostsSection.tsx` を削除
+- 代わりに **ファイル名とセクション名を一致**させる形で新設：
+  - `components/sections/WorksSection.tsx`
+  - `components/sections/BlogSection.tsx`
+
+見出しは `Service` と同じ基準に寄せて、中央寄せの型を統一。
+
+```tsx
+// WorksSection / BlogSection（headerの型）
+<header className="text-center">
+  <h2 className="kns-section-title">Works</h2>
+  <div className="mt-6 flex justify-center">
+    <Link href="/works" className="nav-link">View all</Link>
+  </div>
+</header>
+```
+
+TOP側の読み込みも、新しいファイル名に合わせて整理。
+
+```tsx
+// app/page.tsx
+import { LatestWorksSection } from "@/components/sections/WorksSection";
+import { LatestPostsSection } from "@/components/sections/BlogSection";
+```
+
+---
+
+### 2. push失敗（Password認証廃止）→ SSHへ切り替え
+
+一度、GitHubへのpush時に下記で失敗。
+
+- `remote: Invalid username or token. Password authentication is not supported`
+
+対応は、**remote URLをSSHに変更**して解決。
+
+```bash
+git remote set-url origin git@github.com:ko-nagai-0801/my-site.git
+ssh -T git@github.com
+git push
+```
+
+以後、HTTPSのユーザー名/トークン入力で詰まらない状態に。
+
+---
+
+### 3. nav-link文言の統一（View all運用に決定）
+
+「一覧へ」「戻る」「Back」などに分岐しやすい箇所を、今回は **View all** に寄せて統一。
+
+- TOP Works/Blog：`View all`
+- Works詳細：`Back` → `View all`
+- Blog詳細：新規で `View all` を追加して導線統一
+- Footer：表記ゆれ（Note等）を点検して統一
+
+例：Works詳細（右側リンクを `View all` に）
+
+```tsx
+<Link href="/works" className="nav-link">
+  View all
+</Link>
+```
+
+---
+
+### 4. Paginationの無効状態も nav-link に統一
+
+Prev/Next が無効のとき、以前は `text-xs tracking...` で別指定になっていた。  
+ここも `nav-link` を使い、見た目の一貫性を固定。
+
+```tsx
+<span className="nav-link pointer-events-none opacity-50">← Prev</span>
+<span className="nav-link pointer-events-none opacity-50">Next →</span>
+```
+
+---
+
+### 5. Blog詳細にも「View all」導線を追加
+
+Works詳細と同じ設計（右側に nav-link）に寄せた。  
+ヘッダーをflex化して、SPでも崩れにくい構造に。
+
+```tsx
+<header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+  <div className="max-w-3xl">
+    <p className="kns-page-kicker">Blog</p>
+    <h1 className="mt-3 kns-page-title">{post.meta.title}</h1>
+    {/* ... */}
+  </div>
+
+  <Link href="/blog" className="nav-link">
+    View all
+  </Link>
+</header>
+```
+
+---
+
+## 完了チェック
+
+- [x] TOPが「Works / Blog」表記になっている
+- [x] `nav-link` の運用ルールが **View all** に揃っている
+- [x] PaginationのPrev/Next無効状態が `nav-link` と同じ見た目
+- [x] Blog詳細にも一覧導線があり、Works詳細と統一された導線体験になっている
+- [x] GitHub push が SSH で安定運用できる
+
+---
+
+## 次にやる（候補）
+
+- Tagsページの余白（container化）など、ページ全体の余白ルールを最後まで統一
+- Netlify本番で、SP時の折返し・詰まり・hover/activeトーンを最終QA
+- nav-linkを「ヘッダー/フッター/ページ内導線」で全箇所点検し、例外をゼロにする
