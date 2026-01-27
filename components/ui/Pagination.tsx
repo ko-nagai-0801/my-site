@@ -62,9 +62,7 @@ export function Pagination({
             ← Prev
           </Link>
         ) : (
-          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">
-            ← Prev
-          </span>
+          <span className="nav-link pointer-events-none opacity-50">← Prev</span>
         )}
 
         <ul className="flex flex-wrap items-center justify-center gap-2">
@@ -112,9 +110,7 @@ export function Pagination({
             Next →
           </Link>
         ) : (
-          <span className="text-xs tracking-[0.22em] uppercase text-muted opacity-50">
-            Next →
-          </span>
+          <span className="nav-link pointer-events-none opacity-50">Next →</span>
         )}
       </div>
     </nav>
