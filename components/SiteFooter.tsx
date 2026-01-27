@@ -4,7 +4,7 @@ import Link from "next/link";
 const socialLinks = [
   { href: "https://x.com/k_n_8141", label: "X" },
   { href: "https://github.com/ko-nagai-0801", label: "GitHub" },
-  { href: "https://note.com/gapsmilegeek", label: "note" },
+  { href: "https://note.com/gapsmilegeek", label: "Note" },
   { href: "https://qiita.com/ko_nagai_0801", label: "Qiita" },
 ] as const;
 
@@ -69,4 +69,3 @@ export default function SiteFooter() {
     </footer>
   );
 }
-
