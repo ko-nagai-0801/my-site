@@ -52,7 +52,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
         </div>
 
         <Link href="/works" className="nav-link">
-          Back
+          View all
         </Link>
       </header>
 
