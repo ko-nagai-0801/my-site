@@ -10,14 +10,19 @@ type Props = {
 export function WorksSection({ works }: Props) {
   return (
     <section className="mt-14">
-      <header className="text-center">
-        <Reveal as="h2" className="kns-section-title" delay={60}>
-          Works
-        </Reveal>
+      <header>
+        {/* 1段目：タイトルは常に中央 */}
+        <div className="text-center">
+          <Reveal as="h2" className="kns-section-title" delay={60}>
+            Works
+          </Reveal>
+        </div>
 
-        <Reveal as="div" className="mt-6 flex justify-center" delay={120}>
-          <Link href="/works" className="nav-link">
-            View all
+        {/* 2段目：右端にView all（同じ幅の中で右寄せ） */}
+        <Reveal as="div" className="mt-6 flex justify-end" delay={120}>
+          <Link href="/works" className="kns-btn-ghost">
+            <span>View all</span>
+            <span aria-hidden="true">→</span>
           </Link>
         </Reveal>
       </header>
