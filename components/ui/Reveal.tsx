@@ -1,60 +1,60 @@
 /* components/ui/Reveal.tsx */
 "use client";
 
-import type { ElementType, ReactNode, ComponentPropsWithoutRef } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ComponentPropsWithoutRef, ElementType, ReactNode, Ref } from "react";
 
-type RevealProps<E extends ElementType> = {
-  as?: E;
-  children: ReactNode;
+type Props<T extends ElementType> = {
+  as?: T;
+  children?: ReactNode; // ✅ optional（self-closing でもOK）
   className?: string;
   delay?: number; // ms
-  once?: boolean;
-} & Omit<ComponentPropsWithoutRef<E>, "as" | "children" | "className">;
+} & Omit<ComponentPropsWithoutRef<T>, "as" | "children">;
 
-export function Reveal<E extends ElementType = "div">({
+export function Reveal<T extends ElementType = "div">({
   as,
   children,
   className = "",
   delay = 0,
-  once = true,
-  ...rest
-}: RevealProps<E>) {
+  ...props
+}: Props<T>) {
   const Tag = (as ?? "div") as ElementType;
   const ref = useRef<HTMLElement | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
+    // ✅ reduced-motion は CSS 側で常時表示にしているので state を触らない
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      el.classList.add("is-visible");
-      return;
-    }
+    if (reduce) return;
 
-    if (delay) el.style.setProperty("--reveal-delay", `${delay}ms`);
+    let timeoutId: number | undefined;
 
     const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          el.classList.add("is-visible");
-          if (once) io.unobserve(entry.target);
-        }
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+
+        timeoutId = window.setTimeout(() => setIsVisible(true), delay);
+        io.disconnect();
       },
-      { threshold: 0.18, rootMargin: "0px 0px -10% 0px" }
+      { threshold: 0.2 }
     );
 
     io.observe(el);
-    return () => io.disconnect();
-  }, [delay, once]);
+
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      io.disconnect();
+    };
+  }, [delay]);
 
   return (
     <Tag
-      ref={ref as unknown as React.Ref<unknown>}
-      className={`kns-reveal ${className}`}
-      {...(rest as object)}
+      ref={ref as unknown as Ref<HTMLElement>}
+      className={`kns-reveal ${isVisible ? "is-visible" : ""} ${className}`}
+      {...props}
     >
       {children}
     </Tag>

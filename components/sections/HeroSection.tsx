@@ -61,7 +61,7 @@ export function HeroSection() {
         {/* ✅ 本文も TypeInText に */}
         <TypeInText
           as="p"
-          text="セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。"
+          text="セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。"
           className="mx-auto mt-4 max-w-2xl kns-body text-left"
           delay={420}     // H1 の後に少し間を置く
           stagger={14}    // 長文なので速め（10〜14 推奨）

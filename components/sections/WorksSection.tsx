@@ -1,6 +1,7 @@
 /* components/sections/WorksSection.tsx */
 import Link from "next/link";
 import { WorksGrid, type WorkLike } from "@/components/works/WorksGrid";
+import { Reveal } from "@/components/ui/Reveal";
 
 type Props = {
   works: WorkLike[];
@@ -10,18 +11,21 @@ export function WorksSection({ works }: Props) {
   return (
     <section className="mt-14">
       <header className="text-center">
-        <h2 className="kns-section-title">Works</h2>
+        <Reveal as="h2" className="kns-section-title" delay={60}>
+          Works
+        </Reveal>
 
-        <div className="mt-6 flex justify-center">
+        <Reveal as="div" className="mt-6 flex justify-center" delay={120}>
           <Link href="/works" className="nav-link">
             View all
           </Link>
-        </div>
+        </Reveal>
       </header>
 
-      <div className="mt-10 hairline" />
+      {/* ✅ children optional になったので self-closing OK */}
+      <Reveal as="div" className="mt-10 hairline" delay={160} />
 
-      <div className="mt-8">
+      <div className="mt-6">
         <WorksGrid works={works} />
       </div>
     </section>

@@ -1,103 +1,119 @@
 /* components/sections/ServiceSection.tsx */
 import type { ComponentType } from "react";
+import { Reveal } from "@/components/ui/Reveal";
 
-type ServiceItem = {
-  ja: string;
-  en: string;
-  Icon: ComponentType<{ className?: string }>;
+function IconCode(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M8.5 8L4 12l4.5 4M15.5 8L20 12l-4.5 4M13.5 6l-3 12"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconWordPress(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M12 20.2A8.2 8.2 0 1 0 12 3.8a8.2 8.2 0 0 0 0 16.4Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M7.2 9.2c.7 3.1 2.2 7.5 2.2 7.5l2-6.1 1.9 6.1 2.3-7.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconShield(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M12 3.5 19 6.5v6.2c0 4.5-3 7.7-7 8.8-4-1.1-7-4.3-7-8.8V6.5l7-3Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m9.2 12 1.8 1.8 3.8-3.9"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+type Item = {
+  title: string;
+  kicker: string;
   body: string;
+  Icon: ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
-function IconPencil({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none">
-      <path
-        d="M4 20l4.5-1 10-10a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0l-10 10L4 20z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path d="M13 6l5 5" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function IconMouse({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none">
-      <path
-        d="M12 3c3 0 6 2.4 6 6.2V15c0 3.6-2.7 6-6 6s-6-2.4-6-6V9.2C6 5.4 9 3 12 3z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path d="M12 7v3" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function IconCode({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="none">
-      <path
-        d="M9 18l-6-6 6-6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15 6l6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+const items: Item[] = [
+  {
+    title: "Frontend",
+    kicker: "Semantic HTML / spacing / type",
+    body: "意図を崩さない実装。見た目だけでなく、読みやすさ・導線・余白まで整えます。",
+    Icon: IconCode,
+  },
+  {
+    title: "WordPress",
+    kicker: "Theme tweak / layout fixes",
+    body: "表示崩れやテーマ調整、軽微改善。運用しやすい形に整備して引き継ぎます。",
+    Icon: IconWordPress,
+  },
+  {
+    title: "Secure forms",
+    kicker: "CSRF / validation / hygiene",
+    body: "フォームやデータ周りは安全側で。実務で困りがちな罠を避ける設計にします。",
+    Icon: IconShield,
+  },
+];
 
 export function ServiceSection() {
-  const items: ServiceItem[] = [
-    {
-      ja: "ディレクション",
-      en: "DIRECTION",
-      Icon: IconPencil,
-      body:
-        "要望のヒアリングから課題整理、優先順位付けまで。制作に入る前の準備を丁寧に行い、目的達成に必要な要素を見極めて進行します。",
-    },
-    {
-      ja: "デザイン",
-      en: "DESIGN",
-      Icon: IconMouse,
-      body:
-        "使う人の迷いを減らし、情報が自然に伝わる設計を重視。トーンや余白、視線誘導を整え、目的に沿った表現に落とし込みます。",
-    },
-    {
-      ja: "コーディング",
-      en: "CODING",
-      Icon: IconCode,
-      body:
-        "見た目の再現だけでなく、保守性や表示速度にも配慮。コンポーネント設計・アクセシビリティ・レスポンシブ対応を前提に実装します。",
-    },
-  ];
-
   return (
-    <section id="service" className="py-20 sm:py-28">
+    <section className="mt-14">
       <header className="text-center">
-        <h2 className="kns-section-title">Service</h2>
+        <Reveal as="h2" className="kns-section-title" delay={60}>
+          Service
+        </Reveal>
       </header>
 
-      <ul className="mx-auto mt-14 max-w-3xl space-y-16 sm:mt-16 sm:space-y-20">
-        {items.map(({ en, ja, Icon, body }) => (
-          <li key={en} className="text-center">
-            <h3 className="kns-item-title">{ja}</h3>
-            <p className="mt-3 kns-kicker">{en}</p>
+      <div className="mt-10 hairline" />
 
-            <div className="mt-6 flex justify-center">
-              <Icon className="h-10 w-10 text-muted-foreground" />
+      <ul className="mt-10 grid gap-8 md:grid-cols-3">
+        {items.map(({ title, kicker, body, Icon }, idx) => (
+          <Reveal
+            as="li"
+            key={title}
+            className="text-center"
+            delay={120 + idx * 120}
+          >
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-border bg-panel">
+              <Icon className="h-6 w-6 text-foreground/80" />
             </div>
 
-            <p className="mx-auto mt-8 max-w-2xl text-left kns-body">{body}</p>
-          </li>
+            <h3 className="mt-4 kns-item-title">{title}</h3>
+            <p className="mt-2 text-xs tracking-[0.18em] text-foreground/70">
+              {kicker}
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-foreground/85">
+              {body}
+            </p>
+          </Reveal>
         ))}
       </ul>
     </section>

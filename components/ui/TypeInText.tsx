@@ -1,78 +1,91 @@
 /* components/ui/TypeInText.tsx */
 "use client";
 
-import type { CSSProperties, ElementType } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, ComponentPropsWithoutRef, ElementType, Ref } from "react";
 
-type Props = {
+type CSSVars = CSSProperties & Partial<Record<`--${string}`, string | number>>;
+
+type Props<T extends ElementType> = {
+  as?: T;
   text: string;
-  as?: ElementType;
   className?: string;
-  delay?: number;   // ms
-  stagger?: number; // ms
+  delay?: number; // ms（is-visible 付与までの待ち）
+  stagger?: number; // ms per char
   caret?: boolean;
-  once?: boolean;
-};
+} & Omit<ComponentPropsWithoutRef<T>, "as" | "children">;
 
-export function TypeInText({
+export function TypeInText<T extends ElementType = "p">({
+  as,
   text,
-  as: Tag = "span",
   className = "",
   delay = 0,
-  stagger = 22,
+  stagger = 18,
   caret = true,
-  once = true,
-}: Props) {
+  ...props
+}: Props<T>) {
+  const Tag = (as ?? "p") as ElementType;
   const ref = useRef<HTMLElement | null>(null);
-  const chars = Array.from(text);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const chars = useMemo(() => Array.from(text), [text]);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
+    // ✅ reduced-motion は CSS 側で常時表示にしているので state を触らない
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      el.classList.add("is-visible");
-      return;
-    }
+    if (reduce) return;
+
+    let timeoutId: number | undefined;
 
     const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          el.classList.add("is-visible");
-          if (once) io.unobserve(entry.target);
-        }
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+
+        timeoutId = window.setTimeout(() => setIsVisible(true), delay);
+        io.disconnect();
       },
-      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
+      { threshold: 0.2 }
     );
 
     io.observe(el);
-    return () => io.disconnect();
-  }, [once]);
 
-  const style = {
-    "--typein-delay": `${delay}ms`,
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      io.disconnect();
+    };
+  }, [delay]);
+
+  const styleVars: CSSVars = {
+    "--typein-delay": "0ms",
     "--typein-stagger": `${stagger}ms`,
-  } as CSSProperties;
+  };
 
   return (
     <Tag
-      ref={ref as unknown as React.Ref<unknown>}
-      className={`kns-typein ${caret ? "kns-typein--caret" : ""} ${className}`}
-      style={style}
+      ref={ref as unknown as Ref<HTMLElement>}
+      className={`kns-typein ${caret ? "kns-typein--caret" : ""} ${
+        isVisible ? "is-visible" : ""
+      } ${className}`}
+      style={styleVars}
       aria-label={text}
+      {...props}
     >
-      {chars.map((c, i) => (
-        <span
-          key={`${c}-${i}`}
-          className="kns-typein__char"
-          style={{ "--i": i } as CSSProperties}
-          aria-hidden="true"
-        >
-          {c === " " ? "\u00A0" : c}
-        </span>
-      ))}
+      {chars.map((ch, i) => {
+        const charVars: CSSVars = { "--i": i };
+        return (
+          <span
+            key={`${ch}-${i}`}
+            className="kns-typein__char"
+            style={charVars}
+            aria-hidden="true"
+          >
+            {ch === " " ? "\u00A0" : ch}
+          </span>
+        );
+      })}
     </Tag>
   );
 }
