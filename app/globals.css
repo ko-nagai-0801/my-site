@@ -14,3 +14,8 @@
 @import "../styles/ui/cursor-stalker.css";
 @import "../styles/ui/ripple.css";
 @import "../styles/ui/nav-link.css";
+
+/* Text effects */
+@import "../styles/ui/text-reveal.css";
+@import "../styles/ui/text-underline.css";
+@import "../styles/ui/type-in.css";

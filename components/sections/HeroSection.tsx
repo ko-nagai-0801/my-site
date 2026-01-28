@@ -1,5 +1,7 @@
 /* components/sections/HeroSection.tsx */
 import Image from "next/image";
+import { Reveal } from "@/components/ui/Reveal";
+import { TypeInText } from "@/components/ui/TypeInText";
 
 export function HeroSection() {
   return (
@@ -20,12 +22,21 @@ export function HeroSection() {
 
             <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
               <div className="flex flex-col items-start gap-2 sm:gap-3">
-                <p className="text-sm font-medium leading-relaxed text-foreground sm:text-base sm:max-w-[44rem]">
+                <Reveal
+                  as="p"
+                  className="text-sm font-medium leading-relaxed text-foreground sm:text-base sm:max-w-[44rem]"
+                  delay={80}
+                >
                   デザインの意図を、コードで「気持ち良い体験」へ。
-                </p>
-                <p className="text-xs tracking-[0.18em] text-foreground/75 sm:text-sm sm:max-w-[44rem]">
+                </Reveal>
+
+                <Reveal
+                  as="p"
+                  className="text-xs tracking-[0.18em] text-foreground/75 sm:text-sm sm:max-w-[44rem]"
+                  delay={140}
+                >
                   Semantic HTML / Spacing &amp; Type / Secure Forms
-                </p>
+                </Reveal>
               </div>
             </div>
           </div>
@@ -34,13 +45,28 @@ export function HeroSection() {
 
       {/* 見出し・本文は今まで通り container 幅 */}
       <header className="mt-8 text-center sm:mt-10">
-        <p className="kns-section-label">Studio / Portfolio / Blog</p>
-        <h1 className="mt-4 text-4xl font-light tracking-[0.08em] text-foreground sm:text-5xl">
-          Kou Nagai Studio
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl kns-body text-left">
-          セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
-        </p>
+        <Reveal as="p" className="kns-section-label" delay={160}>
+          Studio / Portfolio / Blog
+        </Reveal>
+
+        <TypeInText
+          as="h1"
+          text="Kou Nagai Studio"
+          className="mt-4 text-4xl font-light tracking-[0.08em] text-foreground sm:text-5xl"
+          delay={220}
+          stagger={28}
+          caret={false}
+        />
+
+        {/* ✅ 本文も TypeInText に */}
+        <TypeInText
+          as="p"
+          text="セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。"
+          className="mx-auto mt-4 max-w-2xl kns-body text-left"
+          delay={420}     // H1 の後に少し間を置く
+          stagger={14}    // 長文なので速め（10〜14 推奨）
+          caret={false}   // 長文は caret 無しが上品
+        />
       </header>
     </section>
   );

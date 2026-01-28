@@ -1,0 +1,34 @@
+/* styles/ui/text-underline.css */
+
+/* 2) Heading underline (runs when .is-visible is付与される) */
+.kns-underline {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.28em; /* 下線との距離 */
+}
+
+.kns-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0.08em;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.35;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: 120ms;
+}
+
+.kns-underline.is-visible::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kns-underline::after {
+    transform: scaleX(1);
+    transition: none;
+  }
+}

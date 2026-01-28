@@ -1,0 +1,61 @@
+/* styles/ui/type-in.css */
+
+/* 3) Type-in / split text (runs when .is-visible is付与される) */
+.kns-typein {
+  display: inline-block;
+  --typein-delay: 0ms;
+  --typein-stagger: 22ms;
+}
+
+.kns-typein__char {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 0.16em, 0);
+  filter: blur(1px);
+  will-change: opacity, transform, filter;
+}
+
+/* ここで初めてアニメを走らせる */
+.kns-typein.is-visible .kns-typein__char {
+  animation: kns-typein-in 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation-delay: calc(var(--typein-delay) + (var(--i) * var(--typein-stagger)));
+}
+
+@keyframes kns-typein-in {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+/* ほんのり caret（止まる） */
+@media (prefers-reduced-motion: no-preference) {
+  .kns-typein--caret::after {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-left: 0.12em;
+    background: currentColor;
+    opacity: 0.5;
+    animation: kns-caret 900ms steps(1) 6;
+    vertical-align: -0.1em;
+  }
+
+  @keyframes kns-caret {
+    50% { opacity: 0; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kns-typein__char {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    animation: none;
+  }
+  .kns-typein--caret::after {
+    display: none;
+  }
+}
