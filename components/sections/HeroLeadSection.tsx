@@ -34,19 +34,19 @@ export default function HeroLeadSection() {
         </Reveal>
 
         <ul className="mt-4 space-y-3 text-sm leading-relaxed text-foreground/90">
-          <Reveal as="li" className="flex gap-2" delay={160}>
-            <span className="mt-[0.2em] h-2 w-2 shrink-0 rounded-full bg-foreground/60" />
+          <Reveal as="li" className="flex items-center gap-2" delay={160}>
+            <span className="h-2 w-2 shrink-0 rounded-full bg-foreground/60" />
             <span>読みやすいタイポと、崩れにくい余白設計</span>
           </Reveal>
 
-          <Reveal as="li" className="flex gap-2" delay={200}>
-            <span className="mt-[0.2em] h-2 w-2 shrink-0 rounded-full bg-foreground/60" />
+          <Reveal as="li" className="flex items-center gap-2" delay={200}>
+            <span className="h-2 w-2 shrink-0 rounded-full bg-foreground/60" />
             <span>Semantic HTML + a11y を“当たり前”に</span>
           </Reveal>
 
-          <Reveal as="li" className="flex gap-2" delay={240}>
-            <span className="mt-[0.2em] h-2 w-2 shrink-0 rounded-full bg-foreground/60" />
-            <span>フォームやデータ周りは“安全に”で実装</span>
+          <Reveal as="li" className="flex items-center gap-2" delay={240}>
+            <span className="h-2 w-2 shrink-0 rounded-full bg-foreground/60" />
+            <span>フォームやデータ周りは“安全に”実装</span>
           </Reveal>
         </ul>
 
