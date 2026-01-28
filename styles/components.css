@@ -88,6 +88,39 @@
     color: var(--foreground);
   }
 
+  /* ---------------------------------------------
+   * ✅ KNS Buttons（共通ボタン）
+   * - nav-link と分離して「ボタンとして明白」な見た目に統一
+   * --------------------------------------------- */
+
+  /* ゴーストボタン（Linkでもbuttonでも使える） */
+  .kns-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-transparent px-5 py-3 text-sm font-semibold tracking-wide text-foreground shadow-sm transition;
+    text-decoration: none;
+  }
+
+  .kns-btn-ghost:hover {
+    @apply border-foreground/40 bg-foreground/5;
+  }
+
+  .kns-btn-ghost:focus-visible {
+    @apply outline-none ring-2 ring-foreground/30 ring-offset-2 ring-offset-background;
+  }
+
+  .kns-btn-ghost:active {
+    @apply translate-y-[1px];
+  }
+
+  /* CTA用：モバイルは幅いっぱい、md以上は横並び前提で auto */
+  .kns-btn-ghost--cta {
+    @apply w-full md:w-auto md:min-w-[12rem];
+  }
+
+  /* CTAの並び：モバイル縦 / md以上で横 */
+  .kns-cta-group {
+    @apply mt-7 flex w-full flex-col items-center gap-3 md:flex-row md:justify-center md:gap-4;
+  }
+
   /* Hero 日本語：モバイルだけ縦書き */
   .hero-ja-vertical {
     writing-mode: horizontal-tb; /* デフォルト（PC含む）は横書き */

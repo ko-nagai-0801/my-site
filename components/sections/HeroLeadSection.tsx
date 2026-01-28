@@ -19,11 +19,7 @@ export default function HeroLeadSection() {
           デザインを、しっかり”カタチ”に
         </Reveal>
 
-        <Reveal
-          as="p"
-          className="mt-3 kns-body text-left"
-          delay={180}
-        >
+        <Reveal as="p" className="mt-3 kns-body text-left" delay={180}>
           余白・視線誘導・読みやすさ。設計の意図を崩さず、コードで体験の精度を上げます。
         </Reveal>
       </header>
@@ -54,13 +50,16 @@ export default function HeroLeadSection() {
           </Reveal>
         </ul>
 
-        {/* ✅ CTAも常に縦並び（必要ならここだけ横並びに戻せます） */}
-        <Reveal as="div" className="mt-6 flex flex-col items-center gap-3" delay={280}>
-          <Link href="/works" className="nav-link">
-            View works
+        {/* ✅ CTA：モバイル縦 / md以上で横。ボタン見た目は共通クラスへ */}
+        <Reveal as="div" className="kns-cta-group" delay={280}>
+          <Link href="/works" className="kns-btn-ghost kns-btn-ghost--cta">
+            <span>View works</span>
+            <span aria-hidden="true">→</span>
           </Link>
-          <Link href="/blog" className="nav-link">
-            Read blog
+
+          <Link href="/blog" className="kns-btn-ghost kns-btn-ghost--cta">
+            <span>Read blog</span>
+            <span aria-hidden="true">→</span>
           </Link>
         </Reveal>
       </div>
