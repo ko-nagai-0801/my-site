@@ -80,7 +80,7 @@ function HeaderFallback() {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ja">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-clip`}>
         <Suspense fallback={<HeaderFallback />}>
           <SiteHeader />
         </Suspense>
@@ -88,9 +88,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {children}
 
         <SiteFooter />
-      </body>
 
-      {prod && GA_ID ? <GoogleAnalytics gaId={GA_ID} /> : null}
+        {prod && GA_ID ? <GoogleAnalytics gaId={GA_ID} /> : null}
+      </body>
     </html>
   );
 }
