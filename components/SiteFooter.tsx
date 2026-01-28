@@ -30,19 +30,13 @@ export default function SiteFooter() {
     <footer className="mt-20 border-t border-border bg-background/40">
       <div className="container py-12 sm:py-14">
         <div className="flex flex-col gap-10">
-          {/* Brand */}
           <div className="min-w-0">
             <div className="text-sm font-semibold tracking-[0.28em] uppercase text-foreground/90">
               Kou Nagai Studio
             </div>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
-              セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。
-            </p>
           </div>
 
-          {/* Contact / Links */}
           <div className="min-w-0">
-            {/* ✅ Contact を少し大きく */}
             <p className="text-sm font-semibold tracking-[0.22em] uppercase text-muted">
               Contact
             </p>
@@ -54,14 +48,16 @@ export default function SiteFooter() {
                     href={l.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="nav-link inline-flex items-center gap-2"
+                    className="nav-link inline-flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-base hover:bg-panel/60"
                   >
-                    <l.Icon className="h-4 w-4" aria-hidden="true" />
-                    <span>{l.label}</span>
+                    <l.Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    <span className="leading-none">{l.label}</span>
                   </a>
                 </li>
               ))}
             </ul>
+
+            {/* 余白が欲しければここに注記なども置けます */}
           </div>
         </div>
       </div>
