@@ -43,12 +43,13 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* 見出し・本文は今まで通り container 幅 */}
-      <header className="mt-8 text-center sm:mt-10">
+      {/* 見出し・本文は container 幅 */}
+      <header className="mt-8 sm:mt-10 flex flex-col items-center text-center">
         <Reveal as="p" className="kns-section-label" delay={160}>
           Studio / Portfolio / Blog
         </Reveal>
 
+        {/* ✅ flex-col にしたので、画面が広くても必ず縦並び */}
         <TypeInText
           as="h1"
           text="Kou Nagai Studio"
@@ -58,14 +59,13 @@ export function HeroSection() {
           caret={false}
         />
 
-        {/* ✅ 本文も TypeInText に */}
         <TypeInText
           as="p"
           text="セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。"
-          className="mx-auto mt-4 max-w-2xl kns-body text-left"
-          delay={420}     // H1 の後に少し間を置く
-          stagger={14}    // 長文なので速め（10〜14 推奨）
-          caret={false}   // 長文は caret 無しが上品
+          className="mt-4  kns-body text-left"
+          delay={420}
+          stagger={14}
+          caret={false}
         />
       </header>
     </section>
