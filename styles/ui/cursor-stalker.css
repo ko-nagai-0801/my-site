@@ -27,6 +27,7 @@
 
     filter: blur(0.2px);
     mix-blend-mode: screen;
+    transition: opacity 180ms ease, box-shadow 220ms ease, filter 220ms ease;
   }
 
   /* クリック時：transform 非依存（追従を壊さない） */
