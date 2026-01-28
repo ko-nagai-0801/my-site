@@ -8,3 +8,40 @@
 @import "../styles/pretty-code.css";
 
 @plugin "@tailwindcss/typography";
+
+
+
+/* Spotlight (pointer: fine のときだけ効かせる) */
+@media (pointer: fine) {
+  .kns-spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kns-spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+    background: radial-gradient(
+      600px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+      rgba(255, 255, 255, 0.10),
+      rgba(255, 255, 255, 0.04) 35%,
+      transparent 60%
+    );
+  }
+
+  .kns-spotlight:hover::before {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kns-spotlight::before {
+    transition: none;
+  }
+}
+
+

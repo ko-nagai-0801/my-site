@@ -20,6 +20,7 @@
     "next-mdx-remote": "^5.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-parallax-tilt": "^1.7.317",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-pretty-code": "^0.14.1",
     "rehype-slug": "^6.0.0",
