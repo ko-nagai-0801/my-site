@@ -12,15 +12,14 @@ function isEnabled() {
 }
 
 export function TiltCard({ children }: { children: ReactNode }) {
-  // クリック等のイベントが発生するまでは window が無いので false → そのまま children を返す
-  // ただし Tilt は client component なので実際はクライアントで評価されます。
-  if (!isEnabled()) return <>{children}</>;
+  const enabled = isEnabled();
 
   return (
     <Tilt
+      tiltEnable={enabled}
       tiltMaxAngleX={6}
       tiltMaxAngleY={6}
-      scale={1.01}
+      scale={enabled ? 1.01 : 1}
       transitionSpeed={700}
       glareEnable={false}
     >
