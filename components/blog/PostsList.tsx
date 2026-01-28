@@ -22,13 +22,11 @@ type LinkMode = "wrap" | "title";
 
 function PostThumb({ src, alt }: { src: string; alt: string }) {
   return (
-    // ✅ 最小幅（sm未満）では大きく＆中央寄せ、sm以上では少し小さく左寄せ
     <div className="relative mx-auto aspect-[16/10] w-44 shrink-0 overflow-hidden rounded-xl border border-border bg-panel sm:mx-0 sm:w-36">
       <Image
         src={src}
         alt={alt}
         fill
-        // ✅ 表示サイズと合わせる（w-44=176px / sm:w-36=144px）
         sizes="(min-width: 640px) 144px, 176px"
         className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
       />
@@ -47,10 +45,6 @@ export function PostsList({
   linkMode?: LinkMode;
   showReadLabel?: boolean;
 }) {
-  // ✅ latest（Home表示）だけ：2カラム行カード
-  // - 右カラム全体をリンク
-  // - Readは削除
-  // - サムネはデフォルト noimage.webp
   if (variant === "latest") {
     return (
       <ul className="space-y-4 sm:space-y-5">
@@ -60,15 +54,14 @@ export function PostsList({
           const thumbSrc = p.meta.image?.src || DEFAULT_THUMB;
           const thumbAlt = p.meta.image?.alt || p.meta.title;
 
+          // ✅ 下線を消す（リンク感は hover の opacity で）
           const titleNode =
             linkMode === "title" ? (
-              <span className="text-base font-medium tracking-tight underline underline-offset-4 group-hover:opacity-80">
+              <span className="text-base font-medium tracking-tight group-hover:opacity-80">
                 {p.meta.title}
               </span>
             ) : (
-              <h2 className="text-base font-medium tracking-tight underline underline-offset-4">
-                {p.meta.title}
-              </h2>
+              <h2 className="text-base font-medium tracking-tight">{p.meta.title}</h2>
             );
 
           const descriptionNode = p.meta.description ? (
