@@ -19,16 +19,13 @@ export function HeroSection() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="pointer-events-none absolute inset-0 ring-1 ring-border" />
 
-          {/* Copy：日本語だけモバイル縦書き / 横書き時は2行 */}
-          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 hero-text">
-            <div className="flex items-end gap-4 sm:flex-col sm:items-start sm:gap-2">
-              {/* 日本語（モバイル縦書き） */}
-              <p className="hero-ja-vertical shrink-0 text-sm font-medium text-foreground sm:text-base sm:max-w-[44rem]">
+          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+            <div className="flex flex-col items-start gap-2 sm:gap-3">
+              <p className="text-sm font-medium leading-relaxed text-foreground sm:text-base sm:max-w-[44rem]">
                 デザインの意図を、コードで「気持ち良い体験」へ。
               </p>
 
-              {/* 英文（横書き固定） */}
-              <p className="flex-1 text-xs tracking-[0.18em] text-foreground/75 sm:text-sm sm:max-w-[44rem]">
+              <p className="text-xs tracking-[0.18em] text-foreground/75 sm:text-sm sm:max-w-[44rem]">
                 Semantic HTML / Spacing &amp; Type / Secure Forms
               </p>
             </div>
@@ -36,18 +33,17 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="mt-8 sm:mt-10">
+      <header className="mt-8 text-center sm:mt-10">
         <p className="kns-section-label">Studio / Portfolio / Blog</p>
 
-        {/* HeroのH1も Service の空気（font-light + tracking）に寄せる */}
-        <h1 className="mt-4 text-3xl font-light tracking-[0.08em] text-foreground sm:text-4xl">
+        <h1 className="mt-4 text-4xl font-light tracking-[0.08em] text-foreground sm:text-5xl">
           Kou Nagai Studio
         </h1>
 
-        <p className="mt-4 max-w-2xl kns-body">
+        <p className="mx-auto mt-4 max-w-2xl kns-body text-left">
           セマンティックなHTMLと整った余白・タイポで、意図を崩さず実装します。ここでは制作のメモと学びを記録します。
         </p>
-      </div>
+      </header>
     </section>
   );
 }
