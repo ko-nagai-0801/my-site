@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
+import { CursorStalker } from "@/components/ui/CursorStalker";
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -81,6 +82,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ja">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-clip`}>
+      <CursorStalker />
+      
         <Suspense fallback={<HeaderFallback />}>
           <SiteHeader />
         </Suspense>
