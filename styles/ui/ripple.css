@@ -1,0 +1,46 @@
+/* styles/ui/ripple.css */
+
+/* Ripple (CTA only by class) */
+.kns-ripple-host {
+  position: relative;
+  overflow: hidden;
+}
+
+.kns-ripple-host::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background: radial-gradient(
+    600px circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.10) 28%,
+    rgba(255, 255, 255, 0.00) 60%
+  );
+}
+
+.kns-ripple-host.kns-ripple::after {
+  animation: kns-ripple 650ms ease-out;
+}
+
+@keyframes kns-ripple {
+  0% {
+    opacity: 0.00;
+    transform: scale(0.9);
+  }
+  18% {
+    opacity: 0.38;
+    transform: scale(1.0);
+  }
+  100% {
+    opacity: 0.00;
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kns-ripple-host::after {
+    animation: none !important;
+  }
+}

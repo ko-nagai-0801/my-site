@@ -1,0 +1,63 @@
+/* styles/ui/cursor-stalker.css */
+
+/* Cursor Stalker */
+@media (pointer: fine) {
+  .kns-cursor-stalker {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 9999;
+    width: 34px;
+    height: 34px;
+    border-radius: 9999px;
+    pointer-events: none;
+    opacity: 0;
+
+    /* transform は JS が管理（追従/scale 合成） */
+    transform: translate3d(0, 0, 0) translate(-50%, -50%);
+    transition: opacity 180ms ease;
+    will-change: transform, opacity;
+
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.06) 35%,
+      rgba(255, 255, 255, 0.00) 70%
+    );
+
+    filter: blur(0.2px);
+    mix-blend-mode: screen;
+  }
+
+  /* クリック時：transform 非依存（追従を壊さない） */
+  .kns-cursor-stalker.kns-cursor--click {
+    animation: kns-cursor-pulse 260ms ease-out;
+  }
+
+  @keyframes kns-cursor-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.18);
+    }
+    70% {
+      box-shadow: 0 0 0 16px rgba(255, 255, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+  }
+
+  /* 2) Hover 時強調：class は CursorStalker.tsx が付与 */
+  .kns-cursor-stalker.kns-cursor--hover {
+    opacity: 1;
+    filter: blur(0.1px);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.10),
+      0 0 24px rgba(255, 255, 255, 0.10);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kns-cursor-stalker {
+    display: none;
+  }
+}
