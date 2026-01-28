@@ -14,20 +14,25 @@ export function BlogSection({ posts }: Props) {
         <Reveal as="h2" className="kns-section-title" delay={60}>
           Blog
         </Reveal>
-
-        <Reveal as="div" className="mt-6 flex justify-center" delay={120}>
-          <Link href="/blog" className="nav-link">
-            View all
-          </Link>
-        </Reveal>
       </header>
 
-      {/* ✅ children optional になったので self-closing OK */}
+      {/* ✅  区切り線 */}
       <Reveal as="div" className="mt-10 hairline" delay={160} />
 
-      <div className="mt-6">
+      {/* ✅ コンテンツ（リスト/カード） */}
+      <div className="mt-10">
         <PostsList posts={posts} variant="latest" linkMode="title" />
       </div>
+
+      <Reveal as="div" className="mt-6 flex justify-end" delay={220}>
+        <Link href="/blog" className="kns-btn-ghost">
+          <span>View all</span>
+          <span aria-hidden="true">→</span>
+        </Link>
+      </Reveal>
+
+        {/* ✅  区切り線 */}
+        <Reveal as="div" className="mt-10 hairline" delay={160} />
     </section>
   );
 }
