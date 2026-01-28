@@ -16,7 +16,7 @@ export default async function Home() {
   const latestWorks = worksAll.slice(0, 3);
 
   return (
-    <main className="container py-14">
+    <main className="container">
       <HeroSection />
 
       <HeroLeadSection />
