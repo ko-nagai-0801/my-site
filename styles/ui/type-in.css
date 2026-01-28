@@ -7,6 +7,16 @@
   --typein-stagger: 22ms;
 }
 
+/*
+  ✅ 縦積み崩れ対策
+  TypeInText を h1/p/div 等「本来ブロック要素」で使うケースでは、
+  .kns-typein の inline-block を打ち消して block として扱う。
+  （as="span" 等の “インライン用途” は従来通り inline-block のまま）
+*/
+.kns-typein:is(h1, h2, h3, h4, h5, h6, p, div) {
+  display: block;
+}
+
 .kns-typein__char {
   display: inline-block;
   opacity: 0;
@@ -44,7 +54,9 @@
   }
 
   @keyframes kns-caret {
-    50% { opacity: 0; }
+    50% {
+      opacity: 0;
+    }
   }
 }
 
