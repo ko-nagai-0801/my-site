@@ -94,7 +94,7 @@ export function ServiceSection() {
 
       <div className="mt-10 hairline" />
 
-      <ul className="mt-10 grid gap-8 md:grid-cols-3">
+      <ul className="mt-10 grid gap-10 md:grid-cols-3">
         {items.map(({ title, kicker, body, Icon }, idx) => (
           <Reveal
             as="li"
@@ -102,17 +102,15 @@ export function ServiceSection() {
             className="text-center"
             delay={120 + idx * 120}
           >
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-border bg-panel">
-              <Icon className="h-6 w-6 text-foreground/80" />
-            </div>
+            {/* ✅ 枠/背景を消して「アイコンのみ」＋サイズUP */}
+            <Icon className="mx-auto h-10 w-10 text-foreground/80 sm:h-12 sm:w-12" />
 
             <h3 className="mt-4 kns-item-title">{title}</h3>
-            <p className="mt-2 text-xs tracking-[0.18em] text-foreground/70">
-              {kicker}
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-foreground/85">
-              {body}
-            </p>
+
+            {/* ✅ 既存のタイポユーティリティに寄せてトーン統一 */}
+            <p className="mt-2 kns-kicker">{kicker}</p>
+
+            <p className="mt-4 kns-body text-left">{body}</p>
           </Reveal>
         ))}
       </ul>
