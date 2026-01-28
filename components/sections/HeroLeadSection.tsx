@@ -15,7 +15,7 @@ export default function HeroLeadSection() {
             WordPress / LP / HP の制作から、既存サイトの改修・バグフィクスまで幅広く対応します。
           </p>
 
-          <ul className="mt-5 space-y-2 kns-body text-left">
+          <ul className="mt-5 w-full space-y-2 kns-body text-left">
             <li className="flex gap-2">
               <span
                 className="mt-[0.65rem] h-1 w-1 shrink-0 rounded-full bg-border"
