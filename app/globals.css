@@ -60,7 +60,6 @@
     transition: opacity 180ms ease;
     will-change: transform, opacity;
 
-    /* “薄い光” */
     background: radial-gradient(
       circle,
       rgba(255, 255, 255, 0.12),
@@ -68,61 +67,24 @@
       rgba(255, 255, 255, 0.00) 70%
     );
 
-    /* ほんの少しだけ“凝った感” */
     filter: blur(0.2px);
     mix-blend-mode: screen;
   }
 
   .kns-cursor-stalker.kns-cursor--click {
-    animation: kns-cursor-click 220ms ease;
+    animation: kns-cursor-pulse 260ms ease-out;
   }
 
-  @keyframes kns-cursor-click {
-    0%   { transform: translate3d(var(--x, 0), var(--y, 0), 0) translate(-50%, -50%) scale(1); }
-    40%  { transform: translate3d(var(--x, 0), var(--y, 0), 0) translate(-50%, -50%) scale(0.86); }
-    100% { transform: translate3d(var(--x, 0), var(--y, 0), 0) translate(-50%, -50%) scale(1); }
+  @keyframes kns-cursor-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.18); }
+    70%  { box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kns-cursor-stalker {
     display: none;
-  }
-}
-
-/* Ripple (CTA only by class) */
-.kns-ripple-host {
-  position: relative;
-  overflow: hidden;
-}
-
-.kns-ripple-host::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  opacity: 0;
-  background: radial-gradient(
-    600px circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
-    rgba(255, 255, 255, 0.22),
-    rgba(255, 255, 255, 0.10) 28%,
-    rgba(255, 255, 255, 0.00) 60%
-  );
-}
-
-.kns-ripple-host.kns-ripple::after {
-  animation: kns-ripple 650ms ease-out;
-}
-
-@keyframes kns-ripple {
-  0%   { opacity: 0.00; transform: scale(0.9); }
-  18%  { opacity: 0.38; transform: scale(1.0); }
-  100% { opacity: 0.00; transform: scale(1.25); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .kns-ripple-host::after {
-    animation: none !important;
   }
 }
 
