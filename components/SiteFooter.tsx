@@ -1,19 +1,33 @@
 // components/SiteFooter.tsx
-import Link from "next/link";
+import type { ElementType } from "react";
+import { SiGithub, SiQiita, SiX } from "@icons-pack/react-simple-icons";
+
+const NoteMark = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" role="img" aria-label="Note" {...props}>
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <path
+      d="M8 16V8h1.6l4.8 6V8H16v8h-1.6l-4.8-6v6H8z"
+      fill="currentColor"
+    />
+  </svg>
+);
 
 const socialLinks = [
-  { href: "https://x.com/k_n_8141", label: "X" },
-  { href: "https://github.com/ko-nagai-0801", label: "GitHub" },
-  { href: "https://note.com/gapsmilegeek", label: "Note" },
-  { href: "https://qiita.com/ko_nagai_0801", label: "Qiita" },
-] as const;
+  { href: "https://x.com/k_n_8141", label: "X", Icon: SiX },
+  { href: "https://github.com/ko-nagai-0801", label: "GitHub", Icon: SiGithub },
+  { href: "https://note.com/gapsmilegeek", label: "Note", Icon: NoteMark },
+  { href: "https://qiita.com/ko_nagai_0801", label: "Qiita", Icon: SiQiita },
+] as const satisfies ReadonlyArray<{
+  href: string;
+  label: string;
+  Icon: ElementType;
+}>;
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
     <footer className="mt-20 border-t border-border bg-background/40">
-      {/* 上段：常に縦並び */}
       <div className="container py-12 sm:py-14">
         <div className="flex flex-col gap-10">
           {/* Brand */}
@@ -28,15 +42,9 @@ export default function SiteFooter() {
 
           {/* Contact / Links */}
           <div className="min-w-0">
-            <p className="text-xs tracking-[0.22em] uppercase text-muted">
+            {/* ✅ Contact を少し大きく */}
+            <p className="text-sm font-semibold tracking-[0.22em] uppercase text-muted">
               Contact
-            </p>
-            <p className="mt-3 text-sm text-muted">
-              まずは{" "}
-              <Link href="/about" className="underline underline-offset-4">
-                About
-              </Link>{" "}
-              からご確認ください。
             </p>
 
             <ul className="mt-4 space-y-2 text-sm">
@@ -46,9 +54,10 @@ export default function SiteFooter() {
                     href={l.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="nav-link"
+                    className="nav-link inline-flex items-center gap-2"
                   >
-                    {l.label}
+                    <l.Icon className="h-4 w-4" aria-hidden="true" />
+                    <span>{l.label}</span>
                   </a>
                 </li>
               ))}
@@ -57,10 +66,8 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      {/* 区切り線：画面幅いっぱい */}
       <div className="h-px w-full bg-border" />
 
-      {/* 下段：コピーライト中央寄せ */}
       <div className="container py-6">
         <p className="text-center text-xs tracking-[0.18em] text-muted">
           © {year} Kou Nagai Studio
