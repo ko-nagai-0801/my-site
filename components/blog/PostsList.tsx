@@ -28,8 +28,9 @@ function PostThumb({ src, alt }: { src: string; alt: string }) {
         src={src}
         alt={alt}
         fill
-        sizes="(min-width: 768px) 144px, 160px"
-        className="object-cover"
+        // ✅ 表示サイズと合わせる（w-44=176px / sm:w-36=144px）
+        sizes="(min-width: 640px) 144px, 176px"
+        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
       />
     </div>
   );
