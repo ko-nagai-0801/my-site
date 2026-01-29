@@ -1,4 +1,4 @@
-/* app/blog/page.tsx */
+// app/blog/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { getAllPostLikes } from "@/lib/posts";
 import { PostsList } from "@/components/blog/PostsList";
 import { Pagination } from "@/components/ui/Pagination";
+import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
   title: "Blog | Kou Nagai Studio",
@@ -37,16 +38,32 @@ export default async function BlogPage({ searchParams }: Props) {
       <main className="container py-14">
         <header className="flex items-end justify-between gap-6">
           <div>
-            <p className="kns-page-kicker">Index</p>
-            <h1 className="mt-3 kns-page-title">Blog</h1>
+            <Reveal as="p" className="kns-page-kicker" delay={60}>
+              Index
+            </Reveal>
+            <Reveal as="h1" className="mt-3 kns-page-title" delay={120}>
+              Blog
+            </Reveal>
+            <Reveal as="p" className="mt-4 kns-lead" delay={180}>
+              学習ログ・制作メモなどの一覧です。
+            </Reveal>
           </div>
 
-          <Link href="/" className="nav-link">
-            Home
-          </Link>
+          <Reveal as="div" delay={220}>
+            <Link href="/" className="kns-btn-ghost" aria-label="Homeへ戻る">
+              <span>Home</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </Reveal>
         </header>
 
-        <p className="mt-10 text-sm text-muted-foreground">記事がまだありません。</p>
+        <Reveal as="div" className="mt-10 hairline" delay={260} />
+
+        <Reveal as="p" className="mt-8 text-sm text-muted-foreground" delay={320}>
+          記事がまだありません。
+        </Reveal>
+
+        <Reveal as="div" className="mt-10 hairline" delay={360} />
       </main>
     );
   }
@@ -61,28 +78,49 @@ export default async function BlogPage({ searchParams }: Props) {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="kns-page-kicker">Index</p>
-          <h1 className="mt-3 kns-page-title">Blog</h1>
-          <p className="mt-2 text-xs tracking-[0.18em] text-muted-foreground">
+          <Reveal as="p" className="kns-page-kicker" delay={60}>
+            Index
+          </Reveal>
+          <Reveal as="h1" className="mt-3 kns-page-title" delay={120}>
+            Blog
+          </Reveal>
+
+          <Reveal
+            as="p"
+            className="mt-2 text-xs tracking-[0.18em] text-muted-foreground"
+            delay={180}
+          >
             Page {requested} / {totalPages}
-          </p>
+          </Reveal>
         </div>
 
-        <Link href="/" className="nav-link">
-          Home
-        </Link>
+        <Reveal as="div" delay={220}>
+          <Link href="/" className="kns-btn-ghost" aria-label="Homeへ戻る">
+            <span>Home</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </Reveal>
       </header>
 
-      <div className="mt-10">
-        <PostsList posts={items} variant="blog" linkMode="title" showReadLabel />
-      </div>
+      {/* ✅ 区切り線（Worksと同テンポ） */}
+      <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      <Pagination
-        className="mt-10"
-        current={requested}
-        total={totalPages}
-        hrefForPage={pageHref}
-      />
+      {/* ✅ 一覧 */}
+      <Reveal as="div" className="mt-10" delay={300}>
+        <PostsList posts={items} variant="blog" linkMode="title" showReadLabel />
+      </Reveal>
+
+      {/* ✅ ページネーション */}
+      <Reveal as="div" className="mt-10" delay={360}>
+        <Pagination
+          current={requested}
+          total={totalPages}
+          hrefForPage={pageHref}
+        />
+      </Reveal>
+
+      {/* ✅ 〆の区切り線 */}
+      <Reveal as="div" className="mt-10 hairline" delay={420} />
     </main>
   );
 }

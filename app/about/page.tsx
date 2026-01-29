@@ -90,12 +90,15 @@ export default function AboutPage() {
           >
             Profile
           </Reveal>
-          <Reveal as="h1" className="mt-3 text-3xl font-semibold tracking-tight" delay={120}>
+          <Reveal
+            as="h1"
+            className="mt-3 text-3xl font-semibold tracking-tight"
+            delay={120}
+          >
             About
           </Reveal>
         </div>
 
-        {/* ✅ Homeリンクをゴーストボタンに + Reveal */}
         <Reveal as="div" delay={180}>
           <Link href="/" className="kns-btn-ghost" aria-label="Homeへ戻る">
             <span>Home</span>
@@ -150,16 +153,29 @@ export default function AboutPage() {
             </p>
           </Reveal>
 
-          {/* ✅ Focusカード（Reveal） */}
-          <Reveal as="div" className="md:col-span-4" delay={420}>
-            <div className="rounded-2xl border border-border bg-panel p-5">
-              <p className="text-xs tracking-[0.22em] uppercase text-muted">
+          {/* ✅ Focusカード：カードもReveal、各行もReveal */}
+          <div className="md:col-span-4">
+            <Reveal
+              as="div"
+              className="rounded-2xl border border-border bg-panel p-5"
+              delay={420}
+            >
+              <Reveal
+                as="p"
+                className="text-xs tracking-[0.22em] uppercase text-muted"
+                delay={460}
+              >
                 Focus
-              </p>
+              </Reveal>
 
               <ul className="mt-4 space-y-3">
-                {focus.map((f) => (
-                  <li key={f.label} className="space-y-1">
+                {focus.map((f, idx) => (
+                  <Reveal
+                    as="li"
+                    key={f.label}
+                    className="space-y-1"
+                    delay={520 + idx * 70}
+                  >
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="text-sm font-medium text-muted">
                         {f.label}
@@ -172,18 +188,18 @@ export default function AboutPage() {
                     <p className="text-[11px] leading-relaxed tracking-[0.14em] text-muted">
                       {f.note}
                     </p>
-                  </li>
+                  </Reveal>
                 ))}
               </ul>
 
-              <div className="mt-6 pl-4">
+              <Reveal as="div" className="mt-6 pl-4" delay={520 + focus.length * 70 + 40}>
                 <p className="relative text-sm leading-relaxed text-muted">
                   <span className="absolute left-[-1rem] top-0 h-full w-px bg-border" />
                   “作って終わり”ではなく、運用と改善まで意識して仕上げます。
                 </p>
-              </div>
-            </div>
-          </Reveal>
+              </Reveal>
+            </Reveal>
+          </div>
         </div>
       </Section>
 
@@ -196,12 +212,8 @@ export default function AboutPage() {
               className="rounded-2xl border border-border bg-panel p-6 transition hover:bg-foreground/5"
               delay={580 + idx * 80}
             >
-              <p className="text-base font-medium tracking-tight">
-                {item.title}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                {item.desc}
-              </p>
+              <p className="text-base font-medium tracking-tight">{item.title}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{item.desc}</p>
             </Reveal>
           ))}
         </ul>

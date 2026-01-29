@@ -1,10 +1,11 @@
-/* app/works/page.tsx */
+// app/works/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllWorks } from "@/lib/works";
 import { WorksGrid } from "@/components/works/WorksGrid";
 import { Pagination } from "@/components/ui/Pagination";
+import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
   title: "Works | Kou Nagai Studio",
@@ -54,20 +55,32 @@ export default async function WorksPage({ searchParams }: Props) {
       <main className="container py-14">
         <header className="flex items-end justify-between gap-6">
           <div>
-            <p className="kns-page-kicker">Portfolio</p>
-            <h1 className="mt-3 kns-page-title">Works</h1>
-            <p className="mt-4 kns-lead">
+            <Reveal as="p" className="kns-page-kicker" delay={60}>
+              Portfolio
+            </Reveal>
+            <Reveal as="h1" className="mt-3 kns-page-title" delay={120}>
+              Works
+            </Reveal>
+            <Reveal as="p" className="mt-4 kns-lead" delay={180}>
               制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
-            </p>
+            </Reveal>
           </div>
 
-          <Link href="/" className="nav-link">
-            Home
-          </Link>
+          <Reveal as="div" delay={220}>
+            <Link href="/" className="kns-btn-ghost" aria-label="Homeへ戻る">
+              <span>Home</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </Reveal>
         </header>
 
-        <div className="mt-10 hairline" />
-        <p className="mt-8 text-sm text-muted-foreground">作品がまだありません。</p>
+        <Reveal as="div" className="mt-10 hairline" delay={260} />
+
+        <Reveal as="p" className="mt-8 text-sm text-muted-foreground" delay={320}>
+          作品がまだありません。
+        </Reveal>
+
+        <Reveal as="div" className="mt-10 hairline" delay={360} />
       </main>
     );
   }
@@ -85,14 +98,18 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const allTags = Array.from(tagMap.entries())
     .map(([key, label]) => ({ key, label }))
-    .sort((a, b) => a.label.localeCompare(b.label, "ja", { sensitivity: "base" }));
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, "ja", { sensitivity: "base" })
+    );
 
   const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
 
   // ✅ tag があるときだけ絞り込み（比較は key で）
   const filtered = activeKey
     ? works.filter((w) =>
-        (w.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === activeKey)
+        (w.meta.tags ?? []).some(
+          (t) => normalizeKey(normalizeLabel(t)) === activeKey
+        )
       )
     : works;
 
@@ -119,30 +136,42 @@ export default async function WorksPage({ searchParams }: Props) {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="kns-page-kicker">Portfolio</p>
-          <h1 className="mt-3 kns-page-title">Works</h1>
-          <p className="mt-4 kns-lead">
+          <Reveal as="p" className="kns-page-kicker" delay={60}>
+            Portfolio
+          </Reveal>
+          <Reveal as="h1" className="mt-3 kns-page-title" delay={120}>
+            Works
+          </Reveal>
+          <Reveal as="p" className="mt-4 kns-lead" delay={180}>
             制作物・サンプルの一覧です。各カードから詳細ページへ移動できます。
-          </p>
+          </Reveal>
 
-          <p className="mt-2 text-xs tracking-[0.18em] text-muted-foreground">
+          <Reveal
+            as="p"
+            className="mt-2 text-xs tracking-[0.18em] text-muted-foreground"
+            delay={220}
+          >
             Page {requested} / {totalPages}
             {activeLabel ? <> ・ Tag: {activeLabel}</> : null}
-          </p>
+          </Reveal>
         </div>
 
-        <Link href="/" className="nav-link">
-          Home
-        </Link>
+        <Reveal as="div" delay={240}>
+          <Link href="/" className="kns-btn-ghost" aria-label="Homeへ戻る">
+            <span>Home</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </Reveal>
       </header>
 
-      <div className="mt-10 hairline" />
+      {/* ✅ 区切り線（About/Topのテンポに寄せる） */}
+      <Reveal as="div" className="mt-10 hairline" delay={280} />
 
-      {/* ✅ タグフィルタ（/tags と同じ “chip” UI） */}
+      {/* ✅ タグフィルタ（chip UI） */}
       <section className="mt-8" aria-label="Tag filter">
         <h2 className="sr-only">Filter by tag</h2>
 
-        <div className="flex flex-wrap gap-2">
+        <Reveal as="div" className="flex flex-wrap gap-2" delay={320}>
           <Link href="/works" className={activeKey ? chipBase : chipActive}>
             All
           </Link>
@@ -151,28 +180,40 @@ export default async function WorksPage({ searchParams }: Props) {
             const href = `/works?tag=${encodeURIComponent(label)}`;
             const isActive = key === activeKey;
             return (
-              <Link key={key} href={href} className={isActive ? chipActive : chipBase}>
+              <Link
+                key={key}
+                href={href}
+                className={isActive ? chipActive : chipBase}
+              >
                 {label}
               </Link>
             );
           })}
-        </div>
+        </Reveal>
 
         {activeKey && filtered.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">このタグの作品はありません。</p>
+          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={360}>
+            このタグの作品はありません。
+          </Reveal>
         ) : null}
       </section>
 
-      <div className="mt-8">
+      {/* ✅ グリッド */}
+      <Reveal as="div" className="mt-10" delay={380}>
         <WorksGrid works={items} />
-      </div>
+      </Reveal>
 
-      <Pagination
-        className="mt-10"
-        current={requested}
-        total={totalPages}
-        hrefForPage={hrefForPage}
-      />
+      {/* ✅ ページネーション */}
+      <Reveal as="div" className="mt-10" delay={440}>
+        <Pagination
+          current={requested}
+          total={totalPages}
+          hrefForPage={hrefForPage}
+        />
+      </Reveal>
+
+      {/* ✅ 〆の区切り線 */}
+      <Reveal as="div" className="mt-10 hairline" delay={500} />
     </main>
   );
 }
