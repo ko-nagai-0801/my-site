@@ -58,13 +58,21 @@ const focus = [
 function Section({
   title,
   children,
+  delay = 0,
 }: {
   title: string;
   children: React.ReactNode;
+  delay?: number;
 }) {
   return (
     <section className="mt-12 border-t border-border pt-10">
-      <h2 className="text-sm tracking-[0.22em] uppercase text-muted">{title}</h2>
+      <Reveal
+        as="h2"
+        className="text-sm tracking-[0.22em] uppercase text-muted"
+        delay={delay}
+      >
+        {title}
+      </Reveal>
       {children}
     </section>
   );
@@ -75,22 +83,32 @@ export default function AboutPage() {
     <main className="container py-14">
       <header className="flex items-end justify-between gap-6">
         <div>
-          <p className="text-xs tracking-[0.22em] uppercase text-muted">
+          <Reveal
+            as="p"
+            className="text-xs tracking-[0.22em] uppercase text-muted"
+            delay={60}
+          >
             Profile
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">About</h1>
+          </Reveal>
+          <Reveal as="h1" className="mt-3 text-3xl font-semibold tracking-tight" delay={120}>
+            About
+          </Reveal>
         </div>
 
-        <Link href="/" className="text-xs tracking-[0.22em] uppercase">
-          Home
-        </Link>
+        {/* ✅ Homeリンクをゴーストボタンに + Reveal */}
+        <Reveal as="div" delay={180}>
+          <Link href="/" className="kns-btn-ghost" aria-label="Homeへ戻る">
+            <span>Home</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </Reveal>
       </header>
 
-      {/* ✅ サブヒーロー（控えめな横長ビジュアル） */}
+      {/* ✅ サブヒーロー（Reveal） */}
       <Reveal
         as="div"
         className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
-        delay={120}
+        delay={220}
       >
         <div className="relative h-44 sm:h-52 md:h-60">
           <Image
@@ -101,12 +119,22 @@ export default function AboutPage() {
             sizes="(min-width: 1024px) 1024px, 100vw"
             className="object-cover"
           />
+
+          {/* ✅ 暗幕を弱める */}
+          <div className="absolute inset-0 hero-scrim opacity-60" aria-hidden="true" />
+
+          {/* ✅ うっすらグラデ（強すぎない） */}
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/18 via-black/0 to-transparent"
+            aria-hidden="true"
+          />
         </div>
       </Reveal>
 
-      <Section title="Bio">
+      <Section title="Bio" delay={300}>
         <div className="mt-6 grid gap-8 md:grid-cols-12">
-          <div className="md:col-span-8">
+          {/* ✅ Bio本文（Reveal） */}
+          <Reveal as="div" className="md:col-span-8" delay={360}>
             <p className="max-w-2xl text-sm leading-relaxed text-muted">
               ご覧いただきありがとうございます。Kou Nagaiです。
               <br />
@@ -120,9 +148,10 @@ export default function AboutPage() {
               <br />
               ご相談はお気軽にどうぞ。
             </p>
-          </div>
+          </Reveal>
 
-          <div className="md:col-span-4">
+          {/* ✅ Focusカード（Reveal） */}
+          <Reveal as="div" className="md:col-span-4" delay={420}>
             <div className="rounded-2xl border border-border bg-panel p-5">
               <p className="text-xs tracking-[0.22em] uppercase text-muted">
                 Focus
@@ -154,16 +183,18 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </Section>
 
-      <Section title="What I Do">
+      <Section title="What I Do" delay={520}>
         <ul className="mt-6 grid gap-4 md:grid-cols-2">
-          {whatIDo.map((item) => (
-            <li
+          {whatIDo.map((item, idx) => (
+            <Reveal
+              as="li"
               key={item.title}
               className="rounded-2xl border border-border bg-panel p-6 transition hover:bg-foreground/5"
+              delay={580 + idx * 80}
             >
               <p className="text-base font-medium tracking-tight">
                 {item.title}
@@ -171,7 +202,7 @@ export default function AboutPage() {
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 {item.desc}
               </p>
-            </li>
+            </Reveal>
           ))}
         </ul>
       </Section>
