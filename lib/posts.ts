@@ -2,24 +2,18 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
-import { cache } from "react";
-
-export type PostImage = {
-  src: string;
-  alt: string;
-};
 
 export type PostMeta = {
   title: string;
   slug: string;
   source: "blog";
-  date: string; // ISO string
+  date: string; // ISO string (ex: "2026-01-26T00:00:00+09:00" or "2026-01-25T15:00:00.000Z")
   description?: string;
   tags?: string[];
   draft?: boolean;
 
-  // ✅ 追加：記事サムネ（16:10 / 1600x1000 推奨）
-  image?: PostImage;
+  // ✅ 追加：サムネ/OGP 用（無い場合はデフォルトへフォールバック）
+  image?: { src: string; alt: string };
 };
 
 export type Post = {
@@ -44,28 +38,12 @@ function trimNonEmpty(value: unknown): string | undefined {
   return v.length ? v : undefined;
 }
 
-/**
- * tags を
- * - trim
- * - 空を除去
- * - 重複を除去（順序は維持）
- */
 function toStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
-
-  const out: string[] = [];
-  const seen = new Set<string>();
-
-  for (const v of value) {
-    if (typeof v !== "string") continue;
-    const t = v.trim();
-    if (!t) continue;
-    if (seen.has(t)) continue;
-    seen.add(t);
-    out.push(t);
-  }
-
-  return out.length ? out : undefined;
+  const arr = value
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+  return arr.length ? arr : undefined;
 }
 
 /**
@@ -92,48 +70,35 @@ function slugFromFilename(filename: string): string {
   return base.replace(/^\d{4}-\d{2}-\d{2}-/, "");
 }
 
-type FrontmatterImage =
-  | { src?: unknown; alt?: unknown }
-  | string
-  | undefined;
+function toPostImage(value: unknown): { src: string; alt: string } | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const v = value as Record<string, unknown>;
 
-function normalizeImage(value: unknown, fallbackAlt: string): PostImage | undefined {
-  if (!value) return undefined;
+  const src = trimNonEmpty(v.src);
+  if (!src) return undefined;
 
-  // image: "/images/blog/foo.webp"
-  if (typeof value === "string") {
-    const src = value.trim();
-    if (!src) return undefined;
-    return { src, alt: fallbackAlt };
-  }
-
-  // image: { src: "...", alt: "..." }
-  if (typeof value === "object" && value !== null) {
-    const v = value as Record<string, unknown>;
-    const src = trimNonEmpty(v.src);
-    if (!src) return undefined;
-    const alt = trimNonEmpty(v.alt) ?? fallbackAlt;
-    return { src, alt };
-  }
-
-  return undefined;
+  const alt = typeof v.alt === "string" ? v.alt.trim() : "";
+  return { src, alt };
 }
 
-function assertPostMeta(meta: Record<string, unknown>, slugFromFile: string): PostMeta {
+function assertPostMeta(
+  meta: Record<string, unknown>,
+  slugFromFile: string
+): PostMeta {
   const title = trimNonEmpty(meta.title);
   if (!title) throw new Error(`Missing title: ${slugFromFile}`);
 
   const source = trimNonEmpty(meta.source);
   if (source !== "blog") throw new Error(`Invalid source: ${slugFromFile}`);
 
-  // ✅ slug は frontmatter 必須にせず、ファイル名からの値と一致を強制
   const slug = trimNonEmpty(meta.slug) ?? slugFromFile;
   if (!slug) throw new Error(`Missing slug: ${slugFromFile}`);
 
   if (slug !== slugFromFile) {
-    // 例のエラー（template / tempate）を、より分かりやすく
+    // ✅ 事故りやすいのでメッセージを具体化
     throw new Error(
-      `Slug mismatch: expected "${slugFromFile}" (frontmatter: "${slug}")`
+      `Slug mismatch: ${slugFromFile} (frontmatter: ${slug}). ` +
+        `Filename should be "YYYY-MM-DD-${slug}.mdx" and frontmatter slug must match the filename-derived slug.`
     );
   }
 
@@ -145,8 +110,8 @@ function assertPostMeta(meta: Record<string, unknown>, slugFromFile: string): Po
   const tags = toStringArray(meta.tags);
   const draft = Boolean(meta.draft);
 
-  // ✅ 追加：image
-  const image = normalizeImage(meta.image as FrontmatterImage, title);
+  // ✅ image は任意（src が無ければ無視）
+  const image = toPostImage(meta.image);
 
   return {
     title,
@@ -160,50 +125,28 @@ function assertPostMeta(meta: Record<string, unknown>, slugFromFile: string): Po
   };
 }
 
-/**
- * ✅ ファイル一覧をキャッシュ（getAllPosts / getPostBySlug のムダを減らす）
- */
-const listPostFiles = cache(async () => {
-  const files = await readdir(BLOG_DIR);
-  return files.filter((f) => /\.(md|mdx)$/i.test(f));
-});
-
-/**
- * ✅ slug -> filename のマップをキャッシュ
- * - slug は filename から導出する（frontmatter ではなく）
- */
-const getSlugToFileMap = cache(async () => {
-  const files = await listPostFiles();
-  const map = new Map<string, string>();
-
-  for (const filename of files) {
-    const s = slugFromFilename(filename);
-    if (!s) continue;
-
-    // 同一slugが複数存在する異常系
-    if (map.has(s)) {
-      throw new Error(`Duplicate slug detected: "${s}"`);
-    }
-    map.set(s, filename);
-  }
-
-  return map;
-});
-
 async function readPostFileBySlug(
   slug: string
 ): Promise<{ filename: string; fullpath: string } | null> {
-  const map = await getSlugToFileMap();
-  const filename = map.get(slug);
-  if (!filename) return null;
-  return { filename, fullpath: path.join(BLOG_DIR, filename) };
+  const files = await readdir(BLOG_DIR);
+  const candidates = files.filter((f) => /\.(md|mdx)$/i.test(f));
+
+  for (const filename of candidates) {
+    const s = slugFromFilename(filename);
+    if (s === slug) {
+      return { filename, fullpath: path.join(BLOG_DIR, filename) };
+    }
+  }
+  return null;
 }
 
 export async function getAllPosts(): Promise<PostMeta[]> {
-  const files = await listPostFiles();
+  const files = await readdir(BLOG_DIR);
+  const targets = files.filter((f) => /\.(md|mdx)$/i.test(f));
+
   const metas: PostMeta[] = [];
 
-  for (const filename of files) {
+  for (const filename of targets) {
     const fullpath = path.join(BLOG_DIR, filename);
     const raw = await readFile(fullpath, "utf8");
     const { data } = matter(raw);
@@ -245,7 +188,6 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   const raw = await readFile(found.fullpath, "utf8");
   const { data, content } = matter(raw);
 
-  // ✅ frontmatter slug とファイルslugの一致を assert で保証
   const meta = assertPostMeta(data as Record<string, unknown>, slug);
   if (meta.draft) return null;
 

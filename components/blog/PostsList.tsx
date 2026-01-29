@@ -4,18 +4,12 @@ import Image from "next/image";
 import { formatDate } from "@/lib/formatDate";
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
 import type { PostLike } from "@/lib/posts";
+import { getPostThumb } from "@/lib/post-thumb";
 
 const DEFAULT_THUMB = "/images/blog/noimage.webp";
 
 type Variant = "blog" | "home" | "latest";
 type LinkMode = "wrap" | "title";
-
-function getThumb(meta: PostLike["meta"]) {
-  return {
-    src: meta.image?.src ?? DEFAULT_THUMB,
-    alt: meta.image?.alt ?? meta.title,
-  };
-}
 
 function PostThumb({ src, alt }: { src: string; alt: string }) {
   return (
@@ -31,10 +25,6 @@ function PostThumb({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-/**
- * ✅ TOPの見え方（行カード）
- * - blog / home / latest を同じ見た目に寄せる
- */
 function RowCardsList({
   posts,
   linkMode,
@@ -46,7 +36,7 @@ function RowCardsList({
     <ul className="space-y-4 sm:space-y-5">
       {posts.map((p) => {
         const tags = p.meta.tags ?? [];
-        const thumb = getThumb(p.meta);
+        const thumb = getPostThumb(p.meta, DEFAULT_THUMB);
 
         // ✅ 下線なし（hover opacityでリンク感）
         const titleNode =
@@ -55,9 +45,7 @@ function RowCardsList({
               {p.meta.title}
             </span>
           ) : (
-            <h2 className="text-base font-medium tracking-tight">
-              {p.meta.title}
-            </h2>
+            <h2 className="text-base font-medium tracking-tight">{p.meta.title}</h2>
           );
 
         const descriptionNode = p.meta.description ? (

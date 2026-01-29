@@ -1,13 +1,14 @@
-// app/blog/[slug]/page.tsx
+/* app/blog/[slug]/page.tsx */
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { getPostBySlug, getAllPosts } from "@/lib/posts";
+import { getPostBySlug, getAllPostSlugs } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
 import { renderMdx } from "@/lib/render-mdx";
 import { Reveal } from "@/components/ui/Reveal";
+import { getPostThumb } from "@/lib/post-thumb";
 
 const DEFAULT_THUMB = "/images/blog/noimage.webp";
 
@@ -22,8 +23,8 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const posts = await getAllPosts();
-  return posts.map((p) => ({ slug: p.slug }));
+  const slugs = await getAllPostSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,9 +41,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${post.meta.title} | Blog | Kou Nagai Studio`;
   const description = post.meta.description ?? "";
 
-  const ogImage = post.meta.image?.src; // ✅ あれば優先
+  // ✅ OGP は「記事画像があれば優先」→ 無ければサイト既定へ
+  const ogImage = post.meta.image?.src;
   const ogImages = ogImage
-    ? [{ url: ogImage, alt: post.meta.image?.alt ?? post.meta.title }]
+    ? [{ url: ogImage, alt: post.meta.image?.alt?.trim() ? post.meta.image.alt : post.meta.title }]
     : SITE_OG_IMAGES;
 
   return {
@@ -76,9 +78,8 @@ export default async function BlogPostPage({ params }: Props) {
 
   const tags = post.meta.tags ?? [];
 
-  // ✅ 詳細表示のサムネ：記事画像が無ければデフォルト
-  const thumbSrc = post.meta.image?.src ?? DEFAULT_THUMB;
-  const thumbAlt = post.meta.image?.alt ?? post.meta.title;
+  // ✅ 詳細サムネ：記事画像が無ければデフォルト（一覧と同ロジック）
+  const thumb = getPostThumb(post.meta, DEFAULT_THUMB);
 
   return (
     <main className="container py-14">
@@ -141,8 +142,8 @@ export default async function BlogPostPage({ params }: Props) {
       >
         <div className="relative aspect-[16/10]">
           <Image
-            src={thumbSrc}
-            alt={thumbAlt}
+            src={thumb.src}
+            alt={thumb.alt}
             fill
             priority
             sizes="(min-width: 1024px) 1024px, 100vw"

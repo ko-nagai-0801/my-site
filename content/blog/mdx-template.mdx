@@ -1,142 +1,63 @@
 ---
-# ✅ ファイル名ルール（重要）
-# content/blog/YYYY-MM-DD-<slug>.mdx
-# 例）content/blog/2026-01-29-mdx-template.mdx
-#
-# ✅ frontmatter の slug は「ファイル名の <slug>」と完全一致させる
-# 例）ファイル名が 2026-01-29-mdx-template.mdx → slug: "mdx-template"
-title: "【テンプレ】MDXブログ記事の書き方"
-slug: "mdx-template"
-source: "blog"
-date: "2026-01-29T10:00:00+09:00"
-description: "このテンプレをコピペして、frontmatterと本文を埋めれば記事として公開できます。"
-tags: ["Next.js", "MDX", "Template"]
+# content/blog/YYYY-MM-DD-your-slug.mdx
+# 例: content/blog/2026-01-29-mdx-template.mdx
+
+title: "記事タイトルを書く（検索で見える）"
+slug: "mdx-template"           # ✅ ファイル名の末尾 slug と一致させる（超重要）
+source: "blog"              # ✅ 固定
+date: "2026-01-29T09:00:00+09:00"   # ✅ ISO文字列（+09:00 推奨）
+description: "この記事の概要。一覧・OGP description に使われます。"
+tags: ["Next.js", "MDX", "TypeScript"]
+
+# ✅ サムネ/OGP用（任意）
+# 16:10 / 1600×1000 を推奨
 image:
-  src: "/images/blog/noimage.webp"
-  alt: "記事サムネ"
+  src: "/images/blog/your-slug.webp"
+  alt: "サムネの説明（空でも可。空の場合はタイトルがフォールバック）"
 
-draft: false  # ✅ 下書きにする（一覧/詳細生成の対象外にしたい時）
+# ✅ 下書きにしたい場合（任意）
+# draft: true
 ---
 
-## TL;DR
-- **frontmatter** を埋める（特に `slug` と `date`）
-- 画像は **16:10（1600×1000）** を基準に作る
-- 見出し→手順→結果→メモ の順にすると読みやすい
+ここから本文です。**太字**・_斜体_・`インラインコード` も使えます。
 
----
-
-## このテンプレの使い方（コピペ手順）
-1. このファイルをコピペして `content/blog/2026-01-29-<slug>.mdx` を作成  
-2. frontmatter の `title / slug / date / description / tags` を変更  
-3. `slug` が **ファイル名の `<slug`> と一致**しているか確認  
-4. 文章を埋める（不要なセクションは削除OK）  
-5. 下書きなら `draft: true` を付ける（公開する時に消す）
+## この記事でできるようになること
+- frontmatter の書き方（slug事故を防ぐ）
+- 画像（サムネ/本文）の使い分け
+- コードブロック（行番号/ファイル名/ハイライト）
 
 ---
 
-## この記事について
-ここに「この記事で扱う内容・前提」を1〜3行で書きます。
-
-- 想定読者：例）Next.jsでMDXブログを作り始めた人
-- 目的：例）記事テンプレで執筆を迷わないようにする
+## サムネ（frontmatter image）について
+- 一覧（PostsList）と詳細（/blog/[slug]）は **同じロジック** です  
+  `post.meta.image?.src` があればそれを表示。無ければ `/images/blog/noimage.webp`。
 
 ---
 
-## 目次（任意）
-- [背景](#背景)
-- [やったこと](#やったこと)
-- [結果](#結果)
-- [ハマりどころ](#ハマりどころ)
-- [参考リンク](#参考リンク)
+## 本文の画像（MDX内）: <MdxImage />
+※ `mdx-components.tsx` で `MdxImage` が公開されている前提です。
+
+<MdxImage
+  src="/images/blog/example-figure.webp"
+  alt="本文中の画像の説明"
+  caption="キャプション例：画像の意図や補足を書く"
+  ratio="16/10"
+/>
 
 ---
 
-## 背景
-なぜこの記事を書くのか、困っていたことを短く書きます。
-
-> 例）毎回構成がブレて、書き始めが遅くなる問題があった。
-
----
-
-## やったこと
-手順を「小さく」分けて書きます。
-
-### 1. 前提
-- 例）Next.js(App Router)
-- 例）MDXは `content/blog/` 配下で管理
-
-### 2. 手順（箇条書き）
-- ① 〜する
-- ② 〜する
-- ③ 〜する
-
-### 3. コード（最小例）
-```ts title="example.ts" showLineNumbers
-export function hello(name: string) {
-  return `Hello, ${name}`;
+## コードブロック（rehype-pretty-code）
+```ts title="app/blog/[slug]/page.tsx" {1,3-5}
+export function hello() {
+  console.log("Hello MDX");
 }
 ```
 
 ---
 
-## 画像の扱い（推奨）
-### ✅ サムネ（OGP/カード用の基準）
-- 比率：**16:10**
-- 推奨：**1600×1000**
-- 形式：`webp` 推奨
-- 置き場所例：`public/images/blog/<slug>.webp`
+## よくあるエラー（Slug mismatch）
+- ファイル名：`2026-01-29-template.mdx`
+- frontmatter：`slug: "tempate"` ← typo
 
-### ✅ 記事内画像（本文）
-**基本はMarkdown記法でOK**（あなたのMDX環境側で `img` を next/image 化している場合、そのまま恩恵を受けられます）
-
-```md
-![画像の説明](/images/blog/mdx-template.webp)
-```
-
-<MdxImage
-  src="/images/blog/noimage.webp"
-  alt="テスト画像"
-  caption="MdxImage テスト"
-  ratio="16/10"
-  maxWidth="lg"
-/>
-
-
-※ もし `MdxImage` コンポーネントを直接使う運用なら、あなたの `MdxImage` のpropsに合わせてこう書きます（props名は実装に合わせて調整）：
-
-```mdx
-{/* 例：propsが src/alt/caption を受け取る想定 */}
-{/* <MdxImage src="/images/blog/mdx-template.webp" alt="画像の説明" caption="キャプション" /> */}
-```
-
----
-
-## 結果
-- どう変わったか（Before/Afterがあると強い）
-- 数値があれば数値も（例：CLSが改善、表示崩れが解消）
-
----
-
-## ハマりどころ
-### よくあるミス
-- `slug` のtypo（ファイル名と一致しない）
-- `date` が Date.parse できない形式
-- `tags` が配列になっていない（例：`tags: "MDX"` はNG）
-
----
-
-## まとめ
-- ここに要点を3つ書きます
-- 例）テンプレがあると執筆が早くなる
-- 例）slugとdateだけは必ずチェック
-
----
-
-## 参考リンク（任意）
-- 公式ドキュメント
-- 関連記事
-
----
-
-## 更新履歴（任意）
-- 2026-01-29: 初版
+この場合、ビルド時に `Slug mismatch: template (frontmatter: tempate)` で落ちます。
+**ファイル名の slug と frontmatter の slug を一致**させてください。

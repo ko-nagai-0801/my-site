@@ -1,7 +1,8 @@
 /* components/sections/BlogSection.tsx */
 import Link from "next/link";
-import { PostsList, type PostLike } from "@/components/blog/PostsList";
+import { PostsList } from "@/components/blog/PostsList";
 import { Reveal } from "@/components/ui/Reveal";
+import type { PostLike } from "@/lib/posts";
 
 type Props = {
   posts: PostLike[];
@@ -16,10 +17,8 @@ export function BlogSection({ posts }: Props) {
         </Reveal>
       </header>
 
-      {/* ✅  区切り線 */}
       <Reveal as="div" className="mt-10 hairline" delay={160} />
 
-      {/* ✅ コンテンツ（リスト/カード） */}
       <div className="mt-10">
         <PostsList posts={posts} variant="latest" linkMode="title" />
       </div>
@@ -31,8 +30,7 @@ export function BlogSection({ posts }: Props) {
         </Link>
       </Reveal>
 
-        {/* ✅  区切り線 */}
-        <Reveal as="div" className="mt-10 hairline" delay={160} />
+      <Reveal as="div" className="mt-10 hairline" delay={160} />
     </section>
   );
 }
