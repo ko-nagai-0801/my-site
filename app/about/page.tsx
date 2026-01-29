@@ -1,14 +1,18 @@
 // app/about/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import type React from "react";
 import { Reveal } from "@/components/ui/Reveal";
-import { SpotlightCard } from "@/components/ui/SpotlightCard";
 
 export const metadata: Metadata = {
   title: "About | Kou Nagai Studio",
   description: "プロフィール・できることリスト",
 };
+
+const ABOUT_HERO_SRC = "/images/about/hero.webp";
+// 装飾目的のサブヒーローなので alt は空でOK（スクリーンリーダーに読ませない）
+const ABOUT_HERO_ALT = "";
 
 const whatIDo = [
   {
@@ -54,18 +58,14 @@ const focus = [
 function Section({
   title,
   children,
-  delay = 0,
 }: {
   title: string;
   children: React.ReactNode;
-  delay?: number;
 }) {
   return (
-    <section className="mt-10">
-      <Reveal as="h2" className="kns-section-label" delay={delay}>
-        {title}
-      </Reveal>
-      <div className="mt-6">{children}</div>
+    <section className="mt-12 border-t border-border pt-10">
+      <h2 className="text-sm tracking-[0.22em] uppercase text-muted">{title}</h2>
+      {children}
     </section>
   );
 }
@@ -73,75 +73,73 @@ function Section({
 export default function AboutPage() {
   return (
     <main className="container py-14">
-      {/* 上部導線（Homeへ戻る） */}
-      <Reveal as="div" className="flex justify-end" delay={40}>
-        <Link href="/" className="kns-btn-ghost">
-          <span>Home</span>
-          <span aria-hidden="true">→</span>
+      <header className="flex items-end justify-between gap-6">
+        <div>
+          <p className="text-xs tracking-[0.22em] uppercase text-muted">
+            Profile
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight">About</h1>
+        </div>
+
+        <Link href="/" className="text-xs tracking-[0.22em] uppercase">
+          Home
         </Link>
-      </Reveal>
-
-      {/* ページ見出し：Home側のタイポに寄せる */}
-      <header className="mt-10 text-center">
-        <Reveal as="p" className="kns-page-kicker" delay={80}>
-          Profile
-        </Reveal>
-
-        <Reveal as="h1" className="mt-3 kns-page-title" delay={120}>
-          About
-        </Reveal>
-
-        <Reveal as="p" className="mx-auto mt-4 kns-lead" delay={160}>
-          デザインの意図を崩さず、読みやすさ・余白・導線まで整えて実装します。
-        </Reveal>
       </header>
 
-      {/* 区切り線：Homeと同じリズム */}
-      <Reveal as="div" className="mt-10 hairline" delay={200} />
+      {/* ✅ サブヒーロー（控えめな横長ビジュアル） */}
+      <Reveal
+        as="div"
+        className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
+        delay={120}
+      >
+        <div className="relative h-44 sm:h-52 md:h-60">
+          <Image
+            src={ABOUT_HERO_SRC}
+            alt={ABOUT_HERO_ALT}
+            fill
+            priority
+            sizes="(min-width: 1024px) 1024px, 100vw"
+            className="object-cover"
+          />
 
-      <Section title="Bio" delay={240}>
-        <div className="grid gap-8 md:grid-cols-12">
-          {/* Bio */}
+          {/* 既存トーンに寄せる：暗幕（トークン）＋軽いグラデ */}
+          <div className="absolute inset-0 hero-scrim" aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent"
+            aria-hidden="true"
+          />
+        </div>
+      </Reveal>
+
+      <Section title="Bio">
+        <div className="mt-6 grid gap-8 md:grid-cols-12">
           <div className="md:col-span-8">
-            <div className="space-y-4">
-              <Reveal as="p" className="kns-body" delay={260}>
-                ご覧いただきありがとうございます。Kou Nagaiです。
-              </Reveal>
-
-              <Reveal as="p" className="kns-body" delay={300}>
-                デザインの意図に沿って、コーディングで「気持ちいい体験」まで仕上げることが得意です。
-              </Reveal>
-
-              <Reveal as="p" className="kns-body" delay={340}>
-                HTMLはセマンティックを意識し、CSSでは余白とタイポを整え、保守しやすい構造で実装することを特に意識しています。必要に応じてJavaScriptでアニメーションやUIの改善も実施いたします。
-              </Reveal>
-
-              <Reveal as="p" className="kns-body" delay={380}>
-                フォームは基本的にスクラッチで組んでいます。CSRF対策・バリデーション・ハニーポットなど、セキュリティ面は特に丁寧に扱います。
-              </Reveal>
-
-              <Reveal as="p" className="kns-body" delay={420}>
-                既存サイトの崩れ・バグ修正、リニューアル時の調整も対応可能です。
-              </Reveal>
-
-              <Reveal as="p" className="kns-body" delay={460}>
-                ご相談はお気軽にどうぞ。
-              </Reveal>
-            </div>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted">
+              ご覧いただきありがとうございます。Kou Nagaiです。
+              <br />
+              デザインの意図に沿って、コーディングで「気持ちいい体験」まで仕上げることが得意です。
+              <br />
+              HTMLはセマンティックを意識し、CSSでは余白とタイポを整え、保守しやすい構造で実装することを特に意識しています。必要に応じてJavaScriptでアニメーションやUIの改善も実施いたします。
+              <br />
+              フォームは基本的にスクラッチで組んでいます。CSRF対策・バリデーション・ハニーポットなど、セキュリティ面は特に丁寧に扱います。
+              <br />
+              既存サイトの崩れ・バグ修正、リニューアル時の調整も対応可能です。
+              <br />
+              ご相談はお気軽にどうぞ。
+            </p>
           </div>
 
-          {/* Focus */}
           <div className="md:col-span-4">
-            <SpotlightCard className="rounded-2xl border border-border bg-panel p-6 transition hover:border-foreground/15">
-              <Reveal as="p" className="kns-section-label" delay={260}>
+            <div className="rounded-2xl border border-border bg-panel p-5">
+              <p className="text-xs tracking-[0.22em] uppercase text-muted">
                 Focus
-              </Reveal>
+              </p>
 
-              <ul className="mt-5 space-y-4">
-                {focus.map((f, i) => (
-                  <Reveal as="li" key={f.label} className="space-y-2" delay={300 + i * 60}>
+              <ul className="mt-4 space-y-3">
+                {focus.map((f) => (
+                  <li key={f.label} className="space-y-1">
                     <div className="flex items-baseline justify-between gap-3">
-                      <span className="text-sm font-medium text-foreground/80">
+                      <span className="text-sm font-medium text-muted">
                         {f.label}
                       </span>
                       <span className="text-xs tracking-[0.16em] text-muted">
@@ -152,39 +150,38 @@ export default function AboutPage() {
                     <p className="text-[11px] leading-relaxed tracking-[0.14em] text-muted">
                       {f.note}
                     </p>
-                  </Reveal>
+                  </li>
                 ))}
               </ul>
 
-              <Reveal as="div" className="mt-6 pl-4" delay={760}>
+              <div className="mt-6 pl-4">
                 <p className="relative text-sm leading-relaxed text-muted">
                   <span className="absolute left-[-1rem] top-0 h-full w-px bg-border" />
                   “作って終わり”ではなく、運用と改善まで意識して仕上げます。
                 </p>
-              </Reveal>
-            </SpotlightCard>
+              </div>
+            </div>
           </div>
         </div>
       </Section>
 
-      <Reveal as="div" className="mt-10 hairline" delay={220} />
-
-      <Section title="What I Do" delay={260}>
-        <ul className="grid gap-4 md:grid-cols-2">
-          {whatIDo.map((item, idx) => (
-            <Reveal as="li" key={item.title} delay={300 + idx * 80}>
-              <SpotlightCard className="h-full rounded-2xl border border-border bg-panel p-6 transition hover:border-foreground/15">
-                <p className="text-base font-medium tracking-[0.02em] text-foreground">
-                  {item.title}
-                </p>
-                <p className="mt-2 kns-body">{item.desc}</p>
-              </SpotlightCard>
-            </Reveal>
+      <Section title="What I Do">
+        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+          {whatIDo.map((item) => (
+            <li
+              key={item.title}
+              className="rounded-2xl border border-border bg-panel p-6 transition hover:bg-foreground/5"
+            >
+              <p className="text-base font-medium tracking-tight">
+                {item.title}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {item.desc}
+              </p>
+            </li>
           ))}
         </ul>
       </Section>
-
-      <Reveal as="div" className="mt-10 hairline" delay={220} />
     </main>
   );
 }
