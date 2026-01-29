@@ -101,13 +101,6 @@ export default function AboutPage() {
             sizes="(min-width: 1024px) 1024px, 100vw"
             className="object-cover"
           />
-
-          {/* 既存トーンに寄せる：暗幕（トークン）＋軽いグラデ */}
-          <div className="absolute inset-0 hero-scrim" aria-hidden="true" />
-          <div
-            className="absolute inset-0 bg-gradient-to-t from-background/55 via-transparent to-transparent"
-            aria-hidden="true"
-          />
         </div>
       </Reveal>
 
