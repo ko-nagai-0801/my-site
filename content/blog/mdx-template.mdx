@@ -2,46 +2,67 @@
 # content/blog/YYYY-MM-DD-your-slug.mdx
 # 例: content/blog/2026-01-29-mdx-template.mdx
 
-title: "記事タイトルを書く（検索で見える）"
-slug: "mdx-template"           # ✅ ファイル名の末尾 slug と一致させる（超重要）
-source: "blog"              # ✅ 固定
-date: "2026-01-29T09:00:00+09:00"   # ✅ ISO文字列（+09:00 推奨）
-description: "この記事の概要。一覧・OGP description に使われます。"
+title: "記事タイトル（検索で見える）"
+slug: "mdx-template"       # ✅ ファイル名の末尾 slug と一致させる（超重要）
+source: "blog"             # ✅ 固定
+date: "2026-01-29T09:00:00+09:00"   # ✅ ISO 文字列（+09:00 推奨）
+description: "この記事の概要（一覧とOGP description に使われます）"
 tags: ["Next.js", "MDX", "TypeScript"]
 
 # ✅ サムネ/OGP用（任意）
-# 16:10 / 1600×1000 を推奨
+# 16:10 / 1600×1000 推奨（PostsList と /blog/[slug] のサムネに使われる）
 image:
-  src: "/images/blog/your-slug.webp"
+  src: "/images/blog/mdx-template.webp"
   alt: "サムネの説明（空でも可。空の場合はタイトルがフォールバック）"
 
-# ✅ 下書きにしたい場合（任意）
-# draft: true
+# ✅ 下書き（任意）
+draft: true
 ---
 
-ここから本文です。**太字**・_斜体_・`インラインコード` も使えます。
+これは **MDX** のテンプレです。Markdownに JSX を混ぜられます。
 
 ## この記事でできるようになること
-- frontmatter の書き方（slug事故を防ぐ）
-- 画像（サムネ/本文）の使い分け
+- frontmatter の正しい書き方（slug事故を防ぐ）
+- 本文画像を <MdxImage /> で統一
 - コードブロック（行番号/ファイル名/ハイライト）
 
 ---
 
 ## サムネ（frontmatter image）について
-- 一覧（PostsList）と詳細（/blog/[slug]）は **同じロジック** です  
-  `post.meta.image?.src` があればそれを表示。無ければ `/images/blog/noimage.webp`。
+- 一覧（PostsList）と詳細（/blog/[slug]）は **同じロジック**  
+  `post.meta.image?.src` があればそれを使い、無ければ `/images/blog/noimage.webp` にフォールバックします。
 
 ---
 
 ## 本文の画像（MDX内）: <MdxImage />
-※ `mdx-components.tsx` で `MdxImage` が公開されている前提です。
+※ mdx-components.tsx で `MdxImage` が公開されている前提です。
 
+### 1) 固定比率（cropあり / fill）※推奨
 <MdxImage
-  src="/images/blog/example-figure.webp"
+  src="/images/blog/example-1600x1000.webp"
   alt="本文中の画像の説明"
-  caption="キャプション例：画像の意図や補足を書く"
+  caption="キャプション例：補足や意図を書く"
   ratio="16/10"
+  maxWidth="lg"
+/>
+
+### 2) そのまま比率（cropなし / width+height）
+<MdxImage
+  src="/images/blog/example-original.webp"
+  alt="原寸比率で表示したい画像"
+  ratio="auto"
+  width={1200}
+  height={800}
+  maxWidth="md"
+/>
+
+### 3) 優先読み込み（LCPに関係する場合のみ）
+<MdxImage
+  src="/images/blog/hero.webp"
+  alt="記事のリード画像"
+  ratio="16/9"
+  priority
+  sizes="(min-width: 1024px) 900px, 100vw"
 />
 
 ---
@@ -59,5 +80,5 @@ export function hello() {
 - ファイル名：`2026-01-29-template.mdx`
 - frontmatter：`slug: "tempate"` ← typo
 
-この場合、ビルド時に `Slug mismatch: template (frontmatter: tempate)` で落ちます。
+この場合、ビルド時に `Slug mismatch` で落ちます。
 **ファイル名の slug と frontmatter の slug を一致**させてください。
