@@ -1,21 +1,11 @@
-// components/blog/PostsList.tsx
+/* components/blog/PostsList.tsx */
 import Link from "next/link";
 import Image from "next/image";
 import { formatDate } from "@/lib/formatDate";
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
+import type { PostLike } from "@/lib/posts";
 
 const DEFAULT_THUMB = "/images/blog/noimage.webp";
-
-export type PostLike = {
-  slug: string;
-  meta: {
-    title: string;
-    date: string;
-    description?: string;
-    tags?: string[];
-    image?: { src: string; alt: string };
-  };
-};
 
 type Variant = "blog" | "home" | "latest";
 type LinkMode = "wrap" | "title";
@@ -41,6 +31,10 @@ function PostThumb({ src, alt }: { src: string; alt: string }) {
   );
 }
 
+/**
+ * ✅ TOPの見え方（行カード）
+ * - blog / home / latest を同じ見た目に寄せる
+ */
 function RowCardsList({
   posts,
   linkMode,
@@ -61,7 +55,9 @@ function RowCardsList({
               {p.meta.title}
             </span>
           ) : (
-            <h2 className="text-base font-medium tracking-tight">{p.meta.title}</h2>
+            <h2 className="text-base font-medium tracking-tight">
+              {p.meta.title}
+            </h2>
           );
 
         const descriptionNode = p.meta.description ? (
@@ -152,7 +148,7 @@ export function PostsList({
     return <RowCardsList posts={posts} linkMode={linkMode} />;
   }
 
-  // ここは将来 variant を増やす場合の保険（今は到達しない想定）
+  // 将来 variant を増やす場合の保険（今は到達しない想定）
   const listClass = "divide-y divide-border border-y border-border";
 
   return (
@@ -168,11 +164,13 @@ export function PostsList({
                 {formatDate(p.meta.date)}
               </span>
             </div>
+
             {p.meta.description ? (
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 {p.meta.description}
               </p>
             ) : null}
+
             {showReadLabel ? (
               <div className="mt-4 text-xs tracking-[0.22em] uppercase text-muted">
                 Read →
