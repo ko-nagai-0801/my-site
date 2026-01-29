@@ -1,4 +1,4 @@
-// app/blog/page.tsx
+/* app/blog/page.tsx */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -105,18 +105,14 @@ export default async function BlogPage({ searchParams }: Props) {
       {/* ✅ 区切り線（Worksと同テンポ） */}
       <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      {/* ✅ 一覧 */}
+      {/* ✅ 一覧：TOPのBlog（variant="latest"）と同じ見え方に揃える */}
       <Reveal as="div" className="mt-10" delay={300}>
-        <PostsList posts={items} variant="blog" linkMode="title" showReadLabel />
+        <PostsList posts={items} variant="latest" linkMode="title" />
       </Reveal>
 
       {/* ✅ ページネーション */}
       <Reveal as="div" className="mt-10" delay={360}>
-        <Pagination
-          current={requested}
-          total={totalPages}
-          hrefForPage={pageHref}
-        />
+        <Pagination current={requested} total={totalPages} hrefForPage={pageHref} />
       </Reveal>
 
       {/* ✅ 〆の区切り線 */}
