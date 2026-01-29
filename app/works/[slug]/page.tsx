@@ -110,7 +110,6 @@ export default async function WorkDetailPage({ params }: PageProps) {
         </Reveal>
       ) : null}
 
-      {/* ✅ サムネより下：Revealを1つにまとめて動きを最小限に */}
       <div className="mt-10">
         {/* Meta (links / note) */}
         {hasMetaBlock ? (

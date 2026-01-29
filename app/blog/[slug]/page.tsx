@@ -1,4 +1,4 @@
-/* app/blog/[slug]/page.tsx */
+// app/blog/[slug]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,17 +11,15 @@ import { Reveal } from "@/components/ui/Reveal";
 
 const DEFAULT_THUMB = "/images/blog/noimage.webp";
 
+// layout と同じ既定OGP（フォールバック用）
+const SITE_OG_IMAGES = [
+  { url: "/og-kns-1200x630.png", alt: "Kou Nagai Studio" },
+  { url: "/og-kns-2400x1260.png", alt: "Kou Nagai Studio" },
+];
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
-
-// ✅ PostMeta に image が未定義でも落ちないように安全に拾う
-function pickPostImage(meta: unknown): { src: string; alt: string } | null {
-  const m = meta as { image?: { src?: string; alt?: string }; title?: string };
-  const src = m.image?.src;
-  if (!src) return null;
-  return { src, alt: m.image?.alt ?? (m.title ?? "") };
-}
 
 export async function generateStaticParams() {
   const posts = await getAllPosts();
@@ -39,35 +37,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const img = pickPostImage(post.meta);
-  const ogImage = img?.src ?? DEFAULT_THUMB;
-  const ogAlt = img?.alt ?? post.meta.title;
   const title = `${post.meta.title} | Blog | Kou Nagai Studio`;
   const description = post.meta.description ?? "";
+
+  const ogImage = post.meta.image?.src; // ✅ あれば優先
+  const ogImages = ogImage
+    ? [{ url: ogImage, alt: post.meta.image?.alt ?? post.meta.title }]
+    : SITE_OG_IMAGES;
 
   return {
     title,
     description,
+
     openGraph: {
       title,
       description,
       type: "article",
-      // ✅ metadataBase が layout.tsx で設定されていれば相対でもOK
-      url: `/blog/${slug}`,
-      images: [
-        {
-          url: ogImage,
-          width: 1600,
-          height: 1000,
-          alt: ogAlt,
-        },
-      ],
+      url: `/blog/${post.meta.slug}`,
+      images: ogImages,
     },
+
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [ogImage],
+      images: ogImages.map((i) => i.url),
     },
   };
 }
@@ -82,10 +76,9 @@ export default async function BlogPostPage({ params }: Props) {
 
   const tags = post.meta.tags ?? [];
 
-  // ✅ 表示用サムネ：記事画像があればそれ、無ければデフォルト
-  const img = pickPostImage(post.meta);
-  const thumbSrc = img?.src ?? DEFAULT_THUMB;
-  const thumbAlt = img?.alt ?? post.meta.title;
+  // ✅ 詳細表示のサムネ：記事画像が無ければデフォルト
+  const thumbSrc = post.meta.image?.src ?? DEFAULT_THUMB;
+  const thumbAlt = post.meta.image?.alt ?? post.meta.title;
 
   return (
     <main className="container py-14">
@@ -118,7 +111,7 @@ export default async function BlogPostPage({ params }: Props) {
             <Reveal as="div" className="mt-4 flex flex-wrap gap-2" delay={240}>
               {tags.map((tag) => (
                 <Link
-                  key={`${slug}-${tag}`}
+                  key={`${post.meta.slug}-${tag}`}
                   href={`/tags/${encodeURIComponent(tag.trim())}`}
                   className="chip hover:opacity-80"
                 >
@@ -140,7 +133,7 @@ export default async function BlogPostPage({ params }: Props) {
       {/* Divider */}
       <Reveal as="div" className="mt-10 hairline" delay={300} />
 
-      {/* ✅ Sub-hero：常に表示（無い場合は noimage.webp） */}
+      {/* Sub-hero (thumb) - ✅ 常に表示（記事画像 or デフォルト） */}
       <Reveal
         as="div"
         className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
@@ -158,7 +151,6 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </Reveal>
 
-      {/* ✅ サムネより下：動きは最小限（まとめて） */}
       <div className="mt-10">
         <div className="mt-10 hairline" />
 

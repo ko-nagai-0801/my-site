@@ -11,7 +11,11 @@ source: "blog"
 date: "2026-01-29T10:00:00+09:00"
 description: "このテンプレをコピペして、frontmatterと本文を埋めれば記事として公開できます。"
 tags: ["Next.js", "MDX", "Template"]
-draft: true  # ✅ 下書きにする（一覧/詳細生成の対象外にしたい時）
+image:
+  src: "/images/blog/noimage.webp"
+  alt: "記事サムネ"
+
+draft: false  # ✅ 下書きにする（一覧/詳細生成の対象外にしたい時）
 ---
 
 ## TL;DR
@@ -88,6 +92,15 @@ export function hello(name: string) {
 ```md
 ![画像の説明](/images/blog/mdx-template.webp)
 ```
+
+<MdxImage
+  src="/images/blog/noimage.webp"
+  alt="テスト画像"
+  caption="MdxImage テスト"
+  ratio="16/10"
+  maxWidth="lg"
+/>
+
 
 ※ もし `MdxImage` コンポーネントを直接使う運用なら、あなたの `MdxImage` のpropsに合わせてこう書きます（props名は実装に合わせて調整）：
 

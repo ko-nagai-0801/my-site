@@ -10,9 +10,13 @@ import { Hr } from "@/mdx/components/Hr";
 import { Img } from "@/mdx/components/Img";
 import { Table, Td, Th } from "@/mdx/components/Table";
 
+import { MdxImage } from "@/components/mdx/MdxImage";
+
 export function getMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...components,
+
+    // ✅ HTMLタグの差し替え（既存どおり）
     a: A,
     img: Img,
     figure: Figure,
@@ -23,5 +27,8 @@ export function getMDXComponents(components: MDXComponents): MDXComponents {
     table: Table,
     th: Th,
     td: Td,
+
+    // ✅ MDX内で <MdxImage /> を使えるように公開
+    MdxImage,
   };
 }
