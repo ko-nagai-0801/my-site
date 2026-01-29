@@ -1,4 +1,4 @@
-// lib/posts.ts
+/* lib/posts.ts */
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
@@ -29,6 +29,10 @@ export type PostLike = {
 
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
+// --------------------
+// Utils
+// --------------------
+
 function trimNonEmpty(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
   const v = value.trim();
@@ -37,20 +41,36 @@ function trimNonEmpty(value: unknown): string | undefined {
 
 function toStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) return undefined;
+
   const arr = value
     .map((v) => (typeof v === "string" ? v.trim() : ""))
     .filter(Boolean);
-  return arr.length ? arr : undefined;
+
+  if (!arr.length) return undefined;
+
+  // 重複は軽く除去（完全一致のみ）
+  const uniq = Array.from(new Set(arr));
+  return uniq.length ? uniq : undefined;
+}
+
+/**
+ * ✅ draft の解釈を厳密に
+ * - YAMLで "false"（文字列）になっても false 扱いできるように
+ */
+function toBoolean(value: unknown): boolean {
+  if (value === true) return true;
+  if (value === false) return false;
+  if (typeof value === "string") return value.trim().toLowerCase() === "true";
+  return false;
 }
 
 /**
  * gray-matter が YAML を Date として解釈することがあるため、
- * date は string / Date を許容して最終的に string に正規化する。
+ * date は string / Date / number(timestamp) を許容して最終的に string に正規化する。
  */
 function normalizeDate(value: unknown): string {
   if (typeof value === "string") return value.trim();
   if (value instanceof Date) return value.toISOString();
-  // まれに number (timestamp) になるケースも保険で吸収
   if (typeof value === "number" && Number.isFinite(value)) {
     return new Date(value).toISOString();
   }
@@ -58,7 +78,6 @@ function normalizeDate(value: unknown): string {
 }
 
 function isValidDateString(value: string): boolean {
-  // "YYYY-MM-DD" / ISO 8601 / "....Z" などを許容して Date.parse で判定
   const t = Date.parse(value);
   return !Number.isNaN(t);
 }
@@ -81,18 +100,21 @@ function assertPostMeta(
 
   const slug = trimNonEmpty(meta.slug) ?? slugFromFile;
   if (!slug) throw new Error(`Missing slug: ${slugFromFile}`);
+
+  // ファイル名由来slugとfrontmatterのslugがズレたら気づけるように
   if (slug !== slugFromFile) {
-    // ファイル名由来slugとfrontmatterのslugがズレたら気づけるように
     throw new Error(`Slug mismatch: ${slugFromFile} (frontmatter: ${slug})`);
   }
 
   const date = normalizeDate(meta.date);
   if (!date) throw new Error(`Missing date: ${slugFromFile}`);
-  if (!isValidDateString(date)) throw new Error(`Invalid date: ${slugFromFile}`);
+  if (!isValidDateString(date)) {
+    throw new Error(`Invalid date: ${slugFromFile} (value: ${String(meta.date)})`);
+  }
 
   const description = trimNonEmpty(meta.description);
   const tags = toStringArray(meta.tags);
-  const draft = Boolean(meta.draft);
+  const draft = toBoolean(meta.draft);
 
   return {
     title,
@@ -105,33 +127,53 @@ function assertPostMeta(
   };
 }
 
-async function readPostFileBySlug(
-  slug: string
-): Promise<{ filename: string; fullpath: string } | null> {
-  const files = await readdir(BLOG_DIR);
-  const candidates = files.filter((f) => /\.(md|mdx)$/i.test(f));
+// --------------------
+// Slug index cache (I/O削減)
+// --------------------
 
-  for (const filename of candidates) {
-    const s = slugFromFilename(filename);
-    if (s === slug) {
-      return { filename, fullpath: path.join(BLOG_DIR, filename) };
-    }
-  }
-  return null;
-}
+type FileEntry = { filename: string; fullpath: string };
 
-export async function getAllPosts(): Promise<PostMeta[]> {
+let slugIndexPromise: Promise<Map<string, FileEntry>> | null = null;
+
+async function buildSlugIndex(): Promise<Map<string, FileEntry>> {
   const files = await readdir(BLOG_DIR);
   const targets = files.filter((f) => /\.(md|mdx)$/i.test(f));
 
+  const map = new Map<string, FileEntry>();
+  for (const filename of targets) {
+    const slug = slugFromFilename(filename);
+    // 同一slugがあれば後勝ち（通常は起きない想定）
+    map.set(slug, { filename, fullpath: path.join(BLOG_DIR, filename) });
+  }
+  return map;
+}
+
+async function ensureSlugIndex(): Promise<Map<string, FileEntry>> {
+  if (!slugIndexPromise) {
+    slugIndexPromise = buildSlugIndex();
+  }
+  return slugIndexPromise;
+}
+
+async function readPostFileBySlug(slug: string): Promise<FileEntry | null> {
+  const index = await ensureSlugIndex();
+  return index.get(slug) ?? null;
+}
+
+// --------------------
+// Public APIs
+// --------------------
+
+export async function getAllPosts(): Promise<PostMeta[]> {
+  const index = await ensureSlugIndex();
+  const entries = Array.from(index.entries()); // [slug, {filename, fullpath}]
+
   const metas: PostMeta[] = [];
 
-  for (const filename of targets) {
-    const fullpath = path.join(BLOG_DIR, filename);
-    const raw = await readFile(fullpath, "utf8");
+  for (const [slugFromFile, entry] of entries) {
+    const raw = await readFile(entry.fullpath, "utf8");
     const { data } = matter(raw);
 
-    const slugFromFile = slugFromFilename(filename);
     const meta = assertPostMeta(data as Record<string, unknown>, slugFromFile);
 
     // draft は一覧から除外
@@ -181,6 +223,6 @@ export async function getPostBySlugOrThrow(slug: string): Promise<Post> {
 }
 
 export async function getAllPostSlugs(): Promise<string[]> {
-  const posts = await getAllPosts();
-  return posts.map((p) => p.slug);
+  const index = await ensureSlugIndex();
+  return Array.from(index.keys());
 }

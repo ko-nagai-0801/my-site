@@ -10,6 +10,7 @@ import rehypePrettyCode, {
 import type { Text } from "hast";
 
 import { getMDXComponents } from "@/mdx-components";
+import { MdxImage } from "@/components/mdx/MdxImage";
 
 /**
  * ✅ MDX描画設定の単一ソース
@@ -85,5 +86,12 @@ export const mdxOptions: MdxOptions = {
 
 /**
  * ✅ MDX components も単一ソースに
+ * - 既存の components は維持
+ * - img だけ MdxImage（Next/Image）へ差し替え
  */
-export const mdxComponents = getMDXComponents({});
+const baseComponents = getMDXComponents({});
+
+export const mdxComponents = {
+  ...baseComponents,
+  img: MdxImage, // ← ここで上書き
+};

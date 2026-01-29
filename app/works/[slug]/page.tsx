@@ -81,7 +81,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
 
         <Reveal as="div" delay={220}>
           <Link href="/works" className="kns-btn-ghost" aria-label="Works一覧へ戻る">
-            <span>View all</span>
+            <span>Works</span>
             <span aria-hidden="true">→</span>
           </Link>
         </Reveal>
@@ -90,7 +90,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
       {/* Divider */}
       <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      {/* Sub-hero (use work image if exists) */}
+      {/* Sub-hero (work image) */}
       {work.meta.image ? (
         <Reveal
           as="div"
@@ -110,40 +110,42 @@ export default async function WorkDetailPage({ params }: PageProps) {
         </Reveal>
       ) : null}
 
-      {/* Meta (links / note) */}
-      {hasMetaBlock ? (
-        <Reveal as="section" className="mt-10" delay={340} aria-label="Work links">
-          {hasLinks ? (
-            <div className="flex flex-wrap items-center gap-3">
-              {work.meta.href ? <ExternalButton href={work.meta.href} label="Open site" /> : null}
-              {work.meta.repo ? <ExternalButton href={work.meta.repo} label="Repository" /> : null}
-            </div>
-          ) : null}
+      {/* ✅ サムネより下：Revealを1つにまとめて動きを最小限に */}
+      <div className="mt-10">
+        {/* Meta (links / note) */}
+        {hasMetaBlock ? (
+          <section aria-label="Work links">
+            {hasLinks ? (
+              <div className="flex flex-wrap items-center gap-3">
+                {work.meta.href ? <ExternalButton href={work.meta.href} label="Open site" /> : null}
+                {work.meta.repo ? <ExternalButton href={work.meta.repo} label="Repository" /> : null}
+              </div>
+            ) : null}
 
-          {hasNote ? (
-            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{work.meta.note}</p>
-          ) : null}
-        </Reveal>
-      ) : null}
+            {hasNote ? (
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{work.meta.note}</p>
+            ) : null}
+          </section>
+        ) : null}
 
-      {/* Divider */}
-      <Reveal as="div" className="mt-10 hairline" delay={380} />
+        <div className="mt-10 hairline" />
 
-      {/* Content */}
-      <Reveal as="div" className="mt-10" delay={420}>
-        {/* ★ iPhoneがライトでも暗背景なら読めるよう、常に prose-invert */}
-        <article className="prose prose-invert max-w-none">{content}</article>
-      </Reveal>
+        {/* Content */}
+        <div className="mt-10">
+          {/* ★ iPhoneがライトでも暗背景なら読めるよう、常に prose-invert */}
+          <article className="prose prose-invert max-w-none">{content}</article>
+        </div>
 
-      {/* Footer back link */}
-      <Reveal as="div" className="mt-10 flex justify-end" delay={480}>
-        <Link href="/works" className="kns-btn-ghost" aria-label="Works一覧へ戻る">
-          <span>View all</span>
-          <span aria-hidden="true">→</span>
-        </Link>
-      </Reveal>
+        {/* Footer back link */}
+        <div className="mt-10 flex justify-end">
+          <Link href="/works" className="kns-btn-ghost" aria-label="Works一覧へ戻る">
+            <span>Works</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
 
-      <Reveal as="div" className="mt-10 hairline" delay={520} />
+        <div className="mt-10 hairline" />
+      </div>
     </main>
   );
 }
