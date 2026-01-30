@@ -4,8 +4,20 @@ import Image from "next/image";
 
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
 import { TiltCard } from "@/components/ui/TiltCard";
-import type { WorkItem } from "@/lib/works";
 import { getWorkThumb, DEFAULT_WORK_THUMB } from "@/lib/work-thumb";
+
+export type WorkLike = {
+  slug: string;
+  meta: {
+    title: string;
+    summary: string;
+    href?: string;
+    repo?: string;
+    note?: string;
+    tags?: string[];
+    image?: { src: string; alt: string };
+  };
+};
 
 function ExternalLink({ href, label }: { href: string; label: string }) {
   return (
@@ -21,19 +33,9 @@ function ExternalLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function WorkThumb({
-  src,
-  alt,
-  title,
-  slug,
-}: {
-  src: string;
-  alt: string;
-  title: string;
-  slug: string;
-}) {
+function WorkThumb({ src, alt, slug }: { src: string; alt: string; slug: string }) {
   return (
-    <Link href={`/works/${slug}`} aria-label={`${title} の詳細へ`} className="group block">
+    <Link href={`/works/${slug}`} aria-label={`${alt} の詳細へ`} className="group block">
       <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-panel">
         <Image
           src={src}
@@ -48,12 +50,17 @@ function WorkThumb({
   );
 }
 
-export function WorksGrid({ works }: { works: WorkItem[] }) {
+export function WorksGrid({ works }: { works: WorkLike[] }) {
   return (
     <ul className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
       {works.map((w) => {
         const hasFooter = Boolean(w.meta.href || w.meta.repo || w.meta.note);
-        const thumb = getWorkThumb(w.meta, DEFAULT_WORK_THUMB);
+
+        // ✅ a) 常にサムネを出す（image が無くても noimage）
+        const thumb = getWorkThumb(
+          { title: w.meta.title, image: w.meta.image },
+          DEFAULT_WORK_THUMB
+        );
 
         return (
           <li key={w.slug} className="flex">
@@ -65,8 +72,7 @@ export function WorksGrid({ works }: { works: WorkItem[] }) {
                     "md:h-[520px]",
                   ].join(" ")}
                 >
-                  {/* ✅ 画像は常に表示（work.image が無ければデフォルト） */}
-                  <WorkThumb src={thumb.src} alt={thumb.alt} title={w.meta.title} slug={w.slug} />
+                  <WorkThumb src={thumb.src} alt={thumb.alt} slug={w.slug} />
 
                   <div className="mt-5 flex min-h-0 flex-1 flex-col">
                     <h2 className="text-base font-medium tracking-tight">

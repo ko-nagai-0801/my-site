@@ -2,16 +2,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
 import { getAllWorks } from "@/lib/works";
 import { WorksGrid } from "@/components/works/WorksGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { Reveal } from "@/components/ui/Reveal";
-
-export const metadata: Metadata = {
-  // ✅ layout の title.template に任せる（site名を含めない）
-  title: "Works",
-  description: "制作実績 / サンプルの一覧",
-};
+import { SITE_NAME, SITE_LOCALE, SITE_OG_IMAGES, SITE_DESCRIPTION } from "@/lib/site-meta";
 
 const PER_PAGE = 6;
 
@@ -25,7 +21,6 @@ const toInt = (v: string | undefined) => {
   return Math.trunc(n);
 };
 
-// 表示用（見た目）は trim のみ
 const normalizeLabel = (s: string) => s.trim();
 
 const normalizeKey = (s: string) =>
@@ -34,6 +29,69 @@ const normalizeKey = (s: string) =>
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
+
+/**
+ * ✅ c) /works の OGP をタグ/ページに追従
+ * - title/description を searchParams から生成
+ * - images はサイト既定（site-meta単一ソース）
+ */
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const sp = (await searchParams) ?? {};
+  const requested = Math.max(1, toInt(sp.page));
+
+  const activeTagRaw = typeof sp.tag === "string" ? normalizeLabel(sp.tag) : "";
+  const activeKey = activeTagRaw ? normalizeKey(activeTagRaw) : "";
+
+  const works = await getAllWorks();
+
+  // フィルタ用タグ一覧（比較keyで重複排除しつつ、表示ラベルは最初の表記を採用）
+  const tagMap = new Map<string, string>(); // key -> label
+  for (const w of works) {
+    for (const t of w.meta.tags ?? []) {
+      const label = normalizeLabel(t);
+      if (!label) continue;
+      const key = normalizeKey(label);
+      if (!tagMap.has(key)) tagMap.set(key, label);
+    }
+  }
+
+  const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
+
+  const titleBase = activeLabel ? `Works: ${activeLabel}` : "Works";
+  const title = requested > 1 ? `${titleBase} - Page ${requested}` : titleBase;
+
+  const description = activeLabel
+    ? `制作実績 / サンプルの一覧（Tag: ${activeLabel}）`
+    : "制作実績 / サンプルの一覧";
+
+  const params = new URLSearchParams();
+  if (activeLabel) params.set("tag", activeLabel);
+  if (requested > 1) params.set("page", String(requested));
+  const qs = params.toString();
+  const url = qs ? `/works?${qs}` : "/works";
+
+  return {
+    title,
+    description,
+
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url,
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
+      images: SITE_OG_IMAGES,
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: SITE_OG_IMAGES.map((i) => i.url),
+    },
+  };
+}
 
 export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
@@ -79,7 +137,7 @@ export default async function WorksPage({ searchParams }: Props) {
     );
   }
 
-  const tagMap = new Map<string, string>();
+  const tagMap = new Map<string, string>(); // key -> label
   for (const w of works) {
     for (const t of w.meta.tags ?? []) {
       const label = normalizeLabel(t);
