@@ -7,7 +7,13 @@ import { getAllWorks } from "@/lib/works";
 import { WorksGrid } from "@/components/works/WorksGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { Reveal } from "@/components/ui/Reveal";
-import { SITE_NAME, SITE_LOCALE, SITE_OG_IMAGES, SITE_DESCRIPTION } from "@/lib/site-meta";
+import { SITE_NAME, SITE_LOCALE, SITE_OG_IMAGES } from "@/lib/site-meta";
+import {
+  buildWorkTagMap,
+  getWorkTagList,
+  getActiveWorkTag,
+  filterWorksByActiveTag,
+} from "@/lib/works-tags";
 
 const PER_PAGE = 6;
 
@@ -21,17 +27,8 @@ const toInt = (v: string | undefined) => {
   return Math.trunc(n);
 };
 
-const normalizeLabel = (s: string) => s.trim();
-
-const normalizeKey = (s: string) =>
-  s
-    .normalize("NFKC")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-
 /**
- * ✅ c) /works の OGP をタグ/ページに追従
+ * ✅ /works の OGP を tag/page に追従
  * - title/description を searchParams から生成
  * - images はサイト既定（site-meta単一ソース）
  */
@@ -39,23 +36,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
-  const activeTagRaw = typeof sp.tag === "string" ? normalizeLabel(sp.tag) : "";
-  const activeKey = activeTagRaw ? normalizeKey(activeTagRaw) : "";
-
   const works = await getAllWorks();
 
-  // フィルタ用タグ一覧（比較keyで重複排除しつつ、表示ラベルは最初の表記を採用）
-  const tagMap = new Map<string, string>(); // key -> label
-  for (const w of works) {
-    for (const t of w.meta.tags ?? []) {
-      const label = normalizeLabel(t);
-      if (!label) continue;
-      const key = normalizeKey(label);
-      if (!tagMap.has(key)) tagMap.set(key, label);
-    }
-  }
-
-  const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
+  const tagMap = buildWorkTagMap(works);
+  const { activeKey, activeLabel } = getActiveWorkTag(sp.tag, tagMap);
 
   const titleBase = activeLabel ? `Works: ${activeLabel}` : "Works";
   const title = requested > 1 ? `${titleBase} - Page ${requested}` : titleBase;
@@ -97,9 +81,6 @@ export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
-  const activeTagRaw = typeof sp.tag === "string" ? normalizeLabel(sp.tag) : "";
-  const activeKey = activeTagRaw ? normalizeKey(activeTagRaw) : "";
-
   const works = await getAllWorks();
 
   if (works.length === 0) {
@@ -137,28 +118,16 @@ export default async function WorksPage({ searchParams }: Props) {
     );
   }
 
-  const tagMap = new Map<string, string>(); // key -> label
-  for (const w of works) {
-    for (const t of w.meta.tags ?? []) {
-      const label = normalizeLabel(t);
-      if (!label) continue;
-      const key = normalizeKey(label);
-      if (!tagMap.has(key)) tagMap.set(key, label);
-    }
-  }
+  const tagMap = buildWorkTagMap(works);
+  const allTags = getWorkTagList(tagMap);
 
-  const allTags = Array.from(tagMap.entries())
-    .map(([key, label]) => ({ key, label }))
-    .sort((a, b) => a.label.localeCompare(b.label, "ja", { sensitivity: "base" }));
+  // ✅ decodeURIComponent は外す（Next側でデコード済みのケースがある）
+  const { activeKey, activeLabel } = getActiveWorkTag(sp.tag, tagMap);
 
-  const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
+  // ✅ tag があるときだけ絞り込み（比較は key で）
+  const filtered = filterWorksByActiveTag(works, activeKey);
 
-  const filtered = activeKey
-    ? works.filter((w) =>
-        (w.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === activeKey)
-      )
-    : works;
-
+  // ✅ フィルタ結果 0 件でも 404 にしない（UI上のフィルタとして自然）
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   if (requested > totalPages) notFound();
 
@@ -167,6 +136,7 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const hrefForPage = (n: number) => {
     const params = new URLSearchParams();
+    // 表示ラベルをURLに入れる（人間が読める）
     if (activeLabel) params.set("tag", activeLabel);
     if (n > 1) params.set("page", String(n));
     const qs = params.toString();
@@ -208,8 +178,10 @@ export default async function WorksPage({ searchParams }: Props) {
         </Reveal>
       </header>
 
+      {/* ✅ 区切り線（About/Topのテンポに寄せる） */}
       <Reveal as="div" className="mt-10 hairline" delay={280} />
 
+      {/* ✅ タグフィルタ（chip UI） */}
       <section className="mt-8" aria-label="Tag filter">
         <h2 className="sr-only">Filter by tag</h2>
 
@@ -236,14 +208,17 @@ export default async function WorksPage({ searchParams }: Props) {
         ) : null}
       </section>
 
+      {/* ✅ グリッド */}
       <Reveal as="div" className="mt-10" delay={380}>
         <WorksGrid works={items} />
       </Reveal>
 
+      {/* ✅ ページネーション */}
       <Reveal as="div" className="mt-10" delay={440}>
         <Pagination current={requested} total={totalPages} hrefForPage={hrefForPage} />
       </Reveal>
 
+      {/* ✅ 〆の区切り線 */}
       <Reveal as="div" className="mt-10 hairline" delay={500} />
     </main>
   );
