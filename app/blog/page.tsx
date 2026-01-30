@@ -9,7 +9,8 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
-  title: "Blog | Kou Nagai Studio",
+  // ✅ layout の title.template に任せる（site名を含めない）
+  title: "Blog",
   description: "ブログ記事一覧（学習ログ / 制作メモ など）",
 };
 
@@ -102,20 +103,16 @@ export default async function BlogPage({ searchParams }: Props) {
         </Reveal>
       </header>
 
-      {/* ✅ 区切り線（Worksと同テンポ） */}
       <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      {/* ✅ 一覧：TOPのBlog（variant="latest"）と同じ見え方に揃える */}
       <Reveal as="div" className="mt-10" delay={300}>
         <PostsList posts={items} variant="latest" linkMode="title" />
       </Reveal>
 
-      {/* ✅ ページネーション */}
       <Reveal as="div" className="mt-10" delay={360}>
         <Pagination current={requested} total={totalPages} hrefForPage={pageHref} />
       </Reveal>
 
-      {/* ✅ 〆の区切り線 */}
       <Reveal as="div" className="mt-10 hairline" delay={420} />
     </main>
   );

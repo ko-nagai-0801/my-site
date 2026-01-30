@@ -10,6 +10,13 @@ import { CursorStalker } from "@/components/ui/CursorStalker";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { getSiteUrl, isProduction } from "@/lib/site-url";
+import {
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  SITE_LOCALE,
+  DEFAULT_OG_IMAGES,
+  DEFAULT_TWITTER_IMAGES,
+} from "@/lib/site-meta";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -22,10 +29,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: {
-    default: "Kou Nagai Studio",
-    template: "%s | Kou Nagai Studio",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "Studio / Portfolio / Blog",
+  description: SITE_DESCRIPTION,
 
   icons: {
     icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
@@ -34,23 +41,25 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 
   openGraph: {
-    title: "Kou Nagai Studio",
-    description: "Studio / Portfolio / Blog",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     url: "/",
-    siteName: "Kou Nagai Studio",
-    locale: "ja_JP",
+    siteName: SITE_NAME,
+    locale: SITE_LOCALE,
     type: "website",
-    images: [
-      { url: "/og-kns-1200x630.png", width: 1200, height: 630, alt: "Kou Nagai Studio" },
-      { url: "/og-kns-2400x1260.png", width: 2400, height: 1260, alt: "Kou Nagai Studio" },
-    ],
+    images: DEFAULT_OG_IMAGES.map((img) => ({
+      url: img.url,
+      width: img.width,
+      height: img.height,
+      alt: img.alt,
+    })),
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Kou Nagai Studio",
-    description: "Studio / Portfolio / Blog",
-    images: ["/og-kns-1200x630.png"],
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [...DEFAULT_TWITTER_IMAGES],
   },
 
   robots: prod ? { index: true, follow: true } : { index: false, follow: false },
@@ -72,7 +81,10 @@ function HeaderFallback() {
           <div className="h-9 w-56 rounded-full border border-border opacity-40" aria-hidden="true" />
         </div>
 
-        <div className="sm:hidden h-10 w-10 rounded-md border border-border opacity-40" aria-hidden="true" />
+        <div
+          className="sm:hidden h-10 w-10 rounded-md border border-border opacity-40"
+          aria-hidden="true"
+        />
       </div>
     </header>
   );
@@ -82,8 +94,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ja">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-clip`}>
-      <CursorStalker />
-      
+        <CursorStalker />
+
         <Suspense fallback={<HeaderFallback />}>
           <SiteHeader />
         </Suspense>

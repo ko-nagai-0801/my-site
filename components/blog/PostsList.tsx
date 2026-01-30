@@ -4,9 +4,7 @@ import Image from "next/image";
 import { formatDate } from "@/lib/formatDate";
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
 import type { PostLike } from "@/lib/posts";
-import { getPostThumb } from "@/lib/post-thumb";
-
-const DEFAULT_THUMB = "/images/blog/noimage.webp";
+import { getPostThumb, DEFAULT_BLOG_THUMB } from "@/lib/post-thumb";
 
 type Variant = "blog" | "home" | "latest";
 type LinkMode = "wrap" | "title";
@@ -36,9 +34,8 @@ function RowCardsList({
     <ul className="space-y-4 sm:space-y-5">
       {posts.map((p) => {
         const tags = p.meta.tags ?? [];
-        const thumb = getPostThumb(p.meta, DEFAULT_THUMB);
+        const thumb = getPostThumb(p.meta, DEFAULT_BLOG_THUMB);
 
-        // ✅ 下線なし（hover opacityでリンク感）
         const titleNode =
           linkMode === "title" ? (
             <span className="text-base font-medium tracking-tight group-hover:opacity-80">
@@ -90,7 +87,6 @@ function RowCardsList({
                 "grid gap-4 md:grid-cols-[160px_1fr] md:gap-8",
               ].join(" ")}
             >
-              {/* 左カラム：日付 + タグ */}
               <div className="min-w-0">
                 <div className="text-xs tracking-[0.18em] text-muted">
                   {formatDate(p.meta.date)}
@@ -98,7 +94,6 @@ function RowCardsList({
                 {tagsNode}
               </div>
 
-              {/* 右カラム：全体リンク（サムネ＋タイトル＋説明） */}
               <Link
                 href={`/blog/${p.slug}`}
                 className="group block min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-foreground/25"
@@ -129,14 +124,12 @@ export function PostsList({
   posts: PostLike[];
   variant?: Variant;
   linkMode?: LinkMode;
-  showReadLabel?: boolean; // 互換用（現状は row-card 表示では未使用）
+  showReadLabel?: boolean;
 }) {
-  // ✅ blog / home / latest を同じ「TOPの見え方（行カード）」に寄せる
   if (variant === "latest" || variant === "blog" || variant === "home") {
     return <RowCardsList posts={posts} linkMode={linkMode} />;
   }
 
-  // 将来 variant を増やす場合の保険（今は到達しない想定）
   const listClass = "divide-y divide-border border-y border-border";
 
   return (

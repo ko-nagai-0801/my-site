@@ -8,15 +8,8 @@ import { getPostBySlug, getAllPostSlugs } from "@/lib/posts";
 import { formatDate } from "@/lib/formatDate";
 import { renderMdx } from "@/lib/render-mdx";
 import { Reveal } from "@/components/ui/Reveal";
-import { getPostThumb } from "@/lib/post-thumb";
-
-const DEFAULT_THUMB = "/images/blog/noimage.webp";
-
-// layout と同じ既定OGP（フォールバック用）
-const SITE_OG_IMAGES = [
-  { url: "/og-kns-1200x630.png", alt: "Kou Nagai Studio" },
-  { url: "/og-kns-2400x1260.png", alt: "Kou Nagai Studio" },
-];
+import { getPostThumb, getPostOgImages, DEFAULT_BLOG_THUMB } from "@/lib/post-thumb";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_LOCALE } from "@/lib/site-meta";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -33,29 +26,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(slug);
   if (!post) {
     return {
-      title: "Not Found | Blog | Kou Nagai Studio",
+      title: "Not Found",
       description: "指定された記事が見つかりませんでした。",
     };
   }
 
-  const title = `${post.meta.title} | Blog | Kou Nagai Studio`;
-  const description = post.meta.description ?? "";
+  // ✅ layout の title.template を活かす（ここでは site 名を含めない）
+  const title = `${post.meta.title} | Blog`;
+  const description = post.meta.description ?? SITE_DESCRIPTION;
 
-  // ✅ OGP は「記事画像があれば優先」→ 無ければサイト既定へ
-  const ogImage = post.meta.image?.src;
-  const ogImages = ogImage
-    ? [{ url: ogImage, alt: post.meta.image?.alt?.trim() ? post.meta.image.alt : post.meta.title }]
-    : SITE_OG_IMAGES;
+  const ogImages = getPostOgImages(post.meta);
 
   return {
     title,
     description,
+    alternates: { canonical: `/blog/${post.meta.slug}` },
 
     openGraph: {
       title,
       description,
       type: "article",
       url: `/blog/${post.meta.slug}`,
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
       images: ogImages,
     },
 
@@ -75,15 +68,13 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   const content = await renderMdx(post.content);
-
   const tags = post.meta.tags ?? [];
 
   // ✅ 詳細サムネ：記事画像が無ければデフォルト（一覧と同ロジック）
-  const thumb = getPostThumb(post.meta, DEFAULT_THUMB);
+  const thumb = getPostThumb(post.meta, DEFAULT_BLOG_THUMB);
 
   return (
     <main className="container py-14">
-      {/* Header */}
       <header className="flex items-end justify-between gap-6">
         <div className="min-w-0 max-w-3xl">
           <Reveal as="p" className="kns-page-kicker" delay={60}>
@@ -131,10 +122,8 @@ export default async function BlogPostPage({ params }: Props) {
         </Reveal>
       </header>
 
-      {/* Divider */}
       <Reveal as="div" className="mt-10 hairline" delay={300} />
 
-      {/* Sub-hero (thumb) - ✅ 常に表示（記事画像 or デフォルト） */}
       <Reveal
         as="div"
         className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
