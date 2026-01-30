@@ -26,24 +26,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(slug);
   if (!post) {
     return {
-      title: "Not Found",
+      title: "Not Found | Blog",
       description: "指定された記事が見つかりませんでした。",
     };
   }
 
-  // ✅ layout の title.template を活かす（ここでは site 名を含めない）
-  const title = `${post.meta.title} | Blog`;
+  const pageTitle = `${post.meta.title} | Blog`;
   const description = post.meta.description ?? SITE_DESCRIPTION;
 
   const ogImages = getPostOgImages(post.meta);
 
   return {
-    title,
+    title: pageTitle,
     description,
-    alternates: { canonical: `/blog/${post.meta.slug}` },
 
     openGraph: {
-      title,
+      title: pageTitle,
       description,
       type: "article",
       url: `/blog/${post.meta.slug}`,
@@ -54,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     twitter: {
       card: "summary_large_image",
-      title,
+      title: pageTitle,
       description,
       images: ogImages.map((i) => i.url),
     },
@@ -70,7 +68,6 @@ export default async function BlogPostPage({ params }: Props) {
   const content = await renderMdx(post.content);
   const tags = post.meta.tags ?? [];
 
-  // ✅ 詳細サムネ：記事画像が無ければデフォルト（一覧と同ロジック）
   const thumb = getPostThumb(post.meta, DEFAULT_BLOG_THUMB);
 
   return (
@@ -124,6 +121,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <Reveal as="div" className="mt-10 hairline" delay={300} />
 
+      {/* ✅ 常に表示（記事画像 or デフォルト） */}
       <Reveal
         as="div"
         className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"

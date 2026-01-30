@@ -7,12 +7,8 @@ import { notFound } from "next/navigation";
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
 import { renderMdx } from "@/lib/render-mdx";
 import { Reveal } from "@/components/ui/Reveal";
-import { getWorkThumb, DEFAULT_WORK_THUMB } from "@/lib/work-thumb";
-
-const SITE_OG_IMAGES = [
-  { url: "/og-kns-1200x630.png", alt: "Kou Nagai Studio" },
-  { url: "/og-kns-2400x1260.png", alt: "Kou Nagai Studio" },
-];
+import { getWorkThumb, getWorkOgImages, DEFAULT_WORK_THUMB } from "@/lib/work-thumb";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_LOCALE } from "@/lib/site-meta";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -29,40 +25,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const work = await getWorkBySlug(slug);
   if (!work) {
     return {
-      title: "Not Found | Works | Kou Nagai Studio",
+      title: "Not Found | Works",
       description: "指定された作品が見つかりませんでした。",
     };
   }
 
-  const title = `${work.meta.title} | Works | Kou Nagai Studio`;
-  const description = work.meta.summary ?? "";
+  const pageTitle = `${work.meta.title} | Works`;
+  const description = work.meta.summary ?? SITE_DESCRIPTION;
 
-  // ✅ OGP は「作品画像があれば優先」→ 無ければサイト既定へ
-  const ogImage = work.meta.image?.src;
-  const ogImages = ogImage
-    ? [
-        {
-          url: ogImage,
-          alt: work.meta.image?.alt?.trim() ? work.meta.image.alt : work.meta.title,
-        },
-      ]
-    : SITE_OG_IMAGES;
+  const ogImages = getWorkOgImages(work.meta);
 
   return {
-    title,
+    title: pageTitle,
     description,
 
     openGraph: {
-      title,
+      title: pageTitle,
       description,
       type: "article",
       url: `/works/${work.slug}`,
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
       images: ogImages,
     },
 
     twitter: {
       card: "summary_large_image",
-      title,
+      title: pageTitle,
       description,
       images: ogImages.map((i) => i.url),
     },
@@ -96,7 +85,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
   const hasNote = Boolean(work.meta.note);
   const hasMetaBlock = hasLinks || hasNote;
 
-  // ✅ 詳細サムネ：画像が無ければデフォルト（一覧と同ロジック）
+  // ✅ 詳細サムネ：作品画像が無ければデフォルト（Blogと同方針）
   const thumb = getWorkThumb(work.meta, DEFAULT_WORK_THUMB);
 
   return (
@@ -126,7 +115,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
 
       <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      {/* ✅ Sub-hero：常に表示（作品画像 or デフォルト） */}
+      {/* ✅ 常に表示（作品画像 or デフォルト） */}
       <Reveal
         as="div"
         className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
