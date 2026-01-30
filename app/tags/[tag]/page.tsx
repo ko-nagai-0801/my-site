@@ -1,4 +1,4 @@
-// app/tags/[tag]/page.tsx
+/* app/tags/[tag]/page.tsx */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,11 +17,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params;
-  const tagLabel = slugToTag(tag);
+
+  // ✅ 正規化済みの canonical label（最初に採用された表記）に統一
+  const detail = await getTagDetail(tag);
+  const label = detail.tag || slugToTag(tag);
 
   return {
-    title: `${tagLabel} | Tags`,
-    description: `タグ「${tagLabel}」で絞り込んだ一覧（Blog / Works 共通）`,
+    title: `${label} | Tags | Kou Nagai Studio`,
+    description: `タグ「${label}」で絞り込んだ一覧（Blog / Works 共通）`,
   };
 }
 
@@ -42,7 +45,6 @@ export default async function TagDetailPage({ params }: Props) {
   if (posts.length === 0 && works.length === 0) {
     notFound();
   }
-  
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
@@ -71,12 +73,16 @@ export default async function TagDetailPage({ params }: Props) {
         <h2 className="text-xl font-semibold">Blog</h2>
 
         {posts.length === 0 ? (
-          <p className="mt-3 text-sm opacity-80">このタグのブログ記事はありません。</p>
+          <p className="mt-3 text-sm opacity-80">
+            このタグのブログ記事はありません。
+          </p>
         ) : (
           <ul className="mt-4 space-y-4">
             {posts.map((p) => (
               <li key={p.slug} className="rounded-lg border p-4">
-                <p className="text-xs opacity-70">{formatDateYMD(p.meta.date)}</p>
+                <p className="text-xs opacity-70">
+                  {formatDateYMD(p.meta.date)}
+                </p>
                 <Link
                   href={`/blog/${p.slug}`}
                   className="mt-1 block text-lg font-semibold hover:underline underline-offset-4"

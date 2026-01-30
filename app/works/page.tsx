@@ -12,7 +12,7 @@ import {
   buildWorkTagMap,
   getWorkTagList,
   getActiveWorkTag,
-  filterWorksByActiveTag,
+  filterWorksByActiveKey,
 } from "@/lib/works-tags";
 
 const PER_PAGE = 6;
@@ -32,7 +32,9 @@ const toInt = (v: string | undefined) => {
  * - title/description を searchParams から生成
  * - images はサイト既定（site-meta単一ソース）
  */
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
@@ -125,7 +127,7 @@ export default async function WorksPage({ searchParams }: Props) {
   const { activeKey, activeLabel } = getActiveWorkTag(sp.tag, tagMap);
 
   // ✅ tag があるときだけ絞り込み（比較は key で）
-  const filtered = filterWorksByActiveTag(works, activeKey);
+  const filtered = filterWorksByActiveKey(works, activeKey);
 
   // ✅ フィルタ結果 0 件でも 404 にしない（UI上のフィルタとして自然）
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -194,7 +196,11 @@ export default async function WorksPage({ searchParams }: Props) {
             const href = `/works?tag=${encodeURIComponent(label)}`;
             const isActive = key === activeKey;
             return (
-              <Link key={key} href={href} className={isActive ? chipActive : chipBase}>
+              <Link
+                key={key}
+                href={href}
+                className={isActive ? chipActive : chipBase}
+              >
                 {label}
               </Link>
             );
@@ -215,7 +221,11 @@ export default async function WorksPage({ searchParams }: Props) {
 
       {/* ✅ ページネーション */}
       <Reveal as="div" className="mt-10" delay={440}>
-        <Pagination current={requested} total={totalPages} hrefForPage={hrefForPage} />
+        <Pagination
+          current={requested}
+          total={totalPages}
+          hrefForPage={hrefForPage}
+        />
       </Reveal>
 
       {/* ✅ 〆の区切り線 */}
