@@ -7,6 +7,12 @@ import { notFound } from "next/navigation";
 import { getAllWorks, getWorkBySlug } from "@/lib/works";
 import { renderMdx } from "@/lib/render-mdx";
 import { Reveal } from "@/components/ui/Reveal";
+import { getWorkThumb, DEFAULT_WORK_THUMB } from "@/lib/work-thumb";
+
+const SITE_OG_IMAGES = [
+  { url: "/og-kns-1200x630.png", alt: "Kou Nagai Studio" },
+  { url: "/og-kns-2400x1260.png", alt: "Kou Nagai Studio" },
+];
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -28,9 +34,38 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const title = `${work.meta.title} | Works | Kou Nagai Studio`;
+  const description = work.meta.summary ?? "";
+
+  // ✅ OGP は「作品画像があれば優先」→ 無ければサイト既定へ
+  const ogImage = work.meta.image?.src;
+  const ogImages = ogImage
+    ? [
+        {
+          url: ogImage,
+          alt: work.meta.image?.alt?.trim() ? work.meta.image.alt : work.meta.title,
+        },
+      ]
+    : SITE_OG_IMAGES;
+
   return {
-    title: `${work.meta.title} | Works | Kou Nagai Studio`,
-    description: work.meta.summary,
+    title,
+    description,
+
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: `/works/${work.slug}`,
+      images: ogImages,
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ogImages.map((i) => i.url),
+    },
   };
 }
 
@@ -61,9 +96,11 @@ export default async function WorkDetailPage({ params }: PageProps) {
   const hasNote = Boolean(work.meta.note);
   const hasMetaBlock = hasLinks || hasNote;
 
+  // ✅ 詳細サムネ：画像が無ければデフォルト（一覧と同ロジック）
+  const thumb = getWorkThumb(work.meta, DEFAULT_WORK_THUMB);
+
   return (
     <main className="container py-14">
-      {/* Header */}
       <header className="flex items-end justify-between gap-6">
         <div className="min-w-0">
           <Reveal as="p" className="kns-page-kicker" delay={60}>
@@ -87,31 +124,27 @@ export default async function WorkDetailPage({ params }: PageProps) {
         </Reveal>
       </header>
 
-      {/* Divider */}
       <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      {/* Sub-hero (work image) */}
-      {work.meta.image ? (
-        <Reveal
-          as="div"
-          className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
-          delay={300}
-        >
-          <div className="relative aspect-[16/10]">
-            <Image
-              src={work.meta.image.src}
-              alt={work.meta.image.alt}
-              fill
-              priority
-              sizes="(min-width: 1024px) 1024px, 100vw"
-              className="object-cover"
-            />
-          </div>
-        </Reveal>
-      ) : null}
+      {/* ✅ Sub-hero：常に表示（作品画像 or デフォルト） */}
+      <Reveal
+        as="div"
+        className="mt-10 overflow-hidden rounded-2xl border border-border bg-panel"
+        delay={300}
+      >
+        <div className="relative aspect-[16/10]">
+          <Image
+            src={thumb.src}
+            alt={thumb.alt}
+            fill
+            priority
+            sizes="(min-width: 1024px) 1024px, 100vw"
+            className="object-cover"
+          />
+        </div>
+      </Reveal>
 
       <div className="mt-10">
-        {/* Meta (links / note) */}
         {hasMetaBlock ? (
           <section aria-label="Work links">
             {hasLinks ? (
@@ -129,13 +162,10 @@ export default async function WorkDetailPage({ params }: PageProps) {
 
         <div className="mt-10 hairline" />
 
-        {/* Content */}
         <div className="mt-10">
-          {/* ★ iPhoneがライトでも暗背景なら読めるよう、常に prose-invert */}
           <article className="prose prose-invert max-w-none">{content}</article>
         </div>
 
-        {/* Footer back link */}
         <div className="mt-10 flex justify-end">
           <Link href="/works" className="kns-btn-ghost" aria-label="Works一覧へ戻る">
             <span>Works</span>

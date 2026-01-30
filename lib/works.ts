@@ -1,4 +1,4 @@
-// lib/works.ts
+/* lib/works.ts */
 import "server-only";
 
 import { readdir, readFile } from "node:fs/promises";
@@ -8,14 +8,14 @@ import matter from "gray-matter";
 export type WorkMeta = {
   title: string;
   summary: string;
-  tags: string[]; // ここは常に配列（無ければ []）
+  tags: string[]; // 常に配列（無ければ []）
   href?: string;
   repo?: string;
   note?: string;
   order?: number;
   image?: {
     src: string;
-    alt: string;
+    alt: string; // 空でもOK（表示/OGPでは title にフォールバック可能）
   };
 };
 
@@ -64,7 +64,6 @@ function assertWorkMeta(meta: unknown, slugFromFile: string): WorkMeta {
     }
     tags = rawTags.map((t) => t.trim());
   } else {
-    // string 等は弾く（運用が崩れるので）
     throw new Error(`Invalid tags: ${slugFromFile}`);
   }
 
@@ -77,15 +76,17 @@ function assertWorkMeta(meta: unknown, slugFromFile: string): WorkMeta {
       ? meta.order
       : undefined;
 
+  // ✅ image：src があれば採用 / alt は空でもOK（UI側で title にフォールバックできる）
   const imageRaw = (meta as Record<string, unknown>).image;
-  const image =
-    isRecord(imageRaw) &&
-    typeof imageRaw.src === "string" &&
-    typeof imageRaw.alt === "string" &&
-    imageRaw.src.trim().length > 0 &&
-    imageRaw.alt.trim().length > 0
-      ? { src: imageRaw.src.trim(), alt: imageRaw.alt.trim() }
-      : undefined;
+  let image: { src: string; alt: string } | undefined;
+
+  if (isRecord(imageRaw)) {
+    const src = trimNonEmpty(imageRaw.src);
+    if (src) {
+      const alt = typeof imageRaw.alt === "string" ? imageRaw.alt.trim() : "";
+      image = { src, alt };
+    }
+  }
 
   return {
     title,

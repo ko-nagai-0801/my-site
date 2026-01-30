@@ -1,4 +1,4 @@
-// app/works/page.tsx
+/* app/works/page.tsx */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,7 +8,8 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Reveal } from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
-  title: "Works | Kou Nagai Studio",
+  // ✅ layout の title.template に任せる（site名を含めない）
+  title: "Works",
   description: "制作実績 / サンプルの一覧",
 };
 
@@ -27,12 +28,6 @@ const toInt = (v: string | undefined) => {
 // 表示用（見た目）は trim のみ
 const normalizeLabel = (s: string) => s.trim();
 
-/**
- * 比較用（重複排除・一致判定）を強める
- * - NFKC：全角/半角などのゆれを吸収
- * - 連続空白を1つに潰す
- * - lower：大小文字ゆれを吸収（比較用だけ）
- */
 const normalizeKey = (s: string) =>
   s
     .normalize("NFKC")
@@ -44,7 +39,6 @@ export default async function WorksPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
-  // ✅ decodeURIComponent は外す（Next側でデコード済みのケースがある）
   const activeTagRaw = typeof sp.tag === "string" ? normalizeLabel(sp.tag) : "";
   const activeKey = activeTagRaw ? normalizeKey(activeTagRaw) : "";
 
@@ -85,8 +79,7 @@ export default async function WorksPage({ searchParams }: Props) {
     );
   }
 
-  // ✅ フィルタ用タグ一覧：比較keyで重複排除しつつ、表示ラベルは最初の表記を採用
-  const tagMap = new Map<string, string>(); // key -> label
+  const tagMap = new Map<string, string>();
   for (const w of works) {
     for (const t of w.meta.tags ?? []) {
       const label = normalizeLabel(t);
@@ -98,22 +91,16 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const allTags = Array.from(tagMap.entries())
     .map(([key, label]) => ({ key, label }))
-    .sort((a, b) =>
-      a.label.localeCompare(b.label, "ja", { sensitivity: "base" })
-    );
+    .sort((a, b) => a.label.localeCompare(b.label, "ja", { sensitivity: "base" }));
 
   const activeLabel = activeKey ? tagMap.get(activeKey) ?? activeTagRaw : "";
 
-  // ✅ tag があるときだけ絞り込み（比較は key で）
   const filtered = activeKey
     ? works.filter((w) =>
-        (w.meta.tags ?? []).some(
-          (t) => normalizeKey(normalizeLabel(t)) === activeKey
-        )
+        (w.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === activeKey)
       )
     : works;
 
-  // ✅ フィルタ結果 0 件でも 404 にしない（UI上のフィルタとして自然）
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   if (requested > totalPages) notFound();
 
@@ -122,7 +109,6 @@ export default async function WorksPage({ searchParams }: Props) {
 
   const hrefForPage = (n: number) => {
     const params = new URLSearchParams();
-    // 表示ラベルをURLに入れる（人間が読める）
     if (activeLabel) params.set("tag", activeLabel);
     if (n > 1) params.set("page", String(n));
     const qs = params.toString();
@@ -164,10 +150,8 @@ export default async function WorksPage({ searchParams }: Props) {
         </Reveal>
       </header>
 
-      {/* ✅ 区切り線（About/Topのテンポに寄せる） */}
       <Reveal as="div" className="mt-10 hairline" delay={280} />
 
-      {/* ✅ タグフィルタ（chip UI） */}
       <section className="mt-8" aria-label="Tag filter">
         <h2 className="sr-only">Filter by tag</h2>
 
@@ -180,11 +164,7 @@ export default async function WorksPage({ searchParams }: Props) {
             const href = `/works?tag=${encodeURIComponent(label)}`;
             const isActive = key === activeKey;
             return (
-              <Link
-                key={key}
-                href={href}
-                className={isActive ? chipActive : chipBase}
-              >
+              <Link key={key} href={href} className={isActive ? chipActive : chipBase}>
                 {label}
               </Link>
             );
@@ -198,21 +178,14 @@ export default async function WorksPage({ searchParams }: Props) {
         ) : null}
       </section>
 
-      {/* ✅ グリッド */}
       <Reveal as="div" className="mt-10" delay={380}>
         <WorksGrid works={items} />
       </Reveal>
 
-      {/* ✅ ページネーション */}
       <Reveal as="div" className="mt-10" delay={440}>
-        <Pagination
-          current={requested}
-          total={totalPages}
-          hrefForPage={hrefForPage}
-        />
+        <Pagination current={requested} total={totalPages} hrefForPage={hrefForPage} />
       </Reveal>
 
-      {/* ✅ 〆の区切り線 */}
       <Reveal as="div" className="mt-10 hairline" delay={500} />
     </main>
   );

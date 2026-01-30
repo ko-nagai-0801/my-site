@@ -1,43 +1,40 @@
 /* lib/post-thumb.ts */
 import type { PostMeta } from "@/lib/posts";
-import { DEFAULT_OG_IMAGES } from "@/lib/site-meta";
+import { resolveThumb } from "@/lib/thumb";
 
 export const DEFAULT_BLOG_THUMB = "/images/blog/noimage.webp";
 
-function normalizeAssetSrc(src: string): string {
-  const s = src.trim();
-  if (!s) return s;
-  if (s.startsWith("http://") || s.startsWith("https://")) return s;
-  if (s.startsWith("/")) return s;
-  return `/${s}`;
-}
-
+/**
+ * ✅ Blog: 一覧/詳細サムネ用
+ * - image.src があれば優先、無ければ DEFAULT_BLOG_THUMB
+ * - alt は image.alt → title の順でフォールバック
+ */
 export function getPostThumb(
   meta: Pick<PostMeta, "title" | "image">,
   fallbackSrc = DEFAULT_BLOG_THUMB
 ) {
-  const src = meta.image?.src ? normalizeAssetSrc(meta.image.src) : fallbackSrc;
-  const alt = meta.image?.alt?.trim() ? meta.image.alt : meta.title;
-  return { src, alt };
+  return resolveThumb(meta, fallbackSrc);
 }
 
 /**
- * ✅ OGP用（単一ソース）
- * - 記事画像があれば優先
- * - 無ければサイト既定OGPへフォールバック（layoutと同一）
+ * ✅ Blog: OGP images 用
+ * - 記事に image があればそれを優先
+ * - 無ければ「サイト既定OGP」へフォールバック
+ *
+ * ※ site-meta 側に既定OGPを寄せる最適化は後でOK（まずはビルド復旧優先）
  */
-export function getPostOgImages(meta: Pick<PostMeta, "title" | "image">) {
-  if (meta.image?.src?.trim()) {
-    const url = normalizeAssetSrc(meta.image.src);
-    const alt = meta.image?.alt?.trim() ? meta.image.alt : meta.title;
-    return [{ url, alt }];
-  }
+const DEFAULT_SITE_OG_IMAGES: Array<{ url: string; alt: string }> = [
+  { url: "/og-kns-1200x630.png", alt: "Kou Nagai Studio" },
+  { url: "/og-kns-2400x1260.png", alt: "Kou Nagai Studio" },
+];
 
-  // デフォルトOGP（width/height付き）
-  return DEFAULT_OG_IMAGES.map((img) => ({
-    url: img.url,
-    width: img.width,
-    height: img.height,
-    alt: img.alt,
-  }));
+export function getPostOgImages(
+  meta: Pick<PostMeta, "title" | "image">,
+  fallback = DEFAULT_SITE_OG_IMAGES
+) {
+  const src = meta.image?.src?.trim() ? meta.image.src.trim() : "";
+  if (!src) return fallback;
+
+  const alt = meta.image?.alt?.trim() ? meta.image.alt.trim() : meta.title;
+  return [{ url: src, alt }];
 }

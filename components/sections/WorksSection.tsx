@@ -1,10 +1,11 @@
 /* components/sections/WorksSection.tsx */
 import Link from "next/link";
-import { WorksGrid, type WorkLike } from "@/components/works/WorksGrid";
+import type { WorkItem } from "@/lib/works";
+import { WorksGrid } from "@/components/works/WorksGrid";
 import { Reveal } from "@/components/ui/Reveal";
 
 type Props = {
-  works: WorkLike[];
+  works: WorkItem[];
 };
 
 export function WorksSection({ works }: Props) {
@@ -16,10 +17,8 @@ export function WorksSection({ works }: Props) {
         </Reveal>
       </header>
 
-      {/* ✅  区切り線 */}
       <Reveal as="div" className="mt-10 hairline" delay={160} />
 
-      {/* ✅ コンテンツ（カード） */}
       <div className="mt-10">
         <WorksGrid works={works} />
       </div>
@@ -31,8 +30,7 @@ export function WorksSection({ works }: Props) {
         </Link>
       </Reveal>
 
-      {/* ✅  区切り線 */}
-      <Reveal as="div" className="mt-10 hairline" delay={160} />
+      <Reveal as="div" className="mt-10 hairline" delay={260} />
     </section>
   );
 }
