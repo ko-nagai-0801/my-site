@@ -73,6 +73,7 @@ export const mdxOptions: MdxOptions = {
         },
 
         // 単語ハイライト時に class を付ける（必要になったらCSS追加）
+        // ✅ _id は使わないが、rehype-pretty-code のシグネチャに合わせて受ける
         onVisitHighlightedChars(element: CharsElement, _id?: string) {
           element.properties.className = [
             ...(element.properties.className ?? []),

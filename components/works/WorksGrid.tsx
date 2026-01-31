@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { SpotlightCard } from "@/components/ui/SpotlightCard";
 import { TiltCard } from "@/components/ui/TiltCard";
-import { getWorkThumb, DEFAULT_WORK_THUMB } from "@/lib/work-thumb";
+import { tagToSlug } from "@/lib/tag-normalize";
 
 export type WorkLike = {
   slug: string;
@@ -56,12 +56,6 @@ export function WorksGrid({ works }: { works: WorkLike[] }) {
       {works.map((w) => {
         const hasFooter = Boolean(w.meta.href || w.meta.repo || w.meta.note);
 
-        // ✅ a) 常にサムネを出す（image が無くても noimage）
-        const thumb = getWorkThumb(
-          { title: w.meta.title, image: w.meta.image },
-          DEFAULT_WORK_THUMB
-        );
-
         return (
           <li key={w.slug} className="flex">
             <div className="h-full w-full">
@@ -72,7 +66,9 @@ export function WorksGrid({ works }: { works: WorkLike[] }) {
                     "md:h-[520px]",
                   ].join(" ")}
                 >
-                  <WorkThumb src={thumb.src} alt={thumb.alt} slug={w.slug} />
+                  {w.meta.image ? (
+                    <WorkThumb src={w.meta.image.src} alt={w.meta.image.alt} slug={w.slug} />
+                  ) : null}
 
                   <div className="mt-5 flex min-h-0 flex-1 flex-col">
                     <h2 className="text-base font-medium tracking-tight">
@@ -96,8 +92,9 @@ export function WorksGrid({ works }: { works: WorkLike[] }) {
                           {w.meta.tags.map((tag) => (
                             <Link
                               key={`${w.slug}-${tag}`}
-                              href={`/tags/${encodeURIComponent(tag.trim())}`}
+                              href={`/tags/${tagToSlug(tag)}`}
                               className="chip"
+                              aria-label={`タグ「${tag}」の一覧へ`}
                             >
                               {tag}
                             </Link>

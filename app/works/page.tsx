@@ -41,7 +41,7 @@ export async function generateMetadata({
   const works = await getAllWorks();
 
   const tagMap = buildWorkTagMap(works);
-  const { activeKey, activeLabel } = getActiveWorkTag(sp.tag, tagMap);
+  const { activeLabel } = getActiveWorkTag(sp.tag, tagMap);
 
   const titleBase = activeLabel ? `Works: ${activeLabel}` : "Works";
   const title = requested > 1 ? `${titleBase} - Page ${requested}` : titleBase;
@@ -111,7 +111,11 @@ export default async function WorksPage({ searchParams }: Props) {
 
         <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-        <Reveal as="p" className="mt-8 text-sm text-muted-foreground" delay={320}>
+        <Reveal
+          as="p"
+          className="mt-8 text-sm text-muted-foreground"
+          delay={320}
+        >
           作品がまだありません。
         </Reveal>
 
@@ -208,7 +212,11 @@ export default async function WorksPage({ searchParams }: Props) {
         </Reveal>
 
         {activeKey && filtered.length === 0 ? (
-          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={360}>
+          <Reveal
+            as="p"
+            className="mt-4 text-sm text-muted-foreground"
+            delay={360}
+          >
             このタグの作品はありません。
           </Reveal>
         ) : null}

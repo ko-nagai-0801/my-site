@@ -1,7 +1,8 @@
 /* lib/tag-normalize.ts */
-import "server-only";
 
-/** 表示用（見た目）は trim のみ */
+/**
+ * 表示用（見た目）は trim のみ
+ */
 export const normalizeLabel = (s: string) => s.trim();
 
 /**
@@ -11,20 +12,41 @@ export const normalizeLabel = (s: string) => s.trim();
  * - lower：大小文字ゆれを吸収（比較用だけ）
  */
 export const normalizeKey = (s: string) =>
-  normalizeLabel(s)
+  s
     .normalize("NFKC")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
 
-/** タグ文字列 → URL に入れる（人間が読める形を優先） */
-export const tagToSlug = (tag: string) => encodeURIComponent(normalizeLabel(tag));
+/**
+ * label -> slug
+ * - /tags/[tag] の [tag] には「正規化後キー」をURLエンコードしたものを使う
+ * - これで Blog/Works 共通のタグ同一性が崩れない（単一ソース）
+ */
+export const tagToSlug = (label: string) =>
+  encodeURIComponent(normalizeKey(normalizeLabel(label)));
 
-/** URL パラメータ → タグ文字列（壊れたエンコードも落とさない） */
+/**
+ * slug -> key
+ * - ルーティングパラメータは Next がデコード済みの場合があるので、例外を飲んで安全に扱う
+ */
+export const slugToKey = (slug: string) => {
+  try {
+    return normalizeKey(decodeURIComponent(slug));
+  } catch {
+    return normalizeKey(slug);
+  }
+};
+
+/**
+ * slug -> 表示ラベル（軽い復元）
+ * - tagToSlug() は normalizeKey() を通すため、大小文字などは元に戻せない
+ * - ただし UI/OGP 用のラベルとしては十分（lib/tags.ts 側で実ラベルが取れるならそちら優先）
+ */
 export const slugToTag = (slug: string) => {
   try {
-    return decodeURIComponent(slug);
+    return normalizeLabel(decodeURIComponent(slug));
   } catch {
-    return slug;
+    return normalizeLabel(slug);
   }
 };

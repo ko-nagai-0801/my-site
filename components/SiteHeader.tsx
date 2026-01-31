@@ -1,6 +1,7 @@
 /* components/SiteHeader.tsx */
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -95,9 +96,7 @@ export default function SiteHeader() {
   // モバイル検索バー：開いたらフォーカス
   useEffect(() => {
     if (!mobileSearchOpen) return;
-    const id = window.requestAnimationFrame(() =>
-      mobileInputRef.current?.focus()
-    );
+    const id = window.requestAnimationFrame(() => mobileInputRef.current?.focus());
     return () => window.cancelAnimationFrame(id);
   }, [mobileSearchOpen]);
 
@@ -166,11 +165,7 @@ export default function SiteHeader() {
 
         const dist = Math.abs(y - dirStartYRef.current);
 
-        if (
-          !hiddenRef.current &&
-          direction === "down" &&
-          dist >= HIDE_DISTANCE
-        ) {
+        if (!hiddenRef.current && direction === "down" && dist >= HIDE_DISTANCE) {
           applyHidden(true);
           cooldownUntilRef.current = t + COOLDOWN_MS;
           dirStartYRef.current = y;
@@ -212,12 +207,13 @@ export default function SiteHeader() {
       <div className="container flex items-center justify-between py-4">
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-3">
-          <img
+          <Image
             src="/images/brand/kns-mark-white.svg"
             width={35}
             height={35}
             alt="KNS logo"
             className="block shrink-0"
+            priority
           />
           <div className="leading-none">
             <span className="block text-[13px] font-semibold tracking-[0.28em] uppercase text-foreground/90 group-hover:text-foreground sm:text-sm">
