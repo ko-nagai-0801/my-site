@@ -1,6 +1,15 @@
 /* lib/tag-normalize.ts */
 
 /**
+ * 表記ゆれの「正」をここで固定（UI/OGP/タグ一覧の表示に使う）
+ * - key は normalizeKey() の結果（= 小文字・NFKC・空白圧縮）
+ */
+const CANONICAL_LABELS: Record<string, string> = {
+  mdx: "MDX",
+  portfolio: "Portfolio",
+};
+
+/**
  * 表示用（見た目）は trim のみ
  */
 export const normalizeLabel = (s: string) => s.trim();
@@ -17,6 +26,23 @@ export const normalizeKey = (s: string) =>
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
+
+/**
+ * key -> canonical label（存在すれば）
+ */
+export const canonicalLabelByKey = (key: string) => CANONICAL_LABELS[key];
+
+/**
+ * label -> canonical label（存在すれば）
+ * - UIに出す label を最終的に整える用途（tagMap生成で使う）
+ */
+export const canonicalizeLabel = (label: string) => {
+  const l = normalizeLabel(label);
+  if (!l) return "";
+  const key = normalizeKey(l);
+  if (!key) return l;
+  return canonicalLabelByKey(key) ?? l;
+};
 
 /**
  * label -> slug

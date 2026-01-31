@@ -1,7 +1,13 @@
 /* lib/works-tags.ts */
-import "server-only";
+import {
+  canonicalLabelByKey,
+  canonicalizeLabel,
+  normalizeKey,
+  normalizeLabel,
+} from "@/lib/tag-normalize";
 
 export type WorkLikeForTags = {
+  slug: string;
   meta: {
     tags?: string[];
   };
@@ -12,85 +18,109 @@ export type WorkTagItem = {
   label: string;
 };
 
-// 表示用（見た目）は trim のみ
-export const normalizeLabel = (s: string) => s.trim();
+const toKeyFromLabel = (raw: string) => {
+  const label = normalizeLabel(raw);
+  if (!label) return "";
+  return normalizeKey(label);
+};
+
+const extractKeys = (tags: unknown): string[] => {
+  if (!Array.isArray(tags)) return [];
+  const keys = new Set<string>();
+  for (const t of tags) {
+    if (typeof t !== "string") continue;
+    const key = toKeyFromLabel(t);
+    if (key) keys.add(key);
+  }
+  return [...keys];
+};
 
 /**
- * 比較用（重複排除・一致判定）を強める
- * - NFKC：全角/半角などのゆれを吸収
- * - 連続空白を1つに潰す
- * - lower：大小文字ゆれを吸収（比較用だけ）
+ * key -> label の単一ソース（Works用）
+ * - label は canonical（あれば）を優先して確定する
  */
-export const normalizeKey = (s: string) =>
-  s
-    .normalize("NFKC")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-
-/**
- * works の tags から tagMap を生成する
- * - key: normalizeKey(label)
- * - label: 最初に登場した表記を採用
- */
-export function buildWorkTagMap(works: WorkLikeForTags[]): Map<string, string> {
-  const tagMap = new Map<string, string>();
+export const buildWorkTagMap = <T extends WorkLikeForTags>(works: T[]) => {
+  const map = new Map<string, string>();
 
   for (const w of works) {
-    for (const t of w.meta.tags ?? []) {
-      const label = normalizeLabel(t);
-      if (!label) continue;
+    const keys = extractKeys(w.meta?.tags);
+    for (const key of keys) {
+      const canonical = canonicalLabelByKey(key);
+      // mapが未登録なら確定
+      if (!map.has(key)) {
+        map.set(key, canonical ?? key);
+        continue;
+      }
+      // canonical があるなら常に上書き（揺れを抑える）
+      if (canonical && map.get(key) !== canonical) {
+        map.set(key, canonical);
+      }
+    }
 
+    // label候補が取れるときは、canonicalが無いkeyの表示用labelを安定させる
+    const tags = Array.isArray(w.meta?.tags) ? w.meta.tags : [];
+    for (const t of tags) {
+      if (typeof t !== "string") continue;
+      const label = canonicalizeLabel(t);
+      if (!label) continue;
       const key = normalizeKey(label);
-      if (!tagMap.has(key)) tagMap.set(key, label);
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, label);
+      const canonical = canonicalLabelByKey(key);
+      if (canonical) map.set(key, canonical);
     }
   }
 
-  return tagMap;
-}
+  return map;
+};
 
 /**
- * Tag list を作る（ソート済み）
- * ✅ works からでも tagMap からでも作れるようにして、呼び出し側の重複を減らす
+ * tagMap -> タグ一覧（chip用）
  */
-export function getWorkTagList(works: WorkLikeForTags[]): WorkTagItem[];
-export function getWorkTagList(tagMap: Map<string, string>): WorkTagItem[];
-export function getWorkTagList(
-  input: WorkLikeForTags[] | Map<string, string>
-): WorkTagItem[] {
-  const tagMap = input instanceof Map ? input : buildWorkTagMap(input);
-
-  return Array.from(tagMap.entries())
-    .map(([key, label]) => ({ key, label }))
-    .sort((a, b) =>
-      a.label.localeCompare(b.label, "ja", { sensitivity: "base" })
-    );
-}
+export const getWorkTagList = (tagMap: Map<string, string>): WorkTagItem[] => {
+  return [...tagMap.entries()]
+    .map(([key, label]) => ({ key, label: canonicalLabelByKey(key) ?? label }))
+    .filter((t) => t.key && t.label)
+    .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+};
 
 /**
- * クエリ(tag)から activeKey/activeLabel を解決する
- * - tagParam は decodeURIComponent しない（Next側でデコード済みのケースがある）
+ * /works?tag=... の active を決める
+ * - URLのtagは「人が読めるlabel」を入れている想定
+ * - 判定は normalizeKey(label) の key で行う
  */
-export function getActiveWorkTag(
-  tagParam: unknown,
+export const getActiveWorkTag = (
+  requestedTag: string | undefined,
   tagMap: Map<string, string>
-): { activeKey: string; activeLabel: string } {
-  const raw = typeof tagParam === "string" ? normalizeLabel(tagParam) : "";
-  const activeKey = raw ? normalizeKey(raw) : "";
-  const activeLabel = activeKey ? tagMap.get(activeKey) ?? raw : "";
-  return { activeKey, activeLabel };
-}
+) => {
+  const raw = typeof requestedTag === "string" ? requestedTag : "";
+  const label = normalizeLabel(raw);
+  if (!label) return { activeKey: "", activeLabel: "" };
+
+  const key = normalizeKey(label);
+  if (!key) return { activeKey: "", activeLabel: "" };
+
+  const activeLabel = tagMap.get(key) ?? canonicalLabelByKey(key) ?? canonicalizeLabel(label) ?? label;
+
+  return { activeKey: key, activeLabel };
+};
 
 /**
- * activeKey がある場合だけフィルタする（比較は key で）
+ * Works を activeKey で絞る（比較は key のみ）
  */
-export function filterWorksByActiveKey<T extends WorkLikeForTags>(
+export const filterWorksByActiveKey = <T extends WorkLikeForTags>(
   works: T[],
   activeKey: string
-): T[] {
+) => {
   if (!activeKey) return works;
 
-  return works.filter((w) =>
-    (w.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === activeKey)
-  );
-}
+  return works.filter((w) => {
+    const tags = Array.isArray(w.meta?.tags) ? w.meta.tags : [];
+    for (const t of tags) {
+      if (typeof t !== "string") continue;
+      const k = toKeyFromLabel(t);
+      if (k === activeKey) return true;
+    }
+    return false;
+  });
+};

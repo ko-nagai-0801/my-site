@@ -1,112 +1,102 @@
 /* lib/post-tags.ts */
-import { normalizeKey, normalizeLabel, slugToKey, tagToSlug } from "@/lib/tag-normalize";
+import {
+  canonicalLabelByKey,
+  canonicalizeLabel,
+  normalizeKey,
+  normalizeLabel,
+} from "@/lib/tag-normalize";
 
 export type PostLikeForTags = {
   slug: string;
   meta: {
-    tags?: string[] | null;
+    tags?: string[];
   };
 };
 
-export type TagItem = {
+export type PostTagItem = {
   key: string;
   label: string;
-  slug: string;
 };
 
-function toTagLabels(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .filter((v): v is string => typeof v === "string")
-    .map((v) => v.trim())
-    .filter(Boolean);
-}
+const toKeyFromLabel = (raw: string) => {
+  const label = normalizeLabel(raw);
+  if (!label) return "";
+  return normalizeKey(label);
+};
+
+const extractKeys = (tags: unknown): string[] => {
+  if (!Array.isArray(tags)) return [];
+  const keys = new Set<string>();
+  for (const t of tags) {
+    if (typeof t !== "string") continue;
+    const key = toKeyFromLabel(t);
+    if (key) keys.add(key);
+  }
+  return [...keys];
+};
 
 /**
- * ✅ posts から tagMap(key -> label) を生成
- * - label は normalizeLabel を通す
- * - key は normalizeKey を通す（比較は key で統一）
+ * key -> label の単一ソース（Blog用）
+ * - label は canonical（あれば）を優先して確定する
  */
-export function buildPostTagMap(posts: PostLikeForTags[]): Map<string, string> {
+export const buildPostTagMap = <T extends PostLikeForTags>(posts: T[]) => {
   const map = new Map<string, string>();
 
   for (const p of posts) {
-    const rawTags = toTagLabels(p.meta?.tags);
-    for (const raw of rawTags) {
-      const label = normalizeLabel(raw);
+    const keys = extractKeys(p.meta?.tags);
+    for (const key of keys) {
+      const canonical = canonicalLabelByKey(key);
+      if (!map.has(key)) {
+        map.set(key, canonical ?? key);
+        continue;
+      }
+      if (canonical && map.get(key) !== canonical) {
+        map.set(key, canonical);
+      }
+    }
+
+    const tags = Array.isArray(p.meta?.tags) ? p.meta.tags : [];
+    for (const t of tags) {
+      if (typeof t !== "string") continue;
+      const label = canonicalizeLabel(t);
+      if (!label) continue;
       const key = normalizeKey(label);
       if (!key) continue;
-
-      // 既に同じ key があれば、最初の label を優先（表記ブレを抑える）
       if (!map.has(key)) map.set(key, label);
+      const canonical = canonicalLabelByKey(key);
+      if (canonical) map.set(key, canonical);
     }
   }
 
   return map;
-}
+};
 
 /**
- * ✅ tagMap から表示用の tag list を生成（slug 付き）
+ * tagMap -> タグ一覧（/tags 用）
  */
-export function getPostTagList(tagMap: Map<string, string>): TagItem[] {
-  const list: TagItem[] = [];
-
-  for (const [key, label] of tagMap.entries()) {
-    list.push({ key, label, slug: tagToSlug(label) });
-  }
-
-  // label の見た目でソート（読みやすさ優先）
-  list.sort((a, b) => a.label.localeCompare(b.label, "ja"));
-
-  return list;
-}
+export const getPostTagList = (tagMap: Map<string, string>): PostTagItem[] => {
+  return [...tagMap.entries()]
+    .map(([key, label]) => ({ key, label: canonicalLabelByKey(key) ?? label }))
+    .filter((t) => t.key && t.label)
+    .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+};
 
 /**
- * ✅ /blog?tag=... の tagParam を “key/slug” 両対応で解釈して active を返す
- * - tag=Label でも tag=slug でも OK（事故防止）
+ * Posts を activeKey で絞る（比較は key のみ）
  */
-export function getActivePostTag(
-  tagParam: string | undefined,
-  tagMap: Map<string, string>
-): { activeKey: string | null; activeLabel: string | null; activeSlug: string | null } {
-  if (!tagParam) return { activeKey: null, activeLabel: null, activeSlug: null };
-
-  // まず “label想定” で key を作る
-  const byLabelKey = normalizeKey(normalizeLabel(tagParam));
-  if (byLabelKey && tagMap.has(byLabelKey)) {
-    const label = tagMap.get(byLabelKey) ?? null;
-    return {
-      activeKey: byLabelKey,
-      activeLabel: label,
-      activeSlug: label ? tagToSlug(label) : null,
-    };
-  }
-
-  // 次に “slug想定” で key を作る
-  const bySlugKey = slugToKey(tagParam);
-  if (bySlugKey && tagMap.has(bySlugKey)) {
-    const label = tagMap.get(bySlugKey) ?? null;
-    return {
-      activeKey: bySlugKey,
-      activeLabel: label,
-      activeSlug: label ? tagToSlug(label) : null,
-    };
-  }
-
-  return { activeKey: null, activeLabel: null, activeSlug: null };
-}
-
-/**
- * ✅ activeKey がある時だけ絞り込み（比較は key）
- */
-export function filterPostsByActiveKey<T extends PostLikeForTags>(
+export const filterPostsByActiveKey = <T extends PostLikeForTags>(
   posts: T[],
-  activeKey: string | null | undefined
-): T[] {
+  activeKey: string
+) => {
   if (!activeKey) return posts;
 
   return posts.filter((p) => {
-    const rawTags = toTagLabels(p.meta?.tags);
-    return rawTags.some((raw) => normalizeKey(normalizeLabel(raw)) === activeKey);
+    const tags = Array.isArray(p.meta?.tags) ? p.meta.tags : [];
+    for (const t of tags) {
+      if (typeof t !== "string") continue;
+      const k = toKeyFromLabel(t);
+      if (k === activeKey) return true;
+    }
+    return false;
   });
-}
+};

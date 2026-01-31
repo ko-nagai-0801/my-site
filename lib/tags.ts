@@ -1,109 +1,163 @@
 /* lib/tags.ts */
-import "server-only";
-
 import { getAllPostLikes } from "@/lib/posts";
 import { getAllWorks } from "@/lib/works";
-import { normalizeKey, normalizeLabel, tagToSlug, slugToTag } from "@/lib/tag-normalize";
+import {
+  canonicalLabelByKey,
+  canonicalizeLabel,
+  slugToKey,
+  slugToTag,
+  normalizeKey,
+  normalizeLabel,
+} from "@/lib/tag-normalize";
 
-export { tagToSlug, slugToTag };
+export { slugToTag } from "@/lib/tag-normalize";
+
+type PostLike = Awaited<ReturnType<typeof getAllPostLikes>>[number];
+type WorkLike = Awaited<ReturnType<typeof getAllWorks>>[number];
 
 export type TagSummary = {
-  tag: string;  // 表示ラベル
-  slug: string; // encodeURIComponent(tag)
-  total: number;
-  posts: number;
-  works: number;
+  key: string;   // 正規化キー
+  slug: string;  // encodeURIComponent(key)
+  label: string; // 表示ラベル（canonical優先）
+  postCount: number;
+  workCount: number;
+  totalCount: number;
 };
 
 export type TagDetail = {
-  tag: string;        // 表示ラベル（canonical）
-  normalized: string; // 比較用 key（互換のため名前は維持）
-  posts: Array<Awaited<ReturnType<typeof getAllPostLikes>>[number]>;
-  works: Array<Awaited<ReturnType<typeof getAllWorks>>[number]>;
+  key: string;
+  tag: string; // 表示ラベル
+  posts: PostLike[];
+  works: WorkLike[];
 };
 
-type TagCounter = { tag: string; posts: number; works: number };
-
-async function buildTagIndex() {
-  const [posts, works] = await Promise.all([getAllPostLikes(), getAllWorks()]);
-  const map = new Map<string, TagCounter>(); // key -> counter（tag は最初の表記を採用）
-
-  const add = (raw: string, kind: "posts" | "works") => {
-    const label = normalizeLabel(raw);
-    if (!label) return;
+const toKeysFromTags = (tags: unknown): string[] => {
+  if (!Array.isArray(tags)) return [];
+  const set = new Set<string>();
+  for (const t of tags) {
+    if (typeof t !== "string") continue;
+    const label = normalizeLabel(t);
+    if (!label) continue;
     const key = normalizeKey(label);
-    if (!key) return;
-
-    const cur = map.get(key) ?? { tag: label, posts: 0, works: 0 };
-    cur[kind] += 1;
-    map.set(key, cur);
-  };
-
-  // 1コンテンツ内で同一タグ（表記ゆれ含む）が複数ある場合は 1 回だけ数える
-  for (const p of posts) {
-    const seen = new Set<string>();
-    for (const t of p.meta.tags ?? []) {
-      const key = normalizeKey(normalizeLabel(t));
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      add(t, "posts");
-    }
+    if (key) set.add(key);
   }
+  return [...set];
+};
 
-  for (const w of works) {
-    const seen = new Set<string>();
-    for (const t of w.meta.tags ?? []) {
-      const key = normalizeKey(normalizeLabel(t));
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      add(t, "works");
-    }
+const hasKey = (tags: unknown, key: string) => {
+  if (!Array.isArray(tags)) return false;
+  for (const t of tags) {
+    if (typeof t !== "string") continue;
+    const label = normalizeLabel(t);
+    if (!label) continue;
+    const k = normalizeKey(label);
+    if (k === key) return true;
   }
+  return false;
+};
 
-  const list: TagSummary[] = Array.from(map.values())
-    .map((v) => ({
-      tag: v.tag,
-      slug: tagToSlug(v.tag),
-      posts: v.posts,
-      works: v.works,
-      total: v.posts + v.works,
-    }))
-    .sort((a, b) => {
-      if (a.total !== b.total) return b.total - a.total;
-      return a.tag.localeCompare(b.tag, "ja", { sensitivity: "base" });
-    });
+const preferCanonicalLabel = (key: string, fallbackLabel: string) => {
+  const canonical = canonicalLabelByKey(key);
+  if (canonical) return canonical;
+  const l = canonicalizeLabel(fallbackLabel);
+  return l || fallbackLabel;
+};
 
-  return { posts, works, map, list };
-}
-
+/**
+ * ✅ /tags 用：Blog/Works 共通のタグ一覧
+ * - key を単一ソースにして、label は canonical を優先
+ * - count は「そのタグを持つ post/work の件数」
+ */
 export async function getAllTags(): Promise<TagSummary[]> {
-  const { list } = await buildTagIndex();
-  return list;
+  const [posts, works] = await Promise.all([getAllPostLikes(), getAllWorks()]);
+
+  const map = new Map<
+    string,
+    { label: string; postCount: number; workCount: number }
+  >();
+
+  // posts
+  for (const p of posts) {
+    const keys = toKeysFromTags(p.meta?.tags);
+    for (const key of keys) {
+      const row = map.get(key) ?? { label: preferCanonicalLabel(key, key), postCount: 0, workCount: 0 };
+      row.postCount += 1;
+      row.label = preferCanonicalLabel(key, row.label);
+      map.set(key, row);
+    }
+
+    // labelの候補（canonicalが無いkeyの表示を安定させる）
+    const tags = Array.isArray(p.meta?.tags) ? p.meta.tags : [];
+    for (const t of tags) {
+      if (typeof t !== "string") continue;
+      const label = canonicalizeLabel(t);
+      if (!label) continue;
+      const key = normalizeKey(label);
+      if (!key) continue;
+      const row = map.get(key) ?? { label, postCount: 0, workCount: 0 };
+      row.label = preferCanonicalLabel(key, row.label);
+      map.set(key, row);
+    }
+  }
+
+  // works
+  for (const w of works) {
+    const keys = toKeysFromTags(w.meta?.tags);
+    for (const key of keys) {
+      const row = map.get(key) ?? { label: preferCanonicalLabel(key, key), postCount: 0, workCount: 0 };
+      row.workCount += 1;
+      row.label = preferCanonicalLabel(key, row.label);
+      map.set(key, row);
+    }
+
+    const tags = Array.isArray(w.meta?.tags) ? w.meta.tags : [];
+    for (const t of tags) {
+      if (typeof t !== "string") continue;
+      const label = canonicalizeLabel(t);
+      if (!label) continue;
+      const key = normalizeKey(label);
+      if (!key) continue;
+      const row = map.get(key) ?? { label, postCount: 0, workCount: 0 };
+      row.label = preferCanonicalLabel(key, row.label);
+      map.set(key, row);
+    }
+  }
+
+  return [...map.entries()]
+    .map(([key, v]) => ({
+      key,
+      slug: encodeURIComponent(key),
+      label: preferCanonicalLabel(key, v.label),
+      postCount: v.postCount,
+      workCount: v.workCount,
+      totalCount: v.postCount + v.workCount,
+    }))
+    .filter((t) => t.key && t.label && t.totalCount > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 }
 
+/**
+ * ✅ /tags/[tag] 用：タグ詳細（Blog/Works 共通）
+ * - tagParam は slug（= encodeURIComponent(key)）
+ */
 export async function getTagDetail(tagParam: string): Promise<TagDetail> {
-  const requestedRaw = normalizeLabel(slugToTag(tagParam));
-  const requestedKey = requestedRaw ? normalizeKey(requestedRaw) : "";
+  const [posts, works, tags] = await Promise.all([
+    getAllPostLikes(),
+    getAllWorks(),
+    getAllTags(), // canonical label を得るため
+  ]);
 
-  const { posts, works, map } = await buildTagIndex();
+  const key = slugToKey(tagParam);
 
-  const canonicalLabel = requestedKey ? map.get(requestedKey)?.tag ?? requestedRaw : requestedRaw;
+  const fromList = tags.find((t) => t.key === key)?.label;
+  const labelFallback = fromList ?? canonicalLabelByKey(key) ?? slugToTag(tagParam);
 
-  const filteredPosts = requestedKey
-    ? posts.filter((p) =>
-        (p.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === requestedKey)
-      )
-    : [];
-
-  const filteredWorks = requestedKey
-    ? works.filter((w) =>
-        (w.meta.tags ?? []).some((t) => normalizeKey(normalizeLabel(t)) === requestedKey)
-      )
-    : [];
+  const filteredPosts = posts.filter((p) => hasKey(p.meta?.tags, key));
+  const filteredWorks = works.filter((w) => hasKey(w.meta?.tags, key));
 
   return {
-    tag: canonicalLabel,
-    normalized: requestedKey,
+    key,
+    tag: preferCanonicalLabel(key, labelFallback),
     posts: filteredPosts,
     works: filteredWorks,
   };
