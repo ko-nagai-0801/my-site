@@ -1,12 +1,40 @@
 /* lib/tag-normalize.ts */
 
-/**
- * 表記ゆれの「正」をここで固定（UI/OGP/タグ一覧の表示に使う）
- * - key は normalizeKey() の結果（= 小文字・NFKC・空白圧縮）
- */
-const CANONICAL_LABELS: Record<string, string> = {
+export const CANONICAL_LABELS: Record<string, string> = {
+  // 既存（確定）
   mdx: "MDX",
   portfolio: "Portfolio",
+
+  // 追加（よく揺れるやつ）
+  "next.js": "Next.js",
+  react: "React",
+  typescript: "TypeScript",
+  tailwindcss: "TailwindCSS",
+  javascript: "JavaScript",
+  "node.js": "Node.js",
+
+  // 追加（基礎タグ）
+  html: "HTML",
+  css: "CSS",
+  php: "PHP",
+  seo: "SEO",
+  bootstrap: "Bootstrap",
+  wordpress: "WordPress",
+
+  // 追加（サービス/環境）
+  vercel: "Vercel",
+  netlify: "Netlify",
+
+  // 追加（GitHub系：表示だけ寄せる）
+  github: "GitHub",
+  githubpages: "GitHubPages",
+  "github pages": "GitHubPages",
+  githubactions: "GitHubActions",
+  "github actions": "GitHubActions",
+  "github-actions": "GitHubActions",
+
+  // 追加（サイト内で出やすい）
+  "anti-spam": "Anti-Spam",
 };
 
 /**
@@ -19,6 +47,9 @@ export const normalizeLabel = (s: string) => s.trim();
  * - NFKC：全角/半角などのゆれを吸収
  * - 連続空白を1つに潰す
  * - lower：大小文字ゆれを吸収（比較用だけ）
+ *
+ * NOTE:
+ * - ここを変えると slug/key が変わってURLに影響するので、慎重に。
  */
 export const normalizeKey = (s: string) =>
   s
@@ -28,20 +59,21 @@ export const normalizeKey = (s: string) =>
     .toLowerCase();
 
 /**
- * key -> canonical label（存在すれば）
+ * key -> canonical label
+ * - 呼び出し側（tags.ts / post-tags.ts / works-tags.ts）で「canonical優先」にするための窓口
  */
 export const canonicalLabelByKey = (key: string) => CANONICAL_LABELS[key];
 
 /**
- * label -> canonical label（存在すれば）
- * - UIに出す label を最終的に整える用途（tagMap生成で使う）
+ * 表示ラベルを canonical に寄せる
+ * - まず normalizeKey(rawLabel) を作り、辞書にあれば canonical 表記を返す
+ * - key 自体を変える目的ではなく、表示統一（MDX/OGP/UI）を安定させる
  */
-export const canonicalizeLabel = (label: string) => {
-  const l = normalizeLabel(label);
-  if (!l) return "";
-  const key = normalizeKey(l);
-  if (!key) return l;
-  return canonicalLabelByKey(key) ?? l;
+export const canonicalizeLabel = (rawLabel: string) => {
+  const label = normalizeLabel(rawLabel);
+  if (!label) return "";
+  const key = normalizeKey(label);
+  return canonicalLabelByKey(key) ?? label;
 };
 
 /**
@@ -66,10 +98,14 @@ export const slugToKey = (slug: string) => {
 
 /**
  * slug -> 表示ラベル（軽い復元）
+ * - 可能なら canonical を優先して返す（表示統一）
  * - tagToSlug() は normalizeKey() を通すため、大小文字などは元に戻せない
- * - ただし UI/OGP 用のラベルとしては十分（lib/tags.ts 側で実ラベルが取れるならそちら優先）
  */
 export const slugToTag = (slug: string) => {
+  const key = slugToKey(slug);
+  const canonical = canonicalLabelByKey(key);
+  if (canonical) return canonical;
+
   try {
     return normalizeLabel(decodeURIComponent(slug));
   } catch {
