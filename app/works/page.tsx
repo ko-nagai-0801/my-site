@@ -8,6 +8,7 @@ import { WorksGrid } from "@/components/works/WorksGrid";
 import { Pagination } from "@/components/ui/Pagination";
 import { Reveal } from "@/components/ui/Reveal";
 import { SITE_NAME, SITE_LOCALE, SITE_OG_IMAGES } from "@/lib/site-meta";
+import { tagToSlug } from "@/lib/tag-normalize";
 import {
   buildWorkTagMap,
   getWorkTagList,
@@ -211,11 +212,25 @@ export default async function WorksPage({ searchParams }: Props) {
           })}
         </Reveal>
 
+        {/* ✅ 追加：選択中タグは /tags/<slug> へ行ける */}
+        {activeLabel ? (
+          <Reveal as="div" className="mt-4 flex justify-end" delay={360}>
+            <Link
+              href={`/tags/${tagToSlug(activeLabel)}`}
+              className="kns-btn-ghost"
+              aria-label={`タグ「${activeLabel}」の詳細へ`}
+            >
+              <span>Tag page</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </Reveal>
+        ) : null}
+
         {activeKey && filtered.length === 0 ? (
           <Reveal
             as="p"
             className="mt-4 text-sm text-muted-foreground"
-            delay={360}
+            delay={380}
           >
             このタグの作品はありません。
           </Reveal>
@@ -223,12 +238,12 @@ export default async function WorksPage({ searchParams }: Props) {
       </section>
 
       {/* ✅ グリッド */}
-      <Reveal as="div" className="mt-10" delay={380}>
+      <Reveal as="div" className="mt-10" delay={420}>
         <WorksGrid works={items} />
       </Reveal>
 
       {/* ✅ ページネーション */}
-      <Reveal as="div" className="mt-10" delay={440}>
+      <Reveal as="div" className="mt-10" delay={480}>
         <Pagination
           current={requested}
           total={totalPages}
@@ -237,7 +252,7 @@ export default async function WorksPage({ searchParams }: Props) {
       </Reveal>
 
       {/* ✅ 〆の区切り線 */}
-      <Reveal as="div" className="mt-10 hairline" delay={500} />
+      <Reveal as="div" className="mt-10 hairline" delay={540} />
     </main>
   );
 }

@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getAllTags, getTagDetail } from "@/lib/tags";
-import { Reveal } from "@/components/ui/Reveal";
+import { getAllTags, getTagDetail, slugToTag } from "@/lib/tags";
 import { SITE_NAME, SITE_LOCALE, SITE_OG_IMAGES } from "@/lib/site-meta";
 
 export const revalidate = 3600;
@@ -18,45 +17,26 @@ export async function generateStaticParams() {
   return tags.map((t) => ({ tag: t.slug }));
 }
 
-const formatDateYMD = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}.${m}.${day}`;
-};
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { tag: tagParam } = await params;
+  const { tag } = await params;
+  const tagLabel = slugToTag(tag);
 
-  const { tag, posts, works } = await getTagDetail(tagParam);
-  const total = posts.length + works.length;
-
-  if (total === 0) {
-    return {
-      title: `Not Found | Tags | ${SITE_NAME}`,
-      description: "指定されたタグは見つかりませんでした。",
-    };
-  }
-
-  const title = `${tag} | Tags | ${SITE_NAME}`;
-  const description = `タグ「${tag}」で絞り込んだ一覧（Blog ${posts.length}件 / Works ${works.length}件）`;
+  const title = `${tagLabel} | Tags | ${SITE_NAME}`;
+  const description = `タグ「${tagLabel}」で絞り込んだ一覧（Blog / Works 共通）`;
+  const url = `/tags/${tag}`;
 
   return {
     title,
     description,
-
     openGraph: {
       title,
       description,
       type: "website",
-      url: `/tags/${tagParam}`,
+      url,
       siteName: SITE_NAME,
       locale: SITE_LOCALE,
       images: SITE_OG_IMAGES,
     },
-
     twitter: {
       card: "summary_large_image",
       title,
@@ -65,6 +45,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   };
 }
+
+const formatDateYMD = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
+};
 
 export default async function TagDetailPage({ params }: Props) {
   const { tag: tagParam } = await params;
@@ -75,99 +64,90 @@ export default async function TagDetailPage({ params }: Props) {
     notFound();
   }
 
+  const worksHref = `/works?tag=${encodeURIComponent(tag)}`;
+  const blogHref = `/blog?tag=${encodeURIComponent(tag)}`;
+
   return (
-    <main className="container py-14">
-      <header className="flex items-end justify-between gap-6">
-        <div className="min-w-0">
-          <Reveal as="p" className="kns-page-kicker" delay={60}>
+    <main className="mx-auto max-w-4xl px-4 py-10">
+      <header className="mb-8">
+        <p className="text-sm opacity-80">
+          <Link
+            href="/tags"
+            className="underline underline-offset-4 hover:opacity-80"
+          >
             Tags
-          </Reveal>
-
-          <Reveal as="h1" className="mt-3 kns-page-title" delay={120}>
-            {tag}
-          </Reveal>
-
-          <Reveal as="p" className="mt-4 kns-lead" delay={180}>
-            Blog {posts.length}件 / Works {works.length}件
-          </Reveal>
-        </div>
-
-        <Reveal as="div" delay={220}>
-          <Link href="/tags" className="kns-btn-ghost" aria-label="Tags一覧へ戻る">
-            <span>Tags</span>
-            <span aria-hidden="true">→</span>
           </Link>
-        </Reveal>
+          <span className="mx-2 opacity-60">/</span>
+          <span className="opacity-80">{tag}</span>
+        </p>
+
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+          <span className="opacity-70">Tag:</span> {tag}
+        </h1>
+
+        <p className="mt-2 text-sm opacity-80">
+          Blog {posts.length}件 / Works {works.length}件
+        </p>
+
+        {/* ✅ 追加：戻り導線（絞り込み） */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link href={worksHref} className="chip hover:opacity-80">
+            Worksで絞り込む
+          </Link>
+          <Link href={blogHref} className="chip hover:opacity-80">
+            Blogで絞り込む
+          </Link>
+        </div>
       </header>
 
-      <Reveal as="div" className="mt-10 hairline" delay={260} />
-
-      {/* Blog */}
-      <section className="mt-10" aria-label="Blog results">
-        <Reveal as="h2" className="kns-section-title" delay={300}>
-          Blog
-        </Reveal>
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold">Blog</h2>
 
         {posts.length === 0 ? (
-          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={340}>
+          <p className="mt-3 text-sm opacity-80">
             このタグのブログ記事はありません。
-          </Reveal>
+          </p>
         ) : (
-          <Reveal as="ul" className="mt-6 space-y-4" delay={340}>
+          <ul className="mt-4 space-y-4">
             {posts.map((p) => (
-              <li key={p.slug} className="rounded-2xl border border-border bg-panel p-5 sm:p-6">
-                <p className="text-xs tracking-[0.16em] text-muted-foreground">
-                  {formatDateYMD(p.meta.date)}
-                </p>
-
+              <li key={p.slug} className="rounded-lg border p-4">
+                <p className="text-xs opacity-70">{formatDateYMD(p.meta.date)}</p>
                 <Link
                   href={`/blog/${p.slug}`}
-                  className="mt-2 block text-base font-medium tracking-tight hover:underline underline-offset-4"
+                  className="mt-1 block text-lg font-semibold hover:underline underline-offset-4"
                 >
                   {p.meta.title}
                 </Link>
-
                 {p.meta.description ? (
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {p.meta.description}
-                  </p>
+                  <p className="mt-2 text-sm opacity-80">{p.meta.description}</p>
                 ) : null}
               </li>
             ))}
-          </Reveal>
+          </ul>
         )}
       </section>
 
-      <div className="mt-10 hairline" />
-
-      {/* Works */}
-      <section className="mt-10" aria-label="Works results">
-        <Reveal as="h2" className="kns-section-title" delay={380}>
-          Works
-        </Reveal>
+      <section>
+        <h2 className="text-xl font-semibold">Works</h2>
 
         {works.length === 0 ? (
-          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={420}>
-            このタグの作品はありません。
-          </Reveal>
+          <p className="mt-3 text-sm opacity-80">このタグの作品はありません。</p>
         ) : (
-          <Reveal as="ul" className="mt-6 space-y-4" delay={420}>
+          <ul className="mt-4 space-y-4">
             {works.map((w) => (
-              <li key={w.slug} className="rounded-2xl border border-border bg-panel p-5 sm:p-6">
+              <li key={w.slug} className="rounded-lg border p-4">
                 <Link
                   href={`/works/${w.slug}`}
-                  className="block text-base font-medium tracking-tight hover:underline underline-offset-4"
+                  className="block text-lg font-semibold hover:underline underline-offset-4"
                 >
                   {w.meta.title}
                 </Link>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{w.meta.summary}</p>
+                <p className="mt-2 text-sm opacity-80">{w.meta.summary}</p>
               </li>
             ))}
-          </Reveal>
+          </ul>
         )}
       </section>
-
-      <Reveal as="div" className="mt-10 hairline" delay={460} />
     </main>
   );
 }
