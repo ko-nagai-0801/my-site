@@ -9,11 +9,11 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Reveal } from "@/components/ui/Reveal";
 import { SITE_NAME, SITE_LOCALE, SITE_OG_IMAGES } from "@/lib/site-meta";
 import {
-  buildPostTagMap,
-  getPostTagList,
-  getActivePostTag,
-  filterPostsByActiveKey,
-} from "@/lib/post-tags";
+  normalizeKey,
+  normalizeLabel,
+  slugToKey,
+  tagToSlug,
+} from "@/lib/tag-normalize";
 
 export const revalidate = 3600;
 
@@ -29,18 +29,75 @@ const toInt = (v: string | undefined) => {
   return Math.trunc(n);
 };
 
+type TagItem = { key: string; label: string; slug: string };
+
+function buildTagList(posts: Awaited<ReturnType<typeof getAllPostLikes>>): TagItem[] {
+  const map = new Map<string, string>(); // key -> label（表示）
+
+  for (const p of posts) {
+    const tags = p.meta.tags ?? [];
+    for (const raw of tags) {
+      const label = normalizeLabel(raw);
+      if (!label) continue;
+      const key = normalizeKey(label);
+      if (!key) continue;
+
+      if (!map.has(key)) map.set(key, label);
+    }
+  }
+
+  const list = [...map.entries()].map(([key, label]) => ({
+    key,
+    label,
+    slug: tagToSlug(label),
+  }));
+
+  list.sort((a, b) => a.label.localeCompare(b.label, "ja"));
+  return list;
+}
+
+function resolveActiveTag(
+  tagParam: string | undefined,
+  tagList: TagItem[]
+): { activeKey: string; activeLabel: string } {
+  if (!tagParam) return { activeKey: "", activeLabel: "" };
+
+  // まず slug として解釈（/tags/<slug> と同一方針）
+  const keyFromSlug = slugToKey(tagParam);
+  const hitSlug = tagList.find((t) => t.key === keyFromSlug);
+  if (hitSlug) return { activeKey: hitSlug.key, activeLabel: hitSlug.label };
+
+  // 次に label として解釈（/blog?tag=Next.js など）
+  const label = normalizeLabel(tagParam);
+  const keyFromLabel = normalizeKey(label);
+  const hitLabel = tagList.find((t) => t.key === keyFromLabel);
+  if (hitLabel) return { activeKey: hitLabel.key, activeLabel: hitLabel.label };
+
+  return { activeKey: "", activeLabel: "" };
+}
+
+function filterPostsByActiveKey(
+  posts: Awaited<ReturnType<typeof getAllPostLikes>>,
+  activeKey: string
+) {
+  if (!activeKey) return posts;
+
+  return posts.filter((p) => {
+    const tags = p.meta.tags ?? [];
+    return tags.some((raw) => normalizeKey(normalizeLabel(raw)) === activeKey);
+  });
+}
+
 /**
  * ✅ /blog の OGP を tag/page に追従（/works と同方針）
- * - title/description を searchParams から生成
- * - images は site-meta 単一ソース
  */
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const sp = (await searchParams) ?? {};
   const requested = Math.max(1, toInt(sp.page));
 
   const posts = await getAllPostLikes();
-  const tagMap = buildPostTagMap(posts);
-  const { activeLabel } = getActivePostTag(sp.tag, tagMap);
+  const tags = buildTagList(posts);
+  const { activeLabel } = resolveActiveTag(sp.tag, tags);
 
   const titleBase = activeLabel ? `Blog: ${activeLabel}` : "Blog";
   const title = requested > 1 ? `${titleBase} - Page ${requested}` : titleBase;
@@ -58,10 +115,6 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   return {
     title,
     description,
-
-    alternates: {
-      canonical: url,
-    },
 
     openGraph: {
       title,
@@ -123,12 +176,8 @@ export default async function BlogPage({ searchParams }: Props) {
     );
   }
 
-  const tagMap = buildPostTagMap(posts);
-  const allTags = getPostTagList(tagMap);
-
-  // ✅ tagParam は label/slug どちらでも受けられる（事故防止）
-  const { activeKey, activeLabel, activeSlug } = getActivePostTag(sp.tag, tagMap);
-
+  const tagList = buildTagList(posts);
+  const { activeKey, activeLabel } = resolveActiveTag(sp.tag, tagList);
   const filtered = filterPostsByActiveKey(posts, activeKey);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -179,54 +228,52 @@ export default async function BlogPage({ searchParams }: Props) {
 
       <Reveal as="div" className="mt-10 hairline" delay={260} />
 
-      {/* ✅ タグフィルタ（chip UI） */}
+      {/* ✅ タグフィルタ（chip UI） + ✅ /tags/<slug> 導線 */}
       <section className="mt-8" aria-label="Tag filter">
         <h2 className="sr-only">Filter by tag</h2>
 
-        <Reveal as="div" className="flex flex-wrap gap-2" delay={300}>
+        <Reveal as="div" className="flex flex-wrap items-center gap-2" delay={300}>
           <Link href="/blog" className={activeKey ? chipBase : chipActive}>
             All
           </Link>
 
-          {allTags.map(({ key, label }) => {
+          {tagList.map(({ key, label, slug }) => {
             const href = `/blog?tag=${encodeURIComponent(label)}`;
             const isActive = key === activeKey;
+
             return (
-              <Link key={key} href={href} className={isActive ? chipActive : chipBase}>
-                {label}
-              </Link>
+              <div key={key} className="flex items-center gap-1">
+                <Link href={href} className={isActive ? chipActive : chipBase}>
+                  {label}
+                </Link>
+                <Link
+                  href={`/tags/${slug}`}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  aria-label={`${label} のタグページへ`}
+                >
+                  ↗
+                </Link>
+              </div>
             );
           })}
         </Reveal>
 
-        {/* ✅ /tags/<slug> への導線（active時のみ表示） */}
-        {activeLabel && activeSlug ? (
-          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={340}>
-            <Link
-              href={`/tags/${activeSlug}`}
-              className="underline underline-offset-4 hover:opacity-80"
-            >
-              このタグの詳細ページを見る →
-            </Link>
-          </Reveal>
-        ) : null}
-
         {activeKey && filtered.length === 0 ? (
-          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={360}>
+          <Reveal as="p" className="mt-4 text-sm text-muted-foreground" delay={340}>
             このタグのブログ記事はありません。
           </Reveal>
         ) : null}
       </section>
 
-      <Reveal as="div" className="mt-10" delay={380}>
+      <Reveal as="div" className="mt-10" delay={360}>
         <PostsList posts={items} variant="latest" linkMode="title" />
       </Reveal>
 
-      <Reveal as="div" className="mt-10" delay={440}>
+      <Reveal as="div" className="mt-10" delay={420}>
         <Pagination current={requested} total={totalPages} hrefForPage={hrefForPage} />
       </Reveal>
 
-      <Reveal as="div" className="mt-10 hairline" delay={500} />
+      <Reveal as="div" className="mt-10 hairline" delay={480} />
     </main>
   );
 }
